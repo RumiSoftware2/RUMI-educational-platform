@@ -6,6 +6,7 @@ RUMI es una plataforma educativa completa desarrollada con Node.js, Express, Rea
 ## 👨‍💻 Autor
 **Desarrollado por:** Sebastian Mendoza Duitama  
 **GitHub:** [@RumiSoftware2](https://github.com/RumiSoftware2)  
+**LinkedIn:** [Sebastian Mendoza Duitama](https://www.linkedin.com/in/sebastian-mendoza-duitama-694845203)  
 **Fecha de creación:** 2024
 
 ## 🚀 Características
