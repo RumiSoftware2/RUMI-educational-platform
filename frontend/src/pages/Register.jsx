@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import logo from '../assets/logo2zeus.png';
+import api from '../services/api';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -24,21 +25,11 @@ const Register = () => {
     setMessage('');
 
     try {
-      const res = await fetch('http://localhost:3000/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(formData)
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Error en el registro');
-
+      const res = await api.post('/auth/register', formData);
       setMessage('✅ Registro exitoso');
       setFormData({ name: '', email: '', password: '', role: 'estudiante' });
     } catch (err) {
-      setMessage(`❌ ${err.message}`);
+      setMessage(`❌ ${err.response?.data?.message || err.message}`);
     } finally {
       setLoading(false);
     }
