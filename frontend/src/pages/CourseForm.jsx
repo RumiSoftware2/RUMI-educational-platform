@@ -19,20 +19,34 @@ const CourseForm = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // Función para convertir cualquier URL de YouTube a formato embed
+  function toYoutubeEmbed(url) {
+    if (!url) return '';
+    // Caso 1: Formato largo
+    let match = url.match(/(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([\w-]+)/);
+    if (match) {
+      const videoId = match[1];
+      const listMatch = url.match(/[?&]list=([\w-]+)/);
+      return `https://www.youtube.com/embed/${videoId}` + (listMatch ? `?list=${listMatch[1]}` : '');
+    }
+    // Caso 2: Formato corto (compartir)
+    match = url.match(/(?:https?:\/\/)?youtu\.be\/([\w-]+)/);
+    if (match) {
+      const videoId = match[1];
+      // Si hay parámetros extra, los puedes conservar si quieres
+      const params = url.split('?')[1];
+      return `https://www.youtube.com/embed/${videoId}` + (params ? `?${params}` : '');
+    }
+    // Si no es YouTube, devolver la URL original
+    return url;
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setMessage('');
     // Transformar la URL a formato embed si es de YouTube
-    let videoUrl = formData.videoUrl;
-    const ytMatch = videoUrl.match(/(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([\w-]+)/);
-    if (ytMatch) {
-      const videoId = ytMatch[1];
-      const listMatch = videoUrl.match(/[?&]list=([\w-]+)/);
-      videoUrl = `https://www.youtube.com/embed/${videoId}` + (listMatch ? `?list=${listMatch[1]}` : '');
-    }
-    // Si ya es embed o short, lo deja igual
-    // (opcional: podrías agregar más validaciones para otros servicios)
+    let videoUrl = toYoutubeEmbed(formData.videoUrl);
     try {
       // Usar la API centralizada, el token se añade automáticamente
       const res = await api.post('/courses', { ...formData, videoUrl });

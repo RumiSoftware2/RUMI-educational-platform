@@ -4,8 +4,8 @@ const Course = require('../models/Course');
 const createCourse = async (req, res) => {
   try {
     const { title, description, price, lessons } = req.body;
-    if (!title || !description) {
-      return res.status(400).json({ message: 'Faltan campos requeridos' });
+    if (!title || !description || !req.body.videoUrl) {
+      return res.status(400).json({ message: 'Faltan campos requeridos: título, descripción y URL del video' });
     }
     let lessonsToSave = [];
     if (Array.isArray(lessons) && lessons.length > 0) {
@@ -21,6 +21,7 @@ const createCourse = async (req, res) => {
       description,
       price: price || 0,
       teacher: req.user.id,
+      videoUrl: req.body.videoUrl,
       lessons: lessonsToSave
     });
     const savedCourse = await newCourse.save();
@@ -67,10 +68,11 @@ const updateCourse = async (req, res) => {
     if (req.user.role !== 'admin' && String(course.teacher) !== String(req.user.id)) {
       return res.status(403).json({ message: 'No autorizado para editar este curso' });
     }
-    const { title, description, price, lessons } = req.body;
+    const { title, description, price, videoUrl, lessons } = req.body;
     if (title) course.title = title;
     if (description) course.description = description;
     if (price !== undefined) course.price = price;
+    if (videoUrl) course.videoUrl = videoUrl;
     if (Array.isArray(lessons)) {
       // Validar lecciones
       for (const lesson of lessons) {

@@ -116,19 +116,7 @@ export default function CourseDetail() {
     setShowStudentView(null);
   };
 
-  // Transforma la URL a embed de YouTube si es necesario
-  function toYoutubeEmbed(url) {
-    if (!url) return '';
-    const match = url.match(/(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([\w-]+)/);
-    if (match) {
-      const videoId = match[1];
-      const listMatch = url.match(/[?&]list=([\w-]+)/);
-      return `https://www.youtube.com/embed/${videoId}` + (listMatch ? `?list=${listMatch[1]}` : '');
-    }
-    return url;
-  }
-
-  const mainVideoUrl = toYoutubeEmbed(course?.videoUrl);
+  const mainVideoUrl = course?.videoUrl;
 
   if (loading) return <p className="p-4">Cargando curso...</p>;
   if (error) return <p className="p-4 text-red-600">{error}</p>;

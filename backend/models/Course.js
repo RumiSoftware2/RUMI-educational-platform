@@ -27,7 +27,7 @@ const courseSchema = new mongoose.Schema({
   },
   videoUrl: {
     type: String,
-    required: false // deprecated, usar lessons
+    required: true
   },
   lessons: [lessonSchema],
   students: [{
