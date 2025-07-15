@@ -13,9 +13,14 @@ connectDB();
 // 4. Creamos la aplicación Express
 const app = express();
 
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://rumieducation.vercel.app'
+];
+
 // 5. Middleware para CORS
 app.use(cors({
-  origin: 'http://localhost:5173' // 👈 Esto solo permite a tu frontend acceder
+  origin: allowedOrigins
 }));
 
 // 6. Middleware para manejar JSON
