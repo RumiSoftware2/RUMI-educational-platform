@@ -10,7 +10,8 @@ const {
   getEnrolledCourses,
   getAllCourses,
   enrollInCourse,
-  getCourseStatistics
+  getCourseStatistics,
+  getEnrolledStudents
 } = require('../controllers/courseController');
 const authMiddleware = require('../middleware/authMiddleware');
 const checkRole = require('../middleware/roleMiddleware');
@@ -44,6 +45,9 @@ router.delete('/:id', authMiddleware, checkRole(['docente', 'admin']), deleteCou
 
 // Obtener curso por ID (público)
 router.get('/:id', getCourseById);
+
+// Obtener la lista de estudiantes inscritos a un curso (público)
+router.get('/:id/students', getEnrolledStudents);
 
 module.exports = router;
 

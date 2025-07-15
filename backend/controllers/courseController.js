@@ -170,6 +170,21 @@ const getCourseStatistics = async (req, res) => {
   }
 };
 
+// Obtener la lista de estudiantes inscritos a un curso
+const getEnrolledStudents = async (req, res) => {
+  try {
+    const course = await Course.findById(req.params.id).populate('students', 'name');
+    if (!course) return res.status(404).json({ message: 'Curso no encontrado' });
+    const students = course.students.map(student => ({
+      id: student._id,
+      name: student.name
+    }));
+    res.json(students);
+  } catch (err) {
+    res.status(500).json({ message: 'Error al obtener los estudiantes inscritos' });
+  }
+};
+
 module.exports = {
   createCourse,
   getCourses,
@@ -180,5 +195,6 @@ module.exports = {
   getEnrolledCourses,
   getAllCourses,
   enrollInCourse,
-  getCourseStatistics
+  getCourseStatistics,
+  getEnrolledStudents
 };

@@ -2,6 +2,7 @@ import { useState, useEffect, useContext } from 'react';
 import { useParams } from 'react-router-dom';
 import api from '../services/api';
 import { AuthContext } from '../context/AuthContext';
+import EnrolledStudentsList from '../components/EnrolledStudentsList';
 
 // Función para convertir cualquier URL de YouTube a formato embed
 function toYoutubeEmbed(url) {
@@ -37,6 +38,7 @@ export default function CourseDetail() {
   const [message, setMessage] = useState('');
   const [editingIndex, setEditingIndex] = useState(null);
   const [showStudentView, setShowStudentView] = useState(null); // index of lesson to show as student
+  const [enrolledStudents, setEnrolledStudents] = useState([]);
 
   useEffect(() => {
     const fetchCourse = async () => {
@@ -58,6 +60,18 @@ export default function CourseDetail() {
       setLessonForm(form => ({ ...form, order: lessons.length + 1 }));
     }
   }, [showForm, lessons.length, editingIndex]);
+
+  useEffect(() => {
+    const fetchEnrolledStudents = async () => {
+      try {
+        const res = await api.get(`/courses/${id}/students`);
+        setEnrolledStudents(res.data);
+      } catch (err) {
+        setEnrolledStudents([]);
+      }
+    };
+    fetchEnrolledStudents();
+  }, [id]);
 
   const isOwner = user && (
     user.role === 'admin' ||
@@ -179,146 +193,153 @@ export default function CourseDetail() {
   }
 
   return (
-    <div className="p-6 max-w-3xl mx-auto">
+    <div className="p-6 max-w-5xl mx-auto">
       <h1 className="text-3xl font-bold mb-4 text-center">{course.title}</h1>
-      <div className="aspect-video mb-4">
-        {mainVideoUrl ? (
-          <iframe
-            src={mainVideoUrl}
-            title={course.title}
-            frameBorder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-            className="w-full h-full rounded"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gray-200 rounded text-gray-500">
-            Sin video principal
-          </div>
-        )}
-      </div>
-      <p className="mb-8 text-lg text-center text-gray-700">{course.description}</p>
-
-      {/* Sección de lecciones */}
-      <div className="mb-8">
-        <h2 className="text-2xl font-extrabold mb-4 text-green-700 border-b-2 border-green-200 pb-2">Lecciones del curso</h2>
-        {isOwner && lessons.length === 0 && !showForm && (
-          <div className="flex flex-col items-center my-8">
-            <p className="mb-4 text-gray-600">Aún no hay lecciones en este curso.</p>
-            <button
-              className="bg-green-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-green-700 shadow"
-              onClick={() => { setShowForm(true); setEditingIndex(null); }}
-            >
-              Crear primera lección
-            </button>
-          </div>
-        )}
-        {isOwner && lessons.length > 0 && !showForm && (
-          <div className="flex flex-col items-center my-8">
-            <button
-              className="bg-green-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-green-700 shadow"
-              onClick={() => { setShowForm(true); setEditingIndex(null); }}
-            >
-              Agregar otra lección
-            </button>
-          </div>
-        )}
-        {isOwner && showForm && (
-          <div className="mb-8 border-2 border-green-200 bg-green-50 rounded-xl p-6 shadow-md">
-            <h3 className="text-lg font-bold mb-2 text-green-800">{editingIndex === null ? 'Crear lección' : `Editar lección #${lessonForm.order}`}</h3>
-            <form onSubmit={handleAddOrUpdateLesson} className="flex flex-col gap-3">
-              <input
-                type="text"
-                name="title"
-                placeholder="Título"
-                value={lessonForm.title}
-                onChange={handleLessonChange}
-                className="p-2 border-2 border-green-300 rounded-lg focus:outline-none focus:border-green-500"
-                required
+      <div className="flex flex-row gap-8">
+        <div className="w-1/3">
+          <EnrolledStudentsList students={enrolledStudents} />
+        </div>
+        <div className="flex-1">
+          <div className="aspect-video mb-4">
+            {mainVideoUrl ? (
+              <iframe
+                src={mainVideoUrl}
+                title={course.title}
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="w-full h-full rounded"
               />
-              <input
-                type="text"
-                name="videoUrl"
-                placeholder="URL del video"
-                value={lessonForm.videoUrl}
-                onChange={handleLessonChange}
-                className="p-2 border-2 border-green-300 rounded-lg focus:outline-none focus:border-green-500"
-                required
-              />
-              <textarea
-                name="description"
-                placeholder="Descripción de la lección"
-                value={lessonForm.description}
-                onChange={handleLessonChange}
-                className="p-2 border-2 border-green-300 rounded-lg focus:outline-none focus:border-green-500"
-                required
-                rows={2}
-              ></textarea>
-              <button
-                type="submit"
-                className="px-4 py-2 rounded-xl font-bold transition text-white bg-green-600 hover:bg-green-700"
-              >
-                {editingIndex === null ? 'Crear lección' : 'Actualizar'}
-              </button>
-              <button
-                type="button"
-                onClick={() => { setShowForm(false); setEditingIndex(null); setLessonForm({ order: lessons.length + 1, title: '', description: '', videoUrl: '' }); }}
-                className="text-sm text-gray-600 hover:underline mt-2"
-              >
-                Cancelar
-              </button>
-            </form>
-          </div>
-        )}
-        <div className="grid gap-6">
-          {lessons
-            .sort((a, b) => a.order - b.order)
-            .map((lesson, idx) => (
-              <div key={idx} className="bg-white border border-gray-200 rounded-xl shadow-lg p-6 flex flex-col gap-3">
-                <div className="flex items-center gap-3">
-                  <LessonNumber number={lesson.order} />
-                  <div>
-                    <span className="font-bold text-lg text-green-800">{lesson.title}</span>
-                    <span className="block text-gray-600 mt-1">{lesson.description}</span>
-                  </div>
-                  {isOwner && (
-                    <div className="flex gap-2 ml-auto">
-                      <button
-                        className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
-                        onClick={() => handleEditLesson(idx)}
-                      >
-                        Editar
-                      </button>
-                      <button
-                        className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
-                        onClick={() => handleOpenStudentView(idx)}
-                      >
-                        Abrir
-                      </button>
-                      <button
-                        className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
-                        onClick={() => handleDeleteLesson(idx)}
-                      >
-                        Eliminar
-                      </button>
-                    </div>
-                  )}
-                  {!isOwner && (
-                    <div className="flex gap-2 ml-auto">
-                      <button
-                        className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
-                        onClick={() => handleOpenStudentView(idx)}
-                      >
-                        Abrir
-                      </button>
-                    </div>
-                  )}
-                </div>
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-gray-200 rounded text-gray-500">
+                Sin video principal
               </div>
-            ))}
+            )}
+          </div>
+          <p className="mb-8 text-lg text-center text-gray-700">{course.description}</p>
+
+          {/* Sección de lecciones */}
+          <div className="mb-8">
+            <h2 className="text-2xl font-extrabold mb-4 text-green-700 border-b-2 border-green-200 pb-2">Lecciones del curso</h2>
+            {isOwner && lessons.length === 0 && !showForm && (
+              <div className="flex flex-col items-center my-8">
+                <p className="mb-4 text-gray-600">Aún no hay lecciones en este curso.</p>
+                <button
+                  className="bg-green-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-green-700 shadow"
+                  onClick={() => { setShowForm(true); setEditingIndex(null); }}
+                >
+                  Crear primera lección
+                </button>
+              </div>
+            )}
+            {isOwner && lessons.length > 0 && !showForm && (
+              <div className="flex flex-col items-center my-8">
+                <button
+                  className="bg-green-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-green-700 shadow"
+                  onClick={() => { setShowForm(true); setEditingIndex(null); }}
+                >
+                  Agregar otra lección
+                </button>
+              </div>
+            )}
+            {isOwner && showForm && (
+              <div className="mb-8 border-2 border-green-200 bg-green-50 rounded-xl p-6 shadow-md">
+                <h3 className="text-lg font-bold mb-2 text-green-800">{editingIndex === null ? 'Crear lección' : `Editar lección #${lessonForm.order}`}</h3>
+                <form onSubmit={handleAddOrUpdateLesson} className="flex flex-col gap-3">
+                  <input
+                    type="text"
+                    name="title"
+                    placeholder="Título"
+                    value={lessonForm.title}
+                    onChange={handleLessonChange}
+                    className="p-2 border-2 border-green-300 rounded-lg focus:outline-none focus:border-green-500"
+                    required
+                  />
+                  <input
+                    type="text"
+                    name="videoUrl"
+                    placeholder="URL del video"
+                    value={lessonForm.videoUrl}
+                    onChange={handleLessonChange}
+                    className="p-2 border-2 border-green-300 rounded-lg focus:outline-none focus:border-green-500"
+                    required
+                  />
+                  <textarea
+                    name="description"
+                    placeholder="Descripción de la lección"
+                    value={lessonForm.description}
+                    onChange={handleLessonChange}
+                    className="p-2 border-2 border-green-300 rounded-lg focus:outline-none focus:border-green-500"
+                    required
+                    rows={2}
+                  ></textarea>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 rounded-xl font-bold transition text-white bg-green-600 hover:bg-green-700"
+                  >
+                    {editingIndex === null ? 'Crear lección' : 'Actualizar'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setShowForm(false); setEditingIndex(null); setLessonForm({ order: lessons.length + 1, title: '', description: '', videoUrl: '' }); }}
+                    className="text-sm text-gray-600 hover:underline mt-2"
+                  >
+                    Cancelar
+                  </button>
+                </form>
+              </div>
+            )}
+            <div className="grid gap-6">
+              {lessons
+                .sort((a, b) => a.order - b.order)
+                .map((lesson, idx) => (
+                  <div key={idx} className="bg-white border border-gray-200 rounded-xl shadow-lg p-6 flex flex-col gap-3">
+                    <div className="flex items-center gap-3">
+                      <LessonNumber number={lesson.order} />
+                      <div>
+                        <span className="font-bold text-lg text-green-800">{lesson.title}</span>
+                        <span className="block text-gray-600 mt-1">{lesson.description}</span>
+                      </div>
+                      {isOwner && (
+                        <div className="flex gap-2 ml-auto">
+                          <button
+                            className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
+                            onClick={() => handleEditLesson(idx)}
+                          >
+                            Editar
+                          </button>
+                          <button
+                            className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+                            onClick={() => handleOpenStudentView(idx)}
+                          >
+                            Abrir
+                          </button>
+                          <button
+                            className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                            onClick={() => handleDeleteLesson(idx)}
+                          >
+                            Eliminar
+                          </button>
+                        </div>
+                      )}
+                      {!isOwner && (
+                        <div className="flex gap-2 ml-auto">
+                          <button
+                            className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+                            onClick={() => handleOpenStudentView(idx)}
+                          >
+                            Abrir
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </div>
+          {message && <div className="mt-4 text-green-700 font-semibold text-center">{message}</div>}
         </div>
       </div>
-      {message && <div className="mt-4 text-green-700 font-semibold text-center">{message}</div>}
     </div>
   );
 }
