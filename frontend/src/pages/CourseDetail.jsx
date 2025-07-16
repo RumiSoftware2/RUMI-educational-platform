@@ -244,17 +244,14 @@ export default function CourseDetail() {
         <p className="mb-4 text-gray-700">{lesson.description}</p>
         {progressMsg && <div className="mb-4 text-green-700 font-semibold text-center">{progressMsg}</div>}
         <div className="mt-6 p-4 border rounded bg-gray-50 text-gray-500 text-center">
-          {/* Mostrar quiz si existe, si no mostrar mensaje de lección completada */}
-          {lesson.quiz ? (
-            <LessonQuiz
-              quizId={lesson.quiz}
-              courseId={id}
-              lessonOrder={lesson.order}
-              onComplete={(score) => setProgressMsg(`¡Progreso guardado! Puntuación: ${score}`)}
-            />
-          ) : (
-            videoWatched && <span>¡Has completado la lección!</span>
-          )}
+          {/* Siempre renderizar LessonQuiz, dejar que el propio componente decida si hay quiz o no */}
+          <LessonQuiz
+            quizId={lesson.quiz}
+            courseId={id}
+            lessonOrder={lesson.order}
+            onComplete={(score) => setProgressMsg(`¡Progreso guardado! Puntuación: ${score}`)}
+          />
+          {!lesson.quiz && videoWatched && <span>¡Has completado la lección!</span>}
         </div>
       </div>
     );
