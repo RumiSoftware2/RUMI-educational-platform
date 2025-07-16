@@ -1,6 +1,7 @@
 // frontend/src/pages/EnterpriseRumi.jsx
 import { motion } from 'framer-motion';
 import logo3 from '../assets/logo3zeus.png';
+import { Link } from 'react-router-dom';
 
 const msg1 = "¡Estamos trabajando para traerte la mejor experiencia empresarial!";
 const msg2 = "Página en construcción";
@@ -60,6 +61,13 @@ function AnimatedConstruction() {
           ))}
         </motion.div>
       </motion.div>
+      {/* Botón para regresar a Home */}
+      <Link
+        to="/"
+        className="mt-8 inline-block bg-gradient-to-r from-[#2ca6e0] to-[#ffd700] text-[#0a2342] px-8 py-3 rounded-xl font-bold text-lg shadow-lg hover:from-[#0a2342] hover:to-[#ffd700] hover:text-white transition-all duration-300 border-2 border-[#ffd700]/60"
+      >
+        ← Volver al inicio
+      </Link>
     </div>
   );
 }

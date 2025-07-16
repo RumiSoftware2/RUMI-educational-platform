@@ -41,6 +41,9 @@ export default function CourseDetail() {
   const [editingIndex, setEditingIndex] = useState(null);
   const [showStudentView, setShowStudentView] = useState(null); // index of lesson to show as student
   const [enrolledStudents, setEnrolledStudents] = useState([]);
+  // Mover hooks aquí
+  const [videoWatched, setVideoWatched] = useState(false);
+  const [progressMsg, setProgressMsg] = useState('');
 
   useEffect(() => {
     const fetchCourse = async () => {
@@ -163,9 +166,9 @@ export default function CourseDetail() {
   // Vista de estudiante para una lección
   if (showStudentView !== null && lessons[showStudentView]) {
     const lesson = lessons[showStudentView];
-    const [videoWatched, setVideoWatched] = useState(false);
-    const [progressMsg, setProgressMsg] = useState('');
-
+    // Elimina los hooks de aquí, ya están arriba
+    // const [videoWatched, setVideoWatched] = useState(false);
+    // const [progressMsg, setProgressMsg] = useState('');
     // Handler para guardar progreso por visualización
     const handleVideoEnded = async () => {
       try {
