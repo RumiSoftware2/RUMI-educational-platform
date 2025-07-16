@@ -5,6 +5,27 @@ import HeaderEnterprise from '../components/HeaderEnterprise';
 import logo from '../assets/logo1zeus.png';
 import logo2 from '../assets/logo2zeus.png';
 import logo3 from '../assets/logo3zeus.png';
+import { motion } from 'framer-motion';
+
+// Banner animado de construcción
+function ConstructionBanner() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.8, ease: 'easeOut' }}
+      className="flex justify-center items-center min-h-[40vh]"
+    >
+      <div className="flex items-center gap-4 bg-white/80 backdrop-blur-lg border-2 border-[#ffd700] rounded-2xl shadow-xl px-8 py-6">
+        <span className="text-4xl animate-bounce">🚧</span>
+        <span className="text-xl md:text-2xl font-bold text-[#0a2342] text-center">
+          ¡Estamos trabajando para traerte la mejor experiencia empresarial!<br />
+          <span className="text-[#2ca6e0]">Página en construcción</span>
+        </span>
+      </div>
+    </motion.div>
+  );
+}
 
 export default function EnterpriseRumi() {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -21,6 +42,7 @@ export default function EnterpriseRumi() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-100 to-blue-200">
       <HeaderEnterprise />
+      <ConstructionBanner />
 
       {/* Título principal empresarial */}
       <div className="text-center py-16 bg-gradient-to-r from-slate-800 via-blue-800 to-indigo-900 text-white relative overflow-hidden mt-20">
