@@ -74,21 +74,24 @@ function AnimatedTitle() {
 export default function PersonRumi() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-700 to-yellow-200 flex flex-col">
-      {/* Sección principal: Logo a la izquierda, video y resumen a la derecha */}
-      <div className="flex flex-col md:flex-row items-center justify-center pt-8 pb-2 gap-8 md:gap-12 w-full max-w-7xl mx-auto">
-        {/* Logo a la izquierda */}
+      {/* Header principal: Logo y título alineados horizontalmente */}
+      <div className="flex flex-col md:flex-row items-center md:items-start justify-center pt-8 pb-2 gap-4 md:gap-8 w-full max-w-7xl mx-auto">
+        {/* Logo en la esquina superior izquierda */}
         <motion.img
           src={logo2}
           alt="RUMI Logo"
-          className="w-40 h-28 md:w-56 md:h-60 rounded-2xl shadow-2xl border-4 border-yellow-400 object-cover mb-4 md:mb-0"
+          className="w-40 h-28 md:w-56 md:h-60 rounded-2xl shadow-2xl border-4 border-yellow-400 object-cover mb-4 md:mb-0 md:mr-4"
           initial={{ opacity: 0, scale: 0.7 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8 }}
         />
-        {/* Título, video y resumen */}
-        <div className="flex-1 flex flex-col gap-8">
+        {/* Título y subtítulo a la derecha del logo */}
+        <div className="flex-1 flex flex-col items-center md:items-start justify-center">
           <AnimatedTitle />
-          <div className="flex flex-col md:flex-row items-center justify-center gap-10 w-full">
+        </div>
+      </div>
+      {/* Video y resumen ... (sin cambios) */}
+      <div className="flex flex-col md:flex-row items-center justify-center pt-8 pb-2 gap-8 md:gap-12 w-full max-w-7xl mx-auto">
             {/* Video */}
             <motion.div
               className="flex-1 bg-white/90 rounded-3xl shadow-2xl border-4 border-yellow-300 p-4 md:p-8 flex flex-col items-center"
@@ -142,8 +145,6 @@ export default function PersonRumi() {
               </div>
             </motion.div>
           </div>
-        </div>
-      </div>
       {/* Sección de Contacto */}
       <motion.div
         className="mt-8 bg-gradient-to-r from-purple-900 to-yellow-400 text-white py-12"
