@@ -11,7 +11,8 @@ const {
   getAllCourses,
   enrollInCourse,
   getCourseStatistics,
-  getEnrolledStudents
+  getEnrolledStudents,
+  leaveCourse
 } = require('../controllers/courseController');
 const authMiddleware = require('../middleware/authMiddleware');
 const checkRole = require('../middleware/roleMiddleware');
@@ -48,6 +49,9 @@ router.get('/:id', getCourseById);
 
 // Obtener la lista de estudiantes inscritos a un curso (público)
 router.get('/:id/students', getEnrolledStudents);
+
+// Abandonar curso (solo estudiantes)
+router.put('/:id/leave', authMiddleware, checkRole(['estudiante']), leaveCourse);
 
 module.exports = router;
 

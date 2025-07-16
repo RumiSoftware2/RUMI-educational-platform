@@ -185,6 +185,27 @@ const getEnrolledStudents = async (req, res) => {
   }
 };
 
+// Permitir que un estudiante abandone un curso
+const leaveCourse = async (req, res) => {
+  try {
+    const courseId = req.params.id;
+    const course = await Course.findById(courseId);
+    if (!course) return res.status(404).json({ message: 'Curso no encontrado' });
+    // Solo estudiantes inscritos pueden abandonar
+    const studentIndex = course.students.findIndex(
+      (studentId) => String(studentId) === String(req.user.id)
+    );
+    if (studentIndex === -1) {
+      return res.status(400).json({ message: 'No estás inscrito en este curso' });
+    }
+    course.students.splice(studentIndex, 1);
+    await course.save();
+    res.json({ message: 'Has abandonado el curso', course });
+  } catch (error) {
+    res.status(500).json({ message: 'Error al abandonar el curso', error });
+  }
+};
+
 module.exports = {
   createCourse,
   getCourses,
@@ -196,5 +217,6 @@ module.exports = {
   getAllCourses,
   enrollInCourse,
   getCourseStatistics,
-  getEnrolledStudents
+  getEnrolledStudents,
+  leaveCourse
 };

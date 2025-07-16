@@ -29,4 +29,7 @@ export const getCourseStatistics = (courseId) => api.get(`/courses/${courseId}/s
 // Inscribir estudiante a un curso
 export const enrollInCourse = (courseId) => api.post(`/courses/${courseId}/enroll`);
 
+// Abandonar curso
+export const leaveCourse = (courseId) => api.put(`/courses/${courseId}/leave`);
+
 export default api;
