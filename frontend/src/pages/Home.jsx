@@ -1,348 +1,235 @@
 // frontend/src/pages/Home.jsx
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import logo from '../assets/logo1zeus.png';
 import logo2 from '../assets/logo2zeus.png';
 import logo3 from '../assets/logo3zeus.png';
+
+// SVGs para redes sociales
+const LinkedInIcon = () => (
+  <svg width="28" height="28" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.761 0 5-2.239 5-5v-14c0-2.761-2.239-5-5-5zm-11 19h-3v-10h3v10zm-1.5-11.268c-.966 0-1.75-.784-1.75-1.75s.784-1.75 1.75-1.75 1.75.784 1.75 1.75-.784 1.75-1.75 1.75zm15.5 11.268h-3v-5.604c0-1.337-.025-3.063-1.868-3.063-1.868 0-2.154 1.459-2.154 2.967v5.7h-3v-10h2.881v1.367h.041c.401-.761 1.379-1.563 2.841-1.563 3.039 0 3.6 2.001 3.6 4.601v5.595z"/></svg>
+);
+const YouTubeIcon = () => (
+  <svg width="28" height="28" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a2.994 2.994 0 0 0-2.112-2.112C19.454 3.5 12 3.5 12 3.5s-7.454 0-9.386.574A2.994 2.994 0 0 0 .502 6.186C0 8.12 0 12 0 12s0 3.88.502 5.814a2.994 2.994 0 0 0 2.112 2.112C4.546 20.5 12 20.5 12 20.5s7.454 0 9.386-.574a2.994 2.994 0 0 0 2.112-2.112C24 15.88 24 12 24 12s0-3.88-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+);
+const GitHubIcon = () => (
+  <svg width="28" height="28" fill="currentColor" viewBox="0 0 24 24"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.387.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.416-4.042-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.084-.729.084-.729 1.205.084 1.84 1.236 1.84 1.236 1.07 1.834 2.809 1.304 3.495.997.108-.775.418-1.305.762-1.605-2.665-.305-5.466-1.334-5.466-5.931 0-1.31.469-2.381 1.236-3.221-.124-.303-.535-1.523.117-3.176 0 0 1.008-.322 3.301 1.23a11.52 11.52 0 0 1 3.003-.404c1.018.005 2.045.138 3.003.404 2.291-1.553 3.297-1.23 3.297-1.23.653 1.653.242 2.873.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.803 5.624-5.475 5.921.43.372.823 1.102.823 2.222 0 1.606-.014 2.898-.014 3.293 0 .322.216.694.825.576C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+);
 
 export default function Home() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const images = [logo, logo2, logo3];
 
-  // Auto-slide cada 3 segundos
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % images.length);
-    }, 3000);
+    }, 3500);
     return () => clearInterval(interval);
   }, [images.length]);
 
+  // Framer Motion variants
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 40 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: 'easeOut' } },
+  };
+  const fadeIn = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { duration: 0.7, ease: 'easeOut' } },
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-yellow-100 to-indigo-200">
-      {/* Título principal mejorado */}
-      <div className="text-center py-12 bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-700 text-white relative overflow-hidden">
-        {/* Efectos de fondo animados */}
-        <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 via-blue-500/20 to-indigo-500/20 animate-pulse"></div>
-        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-white/10 to-transparent"></div>
-        
-        <div className="relative z-10 max-w-4xl mx-auto">
-          <h1 className="text-5xl md:text-7xl font-extrabold animate-bounce bg-gradient-to-r from-pink-200 via-purple-200 to-blue-200 bg-clip-text text-transparent drop-shadow-2xl mx-auto max-w-xl">
-            RUMI
-          </h1>
-          <div className="mt-4">
-            <p className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-200 via-green-200 to-yellow-200 bg-clip-text text-transparent animate-pulse drop-shadow-lg mx-auto max-w-lg">
-              Plataforma Educativa
-            </p>
-            <div className="w-32 h-1 bg-gradient-to-r from-gray-200 to-green-200 mx-auto mt-3 rounded-full animate-pulse"></div>
-            <p className="text-lg text-blue-200 mt-6 max-w-3xl mx-auto">
-              Elige la versión que mejor se adapte a tus necesidades educativas
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Slider de imágenes mejorado con colores llamativos */}
-      <div className="relative h-96 md:h-[500px] overflow-hidden bg-gradient-to-r from-pink-400 via-purple-500 to-indigo-600">
-        {/* Efectos de fondo del slider */}
-        <div className="absolute inset-0 bg-gradient-to-br from-pink-500/30 via-purple-500/30 to-indigo-500/30 animate-pulse"></div>
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-        
-        <div 
-          className="flex transition-transform duration-700 ease-in-out h-full"
-          style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+    <div className="min-h-screen bg-gradient-to-br from-[#0a2342] via-[#2ca6e0] to-[#ffd700] flex flex-col">
+      {/* Hero Section: Slider + Cards */}
+      <div className="flex flex-col md:flex-row justify-center items-center gap-8 md:gap-12 pt-12 pb-8 md:pb-16 w-full max-w-6xl mx-auto">
+        {/* Slider */}
+        <motion.div
+          className="bg-white/30 backdrop-blur-lg rounded-3xl shadow-2xl border-4 border-[#ffd700]/30 flex flex-col items-center justify-center p-4 md:p-6 w-72 h-72 md:w-80 md:h-80 relative"
+          initial="hidden"
+          animate="visible"
+          variants={fadeInUp}
         >
-          {images.map((img, index) => (
-            <div key={index} className="w-full flex-shrink-0 flex items-center justify-center p-4">
-              <div className="relative group">
-                <img
-                  src={img}
-                  alt={`Logo de RUMI ${index + 1}`}
-                  className="w-80 h-80 md:w-96 md:h-96 object-contain rounded-3xl shadow-2xl transform group-hover:scale-110 transition-all duration-500 animate-pulse border-4 border-white/30"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-purple-600/30 via-blue-600/20 to-transparent rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <div className="absolute -inset-4 bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 rounded-3xl opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-500"></div>
-              </div>
-            </div>
-          ))}
-        </div>
-        
-        {/* Indicadores del slider mejorados */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-4">
-          {images.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentSlide(index)}
-              className={`w-5 h-5 rounded-full transition-all duration-300 ${
-                index === currentSlide 
-                  ? 'bg-white scale-125 shadow-lg ring-2 ring-white/50' 
-                  : 'bg-white/50 hover:bg-white/80 hover:scale-110'
-              }`}
+          <div className="relative w-full h-full flex items-center justify-center">
+            <img
+              src={images[currentSlide]}
+              alt={`Logo de RUMI ${currentSlide + 1}`}
+              className="object-contain w-48 h-48 md:w-56 md:h-56 rounded-2xl shadow-lg border-2 border-[#ffd700]/40 transition-all duration-500"
             />
-          ))}
-        </div>
-
-        {/* Flechas de navegación mejoradas */}
-        <button
-          onClick={() => setCurrentSlide((prev) => (prev - 1 + images.length) % images.length)}
-          className="absolute left-6 top-1/2 transform -translate-y-1/2 bg-white/90 hover:bg-white text-purple-800 p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl"
-        >
-          <span className="text-xl font-bold">←</span>
-        </button>
-        <button
-          onClick={() => setCurrentSlide((prev) => (prev + 1) % images.length)}
-          className="absolute right-6 top-1/2 transform -translate-y-1/2 bg-white/90 hover:bg-white text-purple-800 p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl"
-        >
-          <span className="text-xl font-bold">→</span>
-        </button>
-      </div>
-
-      {/* Sección de selección de versión */}
-      <div className="container mx-auto px-6 py-16">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold text-indigo-800 mb-4">
-            Elige tu versión de RUMI
-          </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Tenemos soluciones adaptadas para diferentes necesidades educativas
-          </p>
-        </div>
-
-        <div className="grid lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
-          
-          {/* Versión Personal */}
-          <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-3xl p-8 shadow-2xl border-2 border-purple-200 hover:border-purple-400 transition-all duration-300 transform hover:scale-105">
-            <div className="text-center mb-8">
-              <div className="w-24 h-24 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-4xl">👤</span>
-              </div>
-              <h3 className="text-3xl font-bold text-purple-800 mb-4">RUMI Personal</h3>
-              <p className="text-lg text-gray-600 mb-6">
-                Para estudiantes y docentes individuales
-              </p>
-            </div>
-
-            <div className="space-y-4 mb-8">
-              <div className="flex items-center">
-                <span className="text-green-500 text-xl mr-3">✓</span>
-                <span className="text-gray-700">Cursos de YouTube con quizzes integrados</span>
-              </div>
-              <div className="flex items-center">
-                <span className="text-green-500 text-xl mr-3">✓</span>
-                <span className="text-gray-700">Seguimiento de progreso personal</span>
-              </div>
-              <div className="flex items-center">
-                <span className="text-green-500 text-xl mr-3">✓</span>
-                <span className="text-gray-700">Juegos educativos interactivos</span>
-              </div>
-              <div className="flex items-center">
-                <span className="text-green-500 text-xl mr-3">✓</span>
-                <span className="text-gray-700">Comunidad de aprendizaje</span>
-              </div>
-              <div className="flex items-center">
-                <span className="text-green-500 text-xl mr-3">✓</span>
-                <span className="text-gray-700">Gratis para uso básico</span>
-              </div>
-            </div>
-
-            <div className="text-center">
-              <Link
-                to="/person-rumi"
-                className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-4 rounded-xl font-bold text-lg hover:from-purple-700 hover:to-blue-700 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl inline-block"
-              >
-                Explorar RUMI Personal
-              </Link>
-            </div>
-          </div>
-
-          {/* Versión Empresarial */}
-          <div className="bg-gradient-to-br from-slate-50 to-blue-50 rounded-3xl p-8 shadow-2xl border-2 border-slate-300 hover:border-slate-500 transition-all duration-300 transform hover:scale-105">
-            <div className="text-center mb-8">
-              <div className="w-24 h-24 bg-gradient-to-r from-slate-700 to-blue-700 rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-4xl">🏢</span>
-              </div>
-              <h3 className="text-3xl font-bold text-slate-800 mb-4">RUMI Enterprise</h3>
-              <p className="text-lg text-gray-600 mb-6">
-                Para instituciones educativas
-              </p>
-            </div>
-
-            <div className="space-y-4 mb-8">
-              <div className="flex items-center">
-                <span className="text-green-500 text-xl mr-3">✓</span>
-                <span className="text-gray-700">IA pedagógica especializada</span>
-              </div>
-              <div className="flex items-center">
-                <span className="text-green-500 text-xl mr-3">✓</span>
-                <span className="text-gray-700">Analytics y métricas avanzadas</span>
-              </div>
-              <div className="flex items-center">
-                <span className="text-green-500 text-xl mr-3">✓</span>
-                <span className="text-gray-700">Gestión multi-usuario institucional</span>
-              </div>
-              <div className="flex items-center">
-                <span className="text-green-500 text-xl mr-3">✓</span>
-                <span className="text-gray-700">Branding y personalización completa</span>
-              </div>
-              <div className="flex items-center">
-                <span className="text-green-500 text-xl mr-3">✓</span>
-                <span className="text-gray-700">Soporte técnico dedicado</span>
-              </div>
-            </div>
-
-            <div className="text-center">
-              <Link
-                to="/enterprise-rumi"
-                className="bg-gradient-to-r from-slate-700 to-blue-700 text-white px-8 py-4 rounded-xl font-bold text-lg hover:from-slate-800 hover:to-blue-800 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl inline-block"
-              >
-                Explorar RUMI Enterprise
-              </Link>
-            </div>
-          </div>
-        </div>
-
-        {/* Sección de comparación */}
-        <div className="mt-16 bg-white rounded-3xl p-8 shadow-xl">
-          <h3 className="text-2xl font-bold text-center text-gray-800 mb-8">
-            ¿No estás seguro? Compara las versiones
-          </h3>
-          <div className="grid md:grid-cols-2 gap-8">
-            <div className="text-center">
-              <h4 className="text-xl font-bold text-purple-800 mb-4">RUMI Personal</h4>
-              <p className="text-gray-600">
-                Ideal para estudiantes que quieren aprender a su ritmo, 
-                docentes que quieren compartir conocimiento, y personas 
-                que buscan una plataforma educativa simple y efectiva.
-              </p>
-            </div>
-            <div className="text-center">
-              <h4 className="text-xl font-bold text-slate-800 mb-4">RUMI Enterprise</h4>
-              <p className="text-gray-600">
-                Perfecto para universidades, colegios, empresas de capacitación 
-                y cualquier institución que necesite una solución educativa 
-                completa con IA y analytics avanzados.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Sección de Contáctenos */}
-      <div className="bg-gradient-to-r from-gray-800 to-gray-900 text-white py-12">
-        <div className="container mx-auto px-6 text-center">
-          <h3 className="text-3xl font-bold mb-6">¿Necesitas ayuda?</h3>
-          <p className="text-gray-300 mb-8 max-w-2xl mx-auto">
-            Nuestro equipo está aquí para ayudarte. Contáctanos si tienes alguna pregunta 
-            sobre la plataforma, quieres crear un curso o necesitas soporte técnico.
-          </p>
-          <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
-              <div className="text-3xl mb-4">📧</div>
-              <h4 className="font-semibold mb-2">Email</h4>
-              <div className="space-y-2">
-                <a
-                  href="mailto:s.mendowork@gmail.com"
-                  className="text-blue-200 underline hover:text-blue-400 transition-colors block"
-                >
-                  s.mendowork@gmail.com
-                </a>
+            {/* Indicadores */}
+            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-2">
+              {images.map((_, idx) => (
                 <button
-                  onClick={() => {
-                    navigator.clipboard.writeText('s.mendowork@gmail.com');
-                    alert('Email copiado al portapapeles');
-                  }}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-sm transition-colors"
-                >
-                  📋 Copiar
-                </button>
-              </div>
+                  key={idx}
+                  onClick={() => setCurrentSlide(idx)}
+                  className={`w-3 h-3 rounded-full border-2 transition-all duration-300 ${
+                    idx === currentSlide
+                      ? 'bg-[#ffd700] border-[#0a2342] scale-125 shadow-lg'
+                      : 'bg-white/60 border-[#ffd700]/40 hover:bg-[#ffd700]/80'
+                  }`}
+                  aria-label={`Ir al slide ${idx + 1}`}
+                />
+              ))}
             </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
-              <div className="text-3xl mb-4">📱</div>
-              <h4 className="font-semibold mb-2">youtube</h4>
-              <a
-                href="https://www.youtube.com/@MAP_314"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-200 underline break-words break-all max-w-full overflow-x-auto text-sm md:text-base hover:text-blue-400 transition-colors"
-              >
-                https://www.youtube.com/@MAP_314
-              </a>
-            </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
-              <div className="text-3xl mb-4">💼</div>
-              <h4 className="font-semibold mb-2">Portafolio</h4>
-              <a
-                href="https://tu-portafolio.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-200 underline hover:text-blue-400 transition-colors block"
-              >
-                Ver mi portafolio
-              </a>
-            </div>
+            {/* Flechas */}
+            <button
+              onClick={() => setCurrentSlide((prev) => (prev - 1 + images.length) % images.length)}
+              className="absolute left-2 top-1/2 -translate-y-1/2 bg-[#ffd700]/80 hover:bg-[#ffd700] text-[#0a2342] p-2 rounded-full shadow-md transition-all duration-300"
+              aria-label="Anterior"
+            >
+              <span className="text-lg font-bold">←</span>
+            </button>
+            <button
+              onClick={() => setCurrentSlide((prev) => (prev + 1) % images.length)}
+              className="absolute right-2 top-1/2 -translate-y-1/2 bg-[#ffd700]/80 hover:bg-[#ffd700] text-[#0a2342] p-2 rounded-full shadow-md transition-all duration-300"
+              aria-label="Siguiente"
+            >
+              <span className="text-lg font-bold">→</span>
+            </button>
           </div>
+        </motion.div>
+
+        {/* Cards */}
+        <div className="flex flex-col md:flex-row gap-8 md:gap-6 w-full md:w-auto">
+          {/* RUMI Personal */}
+          <motion.div
+            className="flex-1 bg-white/80 backdrop-blur-lg rounded-3xl shadow-xl border-2 border-[#2ca6e0]/20 p-6 flex flex-col items-center hover:scale-105 hover:shadow-2xl transition-all duration-300"
+            initial="hidden"
+            animate="visible"
+            variants={fadeInUp}
+            transition={{ delay: 0.1 }}
+          >
+            <div className="w-16 h-16 bg-gradient-to-br from-[#2ca6e0] to-[#ffd700] rounded-full flex items-center justify-center mb-4 shadow-lg">
+              <span className="text-3xl">👤</span>
+            </div>
+            <h3 className="text-2xl font-bold text-[#0a2342] mb-2">RUMI Personal</h3>
+            <ul className="text-gray-700 text-base space-y-1 mb-4">
+              <li>✓ Cursos de YouTube con quizzes</li>
+              <li>✓ Seguimiento de progreso</li>
+              <li>✓ Juegos educativos</li>
+              <li>✓ Comunidad de aprendizaje</li>
+              <li>✓ Gratis para uso básico</li>
+            </ul>
+            <Link
+              to="/person-rumi"
+              className="bg-gradient-to-r from-[#2ca6e0] to-[#ffd700] text-[#0a2342] px-6 py-2 rounded-xl font-bold text-base hover:from-[#0a2342] hover:to-[#ffd700] hover:text-white transition-all duration-300 shadow-md"
+            >
+              Explorar RUMI Personal
+            </Link>
+          </motion.div>
+
+          {/* RUMI Enterprise */}
+          <motion.div
+            className="flex-1 bg-white/80 backdrop-blur-lg rounded-3xl shadow-xl border-2 border-[#ffd700]/20 p-6 flex flex-col items-center hover:scale-105 hover:shadow-2xl transition-all duration-300"
+            initial="hidden"
+            animate="visible"
+            variants={fadeInUp}
+            transition={{ delay: 0.2 }}
+          >
+            <div className="w-16 h-16 bg-gradient-to-br from-[#ffd700] to-[#2ca6e0] rounded-full flex items-center justify-center mb-4 shadow-lg">
+              <span className="text-3xl">🏢</span>
+            </div>
+            <h3 className="text-2xl font-bold text-[#0a2342] mb-2">RUMI Enterprise</h3>
+            <ul className="text-gray-700 text-base space-y-1 mb-4">
+              <li>✓ IA pedagógica especializada</li>
+              <li>✓ Analytics avanzados</li>
+              <li>✓ Gestión multi-usuario</li>
+              <li>✓ Branding y personalización</li>
+              <li>✓ Soporte dedicado</li>
+            </ul>
+            <Link
+              to="/enterprise-rumi"
+              className="bg-gradient-to-r from-[#ffd700] to-[#2ca6e0] text-[#0a2342] px-6 py-2 rounded-xl font-bold text-base hover:from-[#0a2342] hover:to-[#ffd700] hover:text-white transition-all duration-300 shadow-md"
+            >
+              Explorar RUMI Enterprise
+            </Link>
+          </motion.div>
         </div>
       </div>
 
-      {/* Estilos CSS para animaciones */}
-      <style jsx>{`
-        @keyframes fade-in-left {
-          from {
-            opacity: 0;
-            transform: translateX(-50px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
-        
-        @keyframes fade-in-right {
-          from {
-            opacity: 0;
-            transform: translateX(50px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
-        
-        @keyframes slide-up {
-          from {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        
-        .animate-fade-in-left {
-          animation: fade-in-left 1s ease-out;
-        }
-        
-        .animate-fade-in-right {
-          animation: fade-in-right 1s ease-out 0.3s both;
-        }
-        
-        .animate-slide-up {
-          animation: slide-up 0.8s ease-out;
-        }
-        
-        .animate-slide-up-delay {
-          animation: slide-up 0.8s ease-out 0.2s both;
-        }
-        
-        .animate-slide-up-delay-2 {
-          animation: slide-up 0.8s ease-out 0.4s both;
-        }
-        
-        .animate-slide-up-delay-3 {
-          animation: slide-up 0.8s ease-out 0.6s both;
-        }
-      `}</style>
+      {/* Comparación */}
+      <motion.div
+        className="mt-8 md:mt-0 max-w-4xl mx-auto w-full bg-white/90 rounded-3xl p-8 shadow-xl border border-[#2ca6e0]/10"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.3 }}
+        variants={fadeIn}
+      >
+        <h3 className="text-xl md:text-2xl font-bold text-center text-[#0a2342] mb-6">
+          ¿No estás seguro? Compara las versiones
+        </h3>
+        <div className="grid md:grid-cols-2 gap-8">
+          <div className="text-center">
+            <h4 className="text-lg font-bold text-[#2ca6e0] mb-2">RUMI Personal</h4>
+            <p className="text-gray-600">
+              Ideal para estudiantes autodidactas, docentes que quieren compartir conocimiento, y personas que buscan una plataforma educativa simple y efectiva.
+            </p>
+          </div>
+          <div className="text-center">
+            <h4 className="text-lg font-bold text-[#ffd700] mb-2">RUMI Enterprise</h4>
+            <p className="text-gray-600">
+              Perfecto para universidades, colegios, empresas de capacitación y cualquier institución que necesite una solución educativa completa con IA y analytics avanzados.
+            </p>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Contacto */}
+      <motion.div
+        className="mt-12 bg-gradient-to-r from-[#0a2342] to-[#2ca6e0] text-white py-12"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.3 }}
+        variants={fadeInUp}
+      >
+        <div className="container mx-auto px-6 text-center">
+          <h3 className="text-2xl md:text-3xl font-bold mb-6">¿Conectemos?</h3>
+          <p className="text-blue-100 mb-8 max-w-2xl mx-auto">
+            Sígueme en mis redes profesionales o revisa mi portafolio para conocer más sobre mi trabajo y proyectos.
+          </p>
+          <div className="flex flex-col md:flex-row justify-center items-center gap-8 max-w-3xl mx-auto">
+            {/* LinkedIn */}
+            <a
+              href="https://www.linkedin.com/in/smendozadev/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 bg-white/10 hover:bg-[#ffd700]/20 text-white px-6 py-4 rounded-xl shadow-lg transition-all duration-300 hover:scale-105 border border-white/20"
+            >
+              <LinkedInIcon />
+              <span className="font-semibold text-lg">LinkedIn</span>
+            </a>
+            {/* YouTube */}
+            <a
+              href="https://www.youtube.com/@MAP_314"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 bg-white/10 hover:bg-[#ffd700]/20 text-white px-6 py-4 rounded-xl shadow-lg transition-all duration-300 hover:scale-105 border border-white/20"
+            >
+              <YouTubeIcon />
+              <span className="font-semibold text-lg">YouTube</span>
+            </a>
+            {/* GitHub */}
+            <a
+              href="https://github.com/smendozadev"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 bg-white/10 hover:bg-[#ffd700]/20 text-white px-6 py-4 rounded-xl shadow-lg transition-all duration-300 hover:scale-105 border border-white/20"
+            >
+              <GitHubIcon />
+              <span className="font-semibold text-lg">GitHub</span>
+            </a>
+            {/* Portafolio */}
+            <a
+              href="https://tu-portafolio.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 bg-gradient-to-r from-[#ffd700] to-[#2ca6e0] text-[#0a2342] px-6 py-4 rounded-xl shadow-xl font-bold text-lg hover:from-[#2ca6e0] hover:to-[#ffd700] hover:text-white transition-all duration-300 border border-white/20"
+            >
+              <span className="text-2xl">💼</span>
+              <span>Portafolio</span>
+            </a>
+          </div>
+        </div>
+      </motion.div>
     </div>
   );
 }
