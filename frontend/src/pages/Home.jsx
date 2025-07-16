@@ -254,7 +254,7 @@ export default function Home() {
           <div className="flex flex-col md:flex-row justify-center items-center gap-8 max-w-3xl mx-auto">
             {/* LinkedIn */}
             <a
-              href="www.linkedin.com/in/sebastian-mendoza-duitama-694845203"
+              href="https://www.linkedin.com/in/sebastian-mendoza-duitama-694845203"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-3 bg-white/10 hover:bg-[#ffd700]/20 text-white px-6 py-4 rounded-xl shadow-lg transition-all duration-300 hover:scale-105 border border-white/20"

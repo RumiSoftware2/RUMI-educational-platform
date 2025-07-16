@@ -74,75 +74,76 @@ function AnimatedTitle() {
 export default function PersonRumi() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-700 to-yellow-200 flex flex-col">
-      {/* Logo y título animado */}
-      <div className="flex flex-col items-center justify-center pt-8 pb-2">
+      {/* Sección principal: Logo a la izquierda, video y resumen a la derecha */}
+      <div className="flex flex-col md:flex-row items-center justify-center pt-8 pb-2 gap-8 md:gap-12 w-full max-w-7xl mx-auto">
+        {/* Logo a la izquierda */}
         <motion.img
           src={logo2}
           alt="RUMI Logo"
-          className="w-40 h-28 md:w-56 md:h-36 rounded-2xl shadow-2xl border-4 border-yellow-400 mb-4 object-cover"
+          className="w-40 h-28 md:w-56 md:h-60 rounded-2xl shadow-2xl border-4 border-yellow-400 object-cover mb-4 md:mb-0"
           initial={{ opacity: 0, scale: 0.7 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8 }}
         />
-        <AnimatedTitle />
-      </div>
-
-      {/* Video y resumen */}
-      <div className="flex flex-col md:flex-row items-center justify-center gap-10 px-4 md:px-12 w-full max-w-6xl mx-auto mt-2 mb-8">
-        {/* Video */}
-        <motion.div
-          className="flex-1 bg-white/90 rounded-3xl shadow-2xl border-4 border-yellow-300 p-4 md:p-8 flex flex-col items-center"
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-        >
-          <h3 className="text-2xl font-bold text-purple-800 mb-4 text-center">
-            🎥 Video Introductorio
-          </h3>
-          <div className="aspect-video rounded-xl overflow-hidden shadow-lg w-full max-w-xl mx-auto">
-            <iframe
-              src="https://www.youtube.com/embed/dQw4w9WgXcQ"
-              title="Video introductorio de RUMI"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              className="w-full h-full"
-            />
-          </div>
-          <p className="text-center text-gray-600 mt-4 text-sm">
-            Descubre cómo RUMI está transformando la educación personal
-          </p>
-        </motion.div>
-        {/* Resumen de valor */}
-        <motion.div
-          className="flex-1 bg-white/80 backdrop-blur-lg rounded-3xl shadow-xl border-2 border-yellow-200 p-8 flex flex-col justify-center"
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-        >
-          <h2 className="text-3xl font-extrabold text-purple-800 mb-4 text-center">
-            Bienvenido a RUMI Personal
-          </h2>
-          <p className="text-lg text-gray-700 leading-relaxed text-center">
-            RUMI Personal es la plataforma educativa donde los <strong className="text-purple-700">docentes pueden publicar cursos de YouTube</strong> con preguntas integradas, y los <strong className="text-yellow-600">estudiantes pueden seguir su progreso</strong>, responder quizzes y mejorar sus habilidades a través de juegos interactivos.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
-            <Link
-              to="/register"
-              className="bg-gradient-to-r from-purple-700 to-yellow-400 text-white px-8 py-4 rounded-xl font-bold text-lg hover:from-purple-800 hover:to-yellow-500 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
+        {/* Título, video y resumen */}
+        <div className="flex-1 flex flex-col gap-8">
+          <AnimatedTitle />
+          <div className="flex flex-col md:flex-row items-center justify-center gap-10 w-full">
+            {/* Video */}
+            <motion.div
+              className="flex-1 bg-white/90 rounded-3xl shadow-2xl border-4 border-yellow-300 p-4 md:p-8 flex flex-col items-center"
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
             >
-              ¡Comenzar Ahora!
-            </Link>
-            <Link
-              to="/courses"
-              className="bg-gradient-to-r from-yellow-400 to-purple-700 text-white px-8 py-4 rounded-xl font-bold text-lg hover:from-yellow-500 hover:to-purple-800 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
+              <h3 className="text-2xl font-bold text-purple-800 mb-4 text-center">
+                🎥 Video Introductorio
+              </h3>
+              <div className="aspect-video rounded-xl overflow-hidden shadow-lg w-full max-w-xl mx-auto">
+                <iframe
+                  src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+                  title="Video introductorio de RUMI"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="w-full h-full"
+                />
+              </div>
+              <p className="text-center text-gray-600 mt-4 text-sm">
+                Descubre cómo RUMI está transformando la educación personal
+              </p>
+            </motion.div>
+            {/* Resumen de valor */}
+            <motion.div
+              className="flex-1 bg-white/80 backdrop-blur-lg rounded-3xl shadow-xl border-2 border-yellow-200 p-8 flex flex-col justify-center"
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
             >
-              Explorar Cursos
-            </Link>
+              <h2 className="text-3xl font-extrabold text-purple-800 mb-4 text-center">
+                Bienvenido a RUMI Personal
+              </h2>
+              <p className="text-lg text-gray-700 leading-relaxed text-center">
+                RUMI Personal es la plataforma educativa donde los <strong className="text-purple-700">docentes pueden publicar cursos de YouTube</strong> con preguntas integradas, y los <strong className="text-yellow-600">estudiantes pueden seguir su progreso</strong>, responder quizzes y mejorar sus habilidades a través de juegos interactivos.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
+                <Link
+                  to="/register"
+                  className="bg-gradient-to-r from-purple-700 to-yellow-400 text-white px-8 py-4 rounded-xl font-bold text-lg hover:from-purple-800 hover:to-yellow-500 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
+                >
+                  ¡Comenzar Ahora!
+                </Link>
+                <Link
+                  to="/courses"
+                  className="bg-gradient-to-r from-yellow-400 to-purple-700 text-white px-8 py-4 rounded-xl font-bold text-lg hover:from-yellow-500 hover:to-purple-800 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
+                >
+                  Explorar Cursos
+                </Link>
+              </div>
+            </motion.div>
           </div>
-        </motion.div>
+        </div>
       </div>
-
       {/* Sección de Contacto */}
       <motion.div
         className="mt-8 bg-gradient-to-r from-purple-900 to-yellow-400 text-white py-12"
@@ -164,7 +165,7 @@ export default function PersonRumi() {
           <div className="flex flex-col md:flex-row justify-center items-center gap-8 max-w-3xl mx-auto">
             {/* LinkedIn */}
             <a
-              href="www.linkedin.com/in/sebastian-mendoza-duitama-694845203"
+              href="https://www.linkedin.com/in/sebastian-mendoza-duitama-694845203"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-3 bg-white/10 hover:bg-yellow-400/20 text-white px-6 py-4 rounded-xl shadow-lg transition-all duration-300 hover:scale-105 border border-white/20"

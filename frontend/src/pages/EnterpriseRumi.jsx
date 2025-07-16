@@ -23,7 +23,7 @@ function AnimatedConstruction() {
       <motion.img
         src={logo3}
         alt="RUMI Logo"
-        className="w-32 h-24 md:w-48 md:h-32 rounded-2xl shadow-2xl border-4 border-[#ffd700] mb-6 object-cover"
+        className="w-32 h-24 md:w-48 md:h-60 rounded-2xl shadow-2xl border-4 border-[#ffd700] mb-6 object-cover"
         initial={{ opacity: 0, y: -30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7 }}
