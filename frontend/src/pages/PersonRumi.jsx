@@ -79,7 +79,7 @@ export default function PersonRumi() {
         <motion.img
           src={logo2}
           alt="RUMI Logo"
-          className="w-28 h-28 md:w-36 md:h-36 rounded-full shadow-2xl border-4 border-yellow-400 mb-4"
+          className="w-40 h-28 md:w-56 md:h-36 rounded-2xl shadow-2xl border-4 border-yellow-400 mb-4 object-cover"
           initial={{ opacity: 0, scale: 0.7 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8 }}
@@ -164,7 +164,7 @@ export default function PersonRumi() {
           <div className="flex flex-col md:flex-row justify-center items-center gap-8 max-w-3xl mx-auto">
             {/* LinkedIn */}
             <a
-              href="https://www.linkedin.com/in/smendozadev/"
+              href="www.linkedin.com/in/sebastian-mendoza-duitama-694845203"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-3 bg-white/10 hover:bg-yellow-400/20 text-white px-6 py-4 rounded-xl shadow-lg transition-all duration-300 hover:scale-105 border border-white/20"
@@ -184,7 +184,7 @@ export default function PersonRumi() {
             </a>
             {/* GitHub */}
             <a
-              href="https://github.com/smendozadev"
+              href="https://github.com/RumiSoftware2"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-3 bg-white/10 hover:bg-yellow-400/20 text-white px-6 py-4 rounded-xl shadow-lg transition-all duration-300 hover:scale-105 border border-white/20"
@@ -194,7 +194,7 @@ export default function PersonRumi() {
             </a>
             {/* Portafolio */}
             <a
-              href="https://tu-portafolio.com"
+              href="https://portafoliosmendo.netlify.app/"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-3 bg-gradient-to-r from-yellow-400 to-purple-700 text-[#0a2342] px-6 py-4 rounded-xl shadow-xl font-bold text-lg hover:from-purple-800 hover:to-yellow-500 hover:text-white transition-all duration-300 border border-white/20"
