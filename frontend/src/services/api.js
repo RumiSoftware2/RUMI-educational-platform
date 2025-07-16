@@ -36,4 +36,7 @@ export const leaveCourse = (courseId) => api.put(`/courses/${courseId}/leave`);
 export const saveLessonProgress = (courseId, lessonOrder, data) =>
   api.post(`/progress/lesson/${courseId}/${lessonOrder}`, data);
 
+// Crear un nuevo quiz
+export const createQuiz = (quizData) => api.post('/quizzes', quizData);
+
 export default api;

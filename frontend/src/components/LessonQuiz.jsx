@@ -3,6 +3,11 @@ import { saveLessonProgress } from '../services/api';
 import api from '../services/api';
 
 export default function LessonQuiz({ quizId, courseId, lessonOrder, onComplete }) {
+  // Si no hay quizId, mostrar mensaje
+  if (!quizId) {
+    return <div className="text-gray-500 text-center p-4">No hay quiz disponible para esta lección.</div>;
+  }
+
   const [quiz, setQuiz] = useState(null);
   const [answers, setAnswers] = useState({});
   const [score, setScore] = useState(null);

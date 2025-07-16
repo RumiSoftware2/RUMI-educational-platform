@@ -5,6 +5,7 @@ import { AuthContext } from '../context/AuthContext';
 import EnrolledStudentsList from '../components/EnrolledStudentsList';
 import { saveLessonProgress } from '../services/api';
 import LessonQuiz from '../components/LessonQuiz';
+import { createQuiz } from '../services/api';
 
 // Función para convertir cualquier URL de YouTube a formato embed
 function toYoutubeEmbed(url) {
@@ -44,6 +45,9 @@ export default function CourseDetail() {
   // Mover hooks aquí
   const [videoWatched, setVideoWatched] = useState(false);
   const [progressMsg, setProgressMsg] = useState('');
+  const [quizForm, setQuizForm] = useState({ title: '', questions: [] });
+  const [showQuizForm, setShowQuizForm] = useState(false);
+  const [currentQuestion, setCurrentQuestion] = useState({ questionText: '', options: ['', ''], correctAnswer: '' });
 
   useEffect(() => {
     const fetchCourse = async () => {
@@ -87,24 +91,60 @@ export default function CourseDetail() {
     setLessonForm({ ...lessonForm, [e.target.name]: e.target.value });
   };
 
+  // Funciones para manejar el quiz
+  const handleQuizInputChange = (e) => {
+    setQuizForm({ ...quizForm, [e.target.name]: e.target.value });
+  };
+  const handleQuestionInputChange = (e, idx) => {
+    const opts = [...currentQuestion.options];
+    if (e.target.name === 'options') opts[idx] = e.target.value;
+    setCurrentQuestion({ ...currentQuestion, options: opts });
+  };
+  const handleAddOption = () => {
+    setCurrentQuestion({ ...currentQuestion, options: [...currentQuestion.options, ''] });
+  };
+  const handleAddQuestion = () => {
+    if (!currentQuestion.questionText || !currentQuestion.correctAnswer || currentQuestion.options.length < 2) return;
+    setQuizForm({ ...quizForm, questions: [...quizForm.questions, { ...currentQuestion }] });
+    setCurrentQuestion({ questionText: '', options: ['', ''], correctAnswer: '' });
+  };
+  const handleRemoveQuestion = (idx) => {
+    setQuizForm({ ...quizForm, questions: quizForm.questions.filter((_, i) => i !== idx) });
+  };
+
   // Crear o actualizar lección
   const handleAddOrUpdateLesson = async (e) => {
     e.preventDefault();
     setMessage(editingIndex === null ? 'Guardando lección...' : 'Actualizando lección...');
     let updatedLessons;
+    let quizId = null;
+    // Si hay quiz, créalo primero
+    if (showQuizForm && quizForm.title && quizForm.questions.length > 0) {
+      try {
+        const quizRes = await createQuiz({
+          title: quizForm.title,
+          questions: quizForm.questions,
+          courseId: id
+        });
+        quizId = quizRes.data._id;
+      } catch (err) {
+        setMessage('Error al crear el quiz');
+        return;
+      }
+    }
     // Transformar el videoUrl a embed antes de guardar
     const embedUrl = toYoutubeEmbed(lessonForm.videoUrl);
     if (editingIndex === null) {
       // Crear nueva lección
       updatedLessons = [
         ...lessons,
-        { ...lessonForm, order: lessons.length + 1, videoUrl: embedUrl }
+        { ...lessonForm, order: lessons.length + 1, videoUrl: embedUrl, quiz: quizId }
       ];
     } else {
       // Actualizar lección existente
       updatedLessons = lessons.map((l, idx) =>
         idx === editingIndex
-          ? { ...lessonForm, order: l.order, videoUrl: embedUrl }
+          ? { ...lessonForm, order: l.order, videoUrl: embedUrl, quiz: quizId || l.quiz }
           : l
       );
     }
@@ -117,6 +157,9 @@ export default function CourseDetail() {
       setShowForm(false);
       setLessonForm({ order: lessons.length + 2, title: '', description: '', videoUrl: '' });
       setEditingIndex(null);
+      setQuizForm({ title: '', questions: [] });
+      setShowQuizForm(false);
+      setCurrentQuestion({ questionText: '', options: ['', ''], correctAnswer: '' });
     } catch (err) {
       setMessage('Error al guardar la lección');
     }
@@ -277,51 +320,110 @@ export default function CourseDetail() {
               </div>
             )}
             {isOwner && showForm && (
-              <div className="mb-8 border-2 border-green-200 bg-green-50 rounded-xl p-6 shadow-md">
-                <h3 className="text-lg font-bold mb-2 text-green-800">{editingIndex === null ? 'Crear lección' : `Editar lección #${lessonForm.order}`}</h3>
-                <form onSubmit={handleAddOrUpdateLesson} className="flex flex-col gap-3">
-                  <input
-                    type="text"
-                    name="title"
-                    placeholder="Título"
-                    value={lessonForm.title}
-                    onChange={handleLessonChange}
-                    className="p-2 border-2 border-green-300 rounded-lg focus:outline-none focus:border-green-500"
-                    required
-                  />
-                  <input
-                    type="text"
-                    name="videoUrl"
-                    placeholder="URL del video"
-                    value={lessonForm.videoUrl}
-                    onChange={handleLessonChange}
-                    className="p-2 border-2 border-green-300 rounded-lg focus:outline-none focus:border-green-500"
-                    required
-                  />
-                  <textarea
-                    name="description"
-                    placeholder="Descripción de la lección"
-                    value={lessonForm.description}
-                    onChange={handleLessonChange}
-                    className="p-2 border-2 border-green-300 rounded-lg focus:outline-none focus:border-green-500"
-                    required
-                    rows={2}
-                  ></textarea>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 rounded-xl font-bold transition text-white bg-green-600 hover:bg-green-700"
-                  >
-                    {editingIndex === null ? 'Crear lección' : 'Actualizar'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => { setShowForm(false); setEditingIndex(null); setLessonForm({ order: lessons.length + 1, title: '', description: '', videoUrl: '' }); }}
-                    className="text-sm text-gray-600 hover:underline mt-2"
-                  >
-                    Cancelar
-                  </button>
-                </form>
-              </div>
+              <>
+                <div className="mb-8 border-2 border-green-200 bg-green-50 rounded-xl p-6 shadow-md">
+                  <h3 className="text-lg font-bold mb-2 text-green-800">{editingIndex === null ? 'Crear lección' : `Editar lección #${lessonForm.order}`}</h3>
+                  <form onSubmit={handleAddOrUpdateLesson} className="flex flex-col gap-3">
+                    <input
+                      type="text"
+                      name="title"
+                      placeholder="Título"
+                      value={lessonForm.title}
+                      onChange={handleLessonChange}
+                      className="p-2 border-2 border-green-300 rounded-lg focus:outline-none focus:border-green-500"
+                      required
+                    />
+                    <input
+                      type="text"
+                      name="videoUrl"
+                      placeholder="URL del video"
+                      value={lessonForm.videoUrl}
+                      onChange={handleLessonChange}
+                      className="p-2 border-2 border-green-300 rounded-lg focus:outline-none focus:border-green-500"
+                      required
+                    />
+                    <textarea
+                      name="description"
+                      placeholder="Descripción de la lección"
+                      value={lessonForm.description}
+                      onChange={handleLessonChange}
+                      className="p-2 border-2 border-green-300 rounded-lg focus:outline-none focus:border-green-500"
+                      required
+                      rows={2}
+                    ></textarea>
+                    <button
+                      type="submit"
+                      className="px-4 py-2 rounded-xl font-bold transition text-white bg-green-600 hover:bg-green-700"
+                    >
+                      {editingIndex === null ? 'Crear lección' : 'Actualizar'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setShowForm(false); setEditingIndex(null); setLessonForm({ order: lessons.length + 1, title: '', description: '', videoUrl: '' }); }}
+                      className="text-sm text-gray-600 hover:underline mt-2"
+                    >
+                      Cancelar
+                    </button>
+                  </form>
+                </div>
+                <button
+                  type="button"
+                  className="px-4 py-2 rounded-xl font-bold transition text-white bg-yellow-500 hover:bg-yellow-600 mt-2"
+                  onClick={() => setShowQuizForm((v) => !v)}
+                >
+                  {showQuizForm ? 'Ocultar Quiz' : 'Agregar Quiz'}
+                </button>
+                {showQuizForm && (
+                  <div className="mt-4 border-2 border-yellow-200 bg-yellow-50 rounded-xl p-4 shadow-md">
+                    <h4 className="text-lg font-bold mb-2 text-yellow-800">Crear Quiz para la lección</h4>
+                    <input
+                      type="text"
+                      name="title"
+                      placeholder="Título del quiz"
+                      value={quizForm.title}
+                      onChange={handleQuizInputChange}
+                      className="p-2 border-2 border-yellow-300 rounded-lg w-full mb-2"
+                    />
+                    <div className="mb-2">
+                      <input
+                        type="text"
+                        placeholder="Pregunta"
+                        value={currentQuestion.questionText}
+                        onChange={e => setCurrentQuestion({ ...currentQuestion, questionText: e.target.value })}
+                        className="p-2 border border-yellow-300 rounded-lg w-full mb-2"
+                      />
+                      {currentQuestion.options.map((opt, idx) => (
+                        <input
+                          key={idx}
+                          type="text"
+                          placeholder={`Opción ${idx + 1}`}
+                          value={opt}
+                          onChange={e => handleQuestionInputChange(e, idx)}
+                          name="options"
+                          className="p-2 border border-yellow-200 rounded-lg w-full mb-1"
+                        />
+                      ))}
+                      <button type="button" className="text-sm text-blue-600 hover:underline" onClick={handleAddOption}>+ Agregar opción</button>
+                      <input
+                        type="text"
+                        placeholder="Respuesta correcta"
+                        value={currentQuestion.correctAnswer}
+                        onChange={e => setCurrentQuestion({ ...currentQuestion, correctAnswer: e.target.value })}
+                        className="p-2 border border-yellow-300 rounded-lg w-full mt-2"
+                      />
+                      <button type="button" className="mt-2 bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700" onClick={handleAddQuestion}>Agregar pregunta</button>
+                    </div>
+                    <div className="mt-2">
+                      {quizForm.questions.map((q, idx) => (
+                        <div key={idx} className="mb-2 p-2 bg-white rounded shadow flex justify-between items-center">
+                          <span>{q.questionText}</span>
+                          <button type="button" className="text-red-500 ml-2" onClick={() => handleRemoveQuestion(idx)}>Eliminar</button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
             )}
             <div className="grid gap-6">
               {lessons
