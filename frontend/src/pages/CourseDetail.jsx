@@ -3,6 +3,8 @@ import { useParams } from 'react-router-dom';
 import api from '../services/api';
 import { AuthContext } from '../context/AuthContext';
 import EnrolledStudentsList from '../components/EnrolledStudentsList';
+import { saveLessonProgress } from '../services/api';
+import LessonQuiz from '../components/LessonQuiz';
 
 // Función para convertir cualquier URL de YouTube a formato embed
 function toYoutubeEmbed(url) {
@@ -161,6 +163,20 @@ export default function CourseDetail() {
   // Vista de estudiante para una lección
   if (showStudentView !== null && lessons[showStudentView]) {
     const lesson = lessons[showStudentView];
+    const [videoWatched, setVideoWatched] = useState(false);
+    const [progressMsg, setProgressMsg] = useState('');
+
+    // Handler para guardar progreso por visualización
+    const handleVideoEnded = async () => {
+      try {
+        await saveLessonProgress(id, lesson.order, { score: 100, completed: true });
+        setProgressMsg('¡Progreso guardado! Puntuación: 100');
+        setVideoWatched(true);
+      } catch (err) {
+        setProgressMsg('Error al guardar el progreso');
+      }
+    };
+
     return (
       <div className="p-6 max-w-2xl mx-auto">
         <button className="mb-4 text-blue-600 underline" onClick={handleCloseStudentView}>← Volver</button>
@@ -173,11 +189,26 @@ export default function CourseDetail() {
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
             className="w-full h-full rounded"
+            onLoad={() => {
+              // Aquí podrías integrar lógica para detectar porcentaje visto usando la API de YouTube
+            }}
+            onEnded={handleVideoEnded}
           />
         </div>
         <p className="mb-4 text-gray-700">{lesson.description}</p>
+        {progressMsg && <div className="mb-4 text-green-700 font-semibold text-center">{progressMsg}</div>}
         <div className="mt-6 p-4 border rounded bg-gray-50 text-gray-500 text-center">
-          Aquí irá el Quiz de la lección (próximamente)
+          {/* Mostrar quiz si existe, si no mostrar mensaje de lección completada */}
+          {lesson.quiz ? (
+            <LessonQuiz
+              quizId={lesson.quiz}
+              courseId={id}
+              lessonOrder={lesson.order}
+              onComplete={(score) => setProgressMsg(`¡Progreso guardado! Puntuación: ${score}`)}
+            />
+          ) : (
+            videoWatched && <span>¡Has completado la lección!</span>
+          )}
         </div>
       </div>
     );

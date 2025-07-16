@@ -5,11 +5,14 @@ const authMiddleware = require('../middleware/authMiddleware');
 const {
   getOwnProgress,
   getCourseProgress,
-  getAllProgress
+  getAllProgress,
+  saveLessonProgress
 } = require('../controllers/progressController');
 
 router.get('/me', authMiddleware, getOwnProgress); // estudiante
 router.get('/course/:courseId', authMiddleware, getCourseProgress); // docente
 router.get('/', authMiddleware, getAllProgress); // admin
+// Guardar progreso de una lección (quiz o visualización)
+router.post('/lesson/:courseId/:lessonOrder', authMiddleware, saveLessonProgress);
 
 module.exports = router;

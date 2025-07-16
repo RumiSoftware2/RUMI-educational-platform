@@ -32,4 +32,8 @@ export const enrollInCourse = (courseId) => api.post(`/courses/${courseId}/enrol
 // Abandonar curso
 export const leaveCourse = (courseId) => api.put(`/courses/${courseId}/leave`);
 
+// Guardar progreso de una lección (quiz o visualización)
+export const saveLessonProgress = (courseId, lessonOrder, data) =>
+  api.post(`/progress/lesson/${courseId}/${lessonOrder}`, data);
+
 export default api;

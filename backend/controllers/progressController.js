@@ -41,3 +41,37 @@ exports.getAllProgress = async (req, res) => {
     res.status(500).json({ error: 'Error al obtener todos los progresos' });
   }
 };
+
+// Guardar progreso de una lección (quiz o visualización)
+exports.saveLessonProgress = async (req, res) => {
+  try {
+    const { courseId, lessonOrder } = req.params;
+    const { score, quizId, completed } = req.body;
+    const userId = req.user.id;
+
+    let progress = await Progress.findOne({ user: userId, course: courseId });
+    if (!progress) {
+      progress = new Progress({ user: userId, course: courseId });
+    }
+
+    // Guardar score de quiz o de visualización
+    if (quizId) {
+      progress.quizScores.set(quizId, score);
+    } else {
+      // Usar una clave especial para score por visualización
+      progress.quizScores.set(`lesson-${lessonOrder}`, score);
+    }
+
+    // Marcar lección como completada si corresponde
+    if (completed && !progress.completedLessons.includes(lessonOrder)) {
+      progress.completedLessons.push(lessonOrder);
+    }
+
+    progress.lastAccessed = new Date();
+    await progress.save();
+
+    res.json({ message: 'Progreso guardado', progress });
+  } catch (err) {
+    res.status(500).json({ message: 'Error al guardar progreso', error: err.message });
+  }
+};
