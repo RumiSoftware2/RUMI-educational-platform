@@ -39,11 +39,11 @@ app.use('/api/progress', require('./routes/progressRoutes'));
 app.use('/api/grades', require('./routes/gradeRoutes'));
 
 // Cleanup diario a las 2:00 AM UTC
-cron.schedule('0 2 * * *', async () => {
-  const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
-  const result = await User.deleteMany({ emailVerified: false, createdAt: { $lt: cutoff } });
-  console.log(`[CLEANUP-CRON] Usuarios no verificados eliminados: ${result.deletedCount}`);
-});
+// cron.schedule('0 2 * * *', async () => {
+//   const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
+//   const result = await User.deleteMany({ emailVerified: false, createdAt: { $lt: cutoff } });
+//   console.log(`[CLEANUP-CRON] Usuarios no verificados eliminados: ${result.deletedCount}`);
+// });
 
 // 8. Ruta básica de prueba
 app.get('/', (req, res) => {
