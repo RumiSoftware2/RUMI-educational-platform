@@ -3,6 +3,8 @@ const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors'); // 👈 AÑADE ESTO
 const connectDB = require('./config/db');
+const cron = require('node-cron');
+const User = require('./models/User');
 
 // 2. Configuramos dotenv
 dotenv.config();
@@ -34,6 +36,13 @@ app.use('/api/courses', require('./routes/courseRoutes'));
 app.use('/api/quizzes', require('./routes/quizRoutes'));
 app.use('/api/progress', require('./routes/progressRoutes'));
 app.use('/api/grades', require('./routes/gradeRoutes'));
+
+// Cleanup diario a las 2:00 AM UTC
+cron.schedule('0 2 * * *', async () => {
+  const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  const result = await User.deleteMany({ emailVerified: false, createdAt: { $lt: cutoff } });
+  console.log(`[CLEANUP-CRON] Usuarios no verificados eliminados: ${result.deletedCount}`);
+});
 
 // 8. Ruta básica de prueba
 app.get('/', (req, res) => {
