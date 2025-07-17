@@ -2,12 +2,18 @@ const User = require('../models/User');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+const validator = require('validator');
 const { generateVerificationCode, sendVerificationEmail, sendPasswordResetEmail } = require('../services/emailService');
 
 // Registro con verificación de email
 exports.register = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
+
+    // Validar formato de email
+    if (!validator.isEmail(email)) {
+      return res.status(400).json({ message: 'Correo electrónico inválido' });
+    }
 
     // Evitar que se registren como admin desde el frontend
     if (role === 'admin') {
@@ -126,6 +132,11 @@ exports.resendVerificationCode = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
+
+    // Validar formato de email
+    if (!validator.isEmail(email)) {
+      return res.status(400).json({ message: 'Correo electrónico inválido' });
+    }
 
     // Buscar al usuario
     const user = await User.findOne({ email });

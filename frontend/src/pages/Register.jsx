@@ -15,6 +15,8 @@ const Register = () => {
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const emailRegex = /^[\w-.]+@[\w-]+\.[a-zA-Z]{2,}$/;
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -23,6 +25,12 @@ const Register = () => {
     e.preventDefault();
     setLoading(true);
     setMessage('');
+
+    if (!emailRegex.test(formData.email)) {
+      setMessage('❌ Ingresa un correo electrónico válido');
+      setLoading(false);
+      return;
+    }
 
     try {
       const res = await api.post('/auth/register', formData);

@@ -13,10 +13,18 @@ export default function Login() {
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
 
+  const emailRegex = /^[\w-.]+@[\w-]+\.[a-zA-Z]{2,}$/;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+
+    if (!emailRegex.test(email)) {
+      setError('Ingresa un correo electrónico válido');
+      setLoading(false);
+      return;
+    }
 
     if (!email || !password) {
       setError('Por favor, llena todos los campos');
