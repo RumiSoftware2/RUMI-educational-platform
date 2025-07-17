@@ -2,12 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { getMyCourses } from '../services/api';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
+import ChangePasswordModal from '../components/ChangePasswordModal';
 
 export default function TeacherCourses() {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState('');
+  const [showChangePassword, setShowChangePassword] = useState(false);
 
   useEffect(() => {
     fetchCourses();
@@ -39,12 +41,20 @@ export default function TeacherCourses() {
     <div className="max-w-4xl mx-auto px-4">
       <div className="flex flex-col sm:flex-row sm:justify-between items-center mb-6 gap-4">
         <h1 className="text-2xl font-bold">Mis Cursos como Docente</h1>
-        <Link
-          to="/courses/new"
-          className="bg-green-600 text-white px-4 py-2 rounded-xl hover:bg-green-700 transition font-semibold text-center"
-        >
-          + Crear nuevo curso
-        </Link>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setShowChangePassword(true)}
+            className="bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700 transition font-semibold"
+          >
+            🔐 Cambiar Contraseña
+          </button>
+          <Link
+            to="/courses/new"
+            className="bg-green-600 text-white px-4 py-2 rounded-xl hover:bg-green-700 transition font-semibold text-center"
+          >
+            + Crear nuevo curso
+          </Link>
+        </div>
       </div>
       {message && <div className="mb-4 text-green-700 font-semibold">{message}</div>}
       <div className="grid gap-4">
@@ -71,6 +81,12 @@ export default function TeacherCourses() {
           </div>
         ))}
       </div>
+      
+      {/* Modal de cambio de contraseña */}
+      <ChangePasswordModal 
+        isOpen={showChangePassword} 
+        onClose={() => setShowChangePassword(false)} 
+      />
     </div>
   );
 } 

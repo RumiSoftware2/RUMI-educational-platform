@@ -24,6 +24,28 @@ const userSchema = new mongoose.Schema({
     enum: ['estudiante', 'docente', 'admin'],
     default: 'estudiante'
   },
+  // Campos para verificación de email
+  emailVerified: {
+    type: Boolean,
+    default: false
+  },
+  emailVerificationCode: {
+    type: String,
+    default: null
+  },
+  emailVerificationExpires: {
+    type: Date,
+    default: null
+  },
+  // Campos para recuperación de contraseña
+  passwordResetToken: {
+    type: String,
+    default: null
+  },
+  passwordResetExpires: {
+    type: Date,
+    default: null
+  },
   progress: {
     type: Object,
     default: {}

@@ -2,6 +2,9 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Register from './pages/Register';
 import Login from './pages/Login';
+import EmailVerification from './pages/EmailVerification';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import Profile from './pages/Profile';
 import Courses from './pages/Courses';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -29,6 +32,9 @@ function App() {
         <Routes>
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/verify-email" element={<EmailVerification />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/" element={<Home />} />
           <Route path="/person-rumi" element={<PersonRumi />} />
           <Route path="/enterprise-rumi" element={<EnterpriseRumi />} />

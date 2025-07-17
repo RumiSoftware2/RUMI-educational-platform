@@ -26,8 +26,14 @@ const Register = () => {
 
     try {
       const res = await api.post('/auth/register', formData);
-      setMessage('✅ Registro exitoso');
-      setFormData({ name: '', email: '', password: '', role: 'estudiante' });
+      
+      if (res.data.requiresVerification) {
+        // Redirigir a verificación de email
+        window.location.href = `/verify-email?email=${encodeURIComponent(formData.email)}`;
+      } else {
+        setMessage('✅ Registro exitoso');
+        setFormData({ name: '', email: '', password: '', role: 'estudiante' });
+      }
     } catch (err) {
       setMessage(`❌ ${err.response?.data?.message || err.message}`);
     } finally {
