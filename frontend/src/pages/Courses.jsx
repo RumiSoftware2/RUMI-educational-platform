@@ -12,9 +12,12 @@ function getYoutubeThumbnail(url) {
   // Formato corto
   match = url.match(/(?:https?:\/\/)?youtu\.be\/([\w-]+)/);
   if (match) return `https://img.youtube.com/vi/${match[1]}/hqdefault.jpg`;
-  // Formato embed
+  // Formato embed (mejorado: solo el ID antes de ?)
   match = url.match(/youtube\.com\/embed\/([\w-]+)/);
-  if (match) return `https://img.youtube.com/vi/${match[1]}/hqdefault.jpg`;
+  if (match) {
+    const videoId = match[1].split('?')[0];
+    return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+  }
   return null;
 }
 
