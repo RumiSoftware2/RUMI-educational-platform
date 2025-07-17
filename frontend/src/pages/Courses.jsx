@@ -27,6 +27,8 @@ export default function Courses() {
   const [error, setError] = useState(null);
   const [message, setMessage] = useState('');
   const { user } = useContext(AuthContext);
+  const [showVideo, setShowVideo] = useState(false);
+  const [videoUrl, setVideoUrl] = useState('');
 
   useEffect(() => {
     api.get('/courses')
@@ -78,18 +80,49 @@ export default function Courses() {
               )}
               <h3 className="font-extrabold text-xl text-green-800 mb-1 text-center drop-shadow">{c.title}</h3>
               <p className="text-gray-700 text-center mb-4 line-clamp-3">{c.description}</p>
-              {user && user.role === 'estudiante' && (
+              <div className="flex gap-2 w-full justify-center">
                 <button
-                  className="bg-gradient-to-r from-blue-600 to-emerald-500 text-white px-6 py-3 rounded-xl font-bold text-lg shadow-lg hover:from-blue-700 hover:to-emerald-600 transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-blue-200 animate-bounce"
-                  onClick={() => handleEnroll(c._id)}
+                  className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-white px-4 py-2 rounded-xl font-bold text-base shadow hover:from-yellow-500 hover:to-yellow-700 transition-all duration-300"
+                  onClick={() => { setShowVideo(true); setVideoUrl(c.videoUrl); }}
                 >
-                  <span className="inline-block mr-2">🎓</span>Inscribirse
+                  Ver
                 </button>
-              )}
+                {user && user.role === 'estudiante' && (
+                  <button
+                    className="bg-gradient-to-r from-blue-600 to-emerald-500 text-white px-6 py-2 rounded-xl font-bold text-base shadow-lg hover:from-blue-700 hover:to-emerald-600 transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-blue-200 animate-bounce"
+                    onClick={() => handleEnroll(c._id)}
+                  >
+                    <span className="inline-block mr-2">🎓</span>Inscribirse
+                  </button>
+                )}
+              </div>
             </div>
           );
         })}
       </div>
+      {/* Modal para ver video */}
+      {showVideo && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl shadow-2xl p-4 max-w-2xl w-full relative flex flex-col items-center">
+            <button
+              className="absolute top-2 right-2 text-gray-600 hover:text-red-600 text-2xl font-bold"
+              onClick={() => setShowVideo(false)}
+            >
+              ×
+            </button>
+            <div className="w-full aspect-video mb-4">
+              <iframe
+                src={videoUrl}
+                title="Video introductorio"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="w-full h-full rounded-xl"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
