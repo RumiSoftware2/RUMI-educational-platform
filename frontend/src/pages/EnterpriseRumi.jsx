@@ -47,17 +47,17 @@ function AnimatedConstruction() {
           className="text-2xl md:text-3xl font-bold text-[#0a2342] text-center mb-2"
         >
           {msg1.split('').map((char, i) => (
-            <motion.span key={i} variants={child} style={{ display: 'inline-block' }}>
-              {char}
-            </motion.span>
+            char === ' '
+              ? <span key={i} style={{ display: 'inline-block', width: '0.5em' }}>&nbsp;</span>
+              : <motion.span key={i} variants={child} style={{ display: 'inline-block' }}>{char}</motion.span>
           ))}
         </motion.h2>
         <motion.div className="text-xl md:text-2xl font-bold text-[#2ca6e0] text-center mt-2 flex items-center justify-center gap-2">
           <span className="text-2xl">🚧</span>
           {msg2.split('').map((char, i) => (
-            <motion.span key={i} variants={child} style={{ display: 'inline-block' }}>
-              {char}
-            </motion.span>
+            char === ' '
+              ? <span key={i} style={{ display: 'inline-block', width: '0.5em' }}>&nbsp;</span>
+              : <motion.span key={i} variants={child} style={{ display: 'inline-block' }}>{char}</motion.span>
           ))}
         </motion.div>
       </motion.div>
