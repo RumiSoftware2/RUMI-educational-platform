@@ -77,6 +77,9 @@ const EmailVerification = () => {
               <p className="text-gray-600">
                 Hemos enviado un código de verificación a tu email
               </p>
+              <p className="text-yellow-700 text-sm mt-2">
+                <b>Revisa también tu bandeja de correos no deseados o spam.</b>
+              </p>
             </div>
 
             <form onSubmit={handleVerification} className="space-y-6">

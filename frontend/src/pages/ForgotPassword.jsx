@@ -54,6 +54,11 @@ const ForgotPassword = () => {
                   : 'Ingresa tu email y te enviaremos un enlace para recuperar tu contraseña'
                 }
               </p>
+              {emailSent && (
+                <p className="text-yellow-700 text-sm mt-2">
+                  <b>Revisa también tu bandeja de correos no deseados o spam.</b>
+                </p>
+              )}
             </div>
 
             {!emailSent ? (
