@@ -109,14 +109,24 @@ export default function Login() {
                 </button>
               </form>
 
-              <div className="mt-8 text-center">
-                <p className="text-gray-600 mb-4">¿No tienes una cuenta?</p>
-                <Link
-                  to="/register"
-                  className="inline-block bg-gradient-to-r from-green-600 to-emerald-600 text-white px-8 py-3 rounded-xl font-bold hover:from-green-700 hover:to-emerald-700 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
-                >
-                  Registrarse
-                </Link>
+              <div className="mt-8 text-center space-y-4">
+                <div>
+                  <p className="text-gray-600 mb-4">¿No tienes una cuenta?</p>
+                  <Link
+                    to="/register"
+                    className="inline-block bg-gradient-to-r from-green-600 to-emerald-600 text-white px-8 py-3 rounded-xl font-bold hover:from-green-700 hover:to-emerald-700 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
+                  >
+                    Registrarse
+                  </Link>
+                </div>
+                <div className="pt-4 border-t border-gray-200">
+                  <Link
+                    to="/forgot-password"
+                    className="text-blue-600 hover:text-blue-800 font-semibold transition-colors duration-300"
+                  >
+                    ¿Olvidaste tu contraseña?
+                  </Link>
+                </div>
               </div>
 
               <div className="mt-6 text-center">
