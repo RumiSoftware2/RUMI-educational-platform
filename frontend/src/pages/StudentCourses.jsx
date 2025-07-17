@@ -4,6 +4,21 @@ import { getEnrolledCourses, leaveCourse } from '../services/api';
 import ChangePasswordModal from '../components/ChangePasswordModal';
 import logo2 from '../assets/logo2zeus.png';
 
+// Función para extraer el ID de YouTube y devolver la miniatura (igual que TeacherCourses.jsx)
+function getYoutubeThumbnail(url) {
+  if (!url) return null;
+  // Formato largo
+  let match = url.match(/(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([\w-]+)/);
+  if (match) return `https://img.youtube.com/vi/${match[1]}/hqdefault.jpg`;
+  // Formato corto
+  match = url.match(/(?:https?:\/\/)?youtu\.be\/([\w-]+)/);
+  if (match) return `https://img.youtube.com/vi/${match[1]}/hqdefault.jpg`;
+  // Formato embed
+  match = url.match(/youtube\.com\/embed\/([\w-]+)/);
+  if (match) return `https://img.youtube.com/vi/${match[1]}/hqdefault.jpg`;
+  return null;
+}
+
 export default function StudentCourses() {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -52,31 +67,41 @@ export default function StudentCourses() {
         <div className="text-center text-gray-500 mt-12">No estás inscrito en ningún curso.</div>
       ) : (
         <div className="grid gap-8 max-w-3xl mx-auto">
-          {courses.map(course => (
-            <div
-              key={course._id}
-              className="group bg-white/90 border border-blue-200 rounded-3xl shadow-xl p-6 flex flex-col md:flex-row items-center justify-between gap-4 hover:scale-105 hover:shadow-2xl transition-transform duration-300 relative overflow-hidden"
-            >
-              <div className="flex-1 min-w-0">
-                <h2 className="text-2xl font-bold text-blue-800 truncate drop-shadow mb-1">{course.title}</h2>
-                <p className="text-gray-600 mt-1 line-clamp-2">{course.description}</p>
+          {courses.map(course => {
+            const thumb = getYoutubeThumbnail(course.videoUrl);
+            return (
+              <div
+                key={course._id}
+                className="group bg-white/90 border border-blue-200 rounded-3xl shadow-xl p-6 flex flex-col md:flex-row items-center justify-between gap-4 hover:scale-105 hover:shadow-2xl transition-transform duration-300 relative overflow-hidden"
+              >
+                {thumb && (
+                  <img
+                    src={thumb}
+                    alt={course.title}
+                    className="w-32 h-20 md:w-40 md:h-24 object-cover rounded-xl shadow-md mb-3 md:mb-0 md:mr-4 flex-shrink-0"
+                  />
+                )}
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-2xl font-bold text-blue-800 truncate drop-shadow mb-1">{course.title}</h2>
+                  <p className="text-gray-600 mt-1 line-clamp-2">{course.description}</p>
+                </div>
+                <div className="flex gap-3 mt-4 md:mt-0">
+                  <button
+                    className="bg-gradient-to-r from-blue-600 to-emerald-500 text-white px-5 py-2 rounded-xl font-bold hover:from-blue-700 hover:to-emerald-600 transform hover:scale-105 transition-all duration-300 shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-200"
+                    onClick={() => navigate(`/courses/${course._id}`)}
+                  >
+                    Abrir
+                  </button>
+                  <button
+                    className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-5 py-2 rounded-xl font-bold hover:from-red-600 hover:to-pink-600 transform hover:scale-105 transition-all duration-300 shadow-lg focus:outline-none focus:ring-4 focus:ring-red-200"
+                    onClick={() => handleLeaveCourse(course._id)}
+                  >
+                    Abandonar
+                  </button>
+                </div>
               </div>
-              <div className="flex gap-3 mt-4 md:mt-0">
-                <button
-                  className="bg-gradient-to-r from-blue-600 to-emerald-500 text-white px-5 py-2 rounded-xl font-bold hover:from-blue-700 hover:to-emerald-600 transform hover:scale-105 transition-all duration-300 shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-200"
-                  onClick={() => navigate(`/courses/${course._id}`)}
-                >
-                  Abrir
-                </button>
-                <button
-                  className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-5 py-2 rounded-xl font-bold hover:from-red-600 hover:to-pink-600 transform hover:scale-105 transition-all duration-300 shadow-lg focus:outline-none focus:ring-4 focus:ring-red-200"
-                  onClick={() => handleLeaveCourse(course._id)}
-                >
-                  Abandonar
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
       {/* Modal de cambio de contraseña */}

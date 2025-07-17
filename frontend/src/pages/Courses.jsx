@@ -3,12 +3,17 @@ import { AuthContext } from '../context/AuthContext';
 import api, { enrollInCourse } from '../services/api';
 import logo3 from '../assets/logo3zeus.png';
 
-// Función para extraer el ID de YouTube y devolver la miniatura
+// Función mejorada para extraer el ID de YouTube y devolver la miniatura (igual que TeacherCourses.jsx)
 function getYoutubeThumbnail(url) {
   if (!url) return null;
+  // Formato largo
   let match = url.match(/(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([\w-]+)/);
   if (match) return `https://img.youtube.com/vi/${match[1]}/hqdefault.jpg`;
+  // Formato corto
   match = url.match(/(?:https?:\/\/)?youtu\.be\/([\w-]+)/);
+  if (match) return `https://img.youtube.com/vi/${match[1]}/hqdefault.jpg`;
+  // Formato embed
+  match = url.match(/youtube\.com\/embed\/([\w-]+)/);
   if (match) return `https://img.youtube.com/vi/${match[1]}/hqdefault.jpg`;
   return null;
 }
