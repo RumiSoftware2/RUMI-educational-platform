@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getEnrolledCourses, leaveCourse } from '../services/api';
 import ChangePasswordModal from '../components/ChangePasswordModal';
+import logo2 from '../assets/logo2zeus.png';
 
 export default function StudentCourses() {
   const [courses, setCourses] = useState([]);
@@ -29,43 +30,46 @@ export default function StudentCourses() {
     }
   };
 
-  if (loading) return <p className="p-6 text-center">Cargando...</p>;
+  if (loading) return <div className="flex justify-center items-center min-h-[60vh]"><div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600"></div></div>;
   if (error) return <p className="p-6 text-center text-red-600">{error}</p>;
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-blue-100 via-green-100 to-purple-200 py-8 px-2">
+      <div className="flex flex-col items-center mb-8">
+        <img src={logo2} alt="Logo RUMI" className="w-24 h-24 object-contain rounded-2xl shadow-lg mb-2 animate-pulse" />
+        <h1 className="text-3xl md:text-4xl font-extrabold text-blue-900 drop-shadow mb-1 text-center">Mis Cursos Inscritos</h1>
+      </div>
       <div className="flex flex-col sm:flex-row sm:justify-between items-center mb-6 gap-4">
-        <h1 className="text-3xl font-bold text-blue-900 drop-shadow">Mis Cursos Inscritos</h1>
         <button
           onClick={() => setShowChangePassword(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700 transition font-semibold"
+          className="bg-gradient-to-r from-blue-600 to-emerald-500 text-white px-5 py-3 rounded-xl hover:from-blue-700 hover:to-emerald-600 transition font-bold text-lg shadow-lg animate-bounce"
         >
           🔐 Cambiar Contraseña
         </button>
       </div>
-      {message && <div className="mb-4 text-green-700 font-semibold text-center animate-fade-in">{message}</div>}
+      {message && <div className="mb-4 text-green-700 font-semibold text-center animate-pulse bg-white/80 rounded-xl py-2 shadow max-w-xl mx-auto">{message}</div>}
       {courses.length === 0 ? (
         <div className="text-center text-gray-500 mt-12">No estás inscrito en ningún curso.</div>
       ) : (
-        <div className="grid gap-6">
+        <div className="grid gap-8 max-w-3xl mx-auto">
           {courses.map(course => (
             <div
               key={course._id}
-              className="bg-white rounded-xl shadow-lg p-6 flex flex-col md:flex-row items-center justify-between gap-4 hover:shadow-2xl transition"
+              className="group bg-white/90 border border-blue-200 rounded-3xl shadow-xl p-6 flex flex-col md:flex-row items-center justify-between gap-4 hover:scale-105 hover:shadow-2xl transition-transform duration-300 relative overflow-hidden"
             >
               <div className="flex-1 min-w-0">
-                <h2 className="text-xl font-bold text-blue-800 truncate">{course.title}</h2>
+                <h2 className="text-2xl font-bold text-blue-800 truncate drop-shadow mb-1">{course.title}</h2>
                 <p className="text-gray-600 mt-1 line-clamp-2">{course.description}</p>
               </div>
               <div className="flex gap-3 mt-4 md:mt-0">
                 <button
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition shadow"
+                  className="bg-gradient-to-r from-blue-600 to-emerald-500 text-white px-5 py-2 rounded-xl font-bold hover:from-blue-700 hover:to-emerald-600 transform hover:scale-105 transition-all duration-300 shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-200"
                   onClick={() => navigate(`/courses/${course._id}`)}
                 >
                   Abrir
                 </button>
                 <button
-                  className="bg-red-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-600 transition shadow"
+                  className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-5 py-2 rounded-xl font-bold hover:from-red-600 hover:to-pink-600 transform hover:scale-105 transition-all duration-300 shadow-lg focus:outline-none focus:ring-4 focus:ring-red-200"
                   onClick={() => handleLeaveCourse(course._id)}
                 >
                   Abandonar
@@ -75,7 +79,6 @@ export default function StudentCourses() {
           ))}
         </div>
       )}
-      
       {/* Modal de cambio de contraseña */}
       <ChangePasswordModal 
         isOpen={showChangePassword} 

@@ -48,6 +48,10 @@ export default function CourseDetail() {
   const [quizForm, setQuizForm] = useState({ title: '', questions: [] });
   const [showQuizForm, setShowQuizForm] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState({ questionText: '', options: ['', ''], correctAnswer: '' });
+  const [showEditCourse, setShowEditCourse] = useState(false);
+  const [editCourseForm, setEditCourseForm] = useState({ title: '', videoUrl: '', description: '' });
+  const [editCourseLoading, setEditCourseLoading] = useState(false);
+  const [editCourseMsg, setEditCourseMsg] = useState('');
 
   useEffect(() => {
     const fetchCourse = async () => {
@@ -81,6 +85,16 @@ export default function CourseDetail() {
     };
     fetchEnrolledStudents();
   }, [id]);
+
+  useEffect(() => {
+    if (course && showEditCourse) {
+      setEditCourseForm({
+        title: course.title || '',
+        videoUrl: course.videoUrl || '',
+        description: course.description || '',
+      });
+    }
+  }, [course, showEditCourse]);
 
   const isOwner = user && (
     user.role === 'admin' ||
@@ -200,6 +214,33 @@ export default function CourseDetail() {
     setShowStudentView(null);
   };
 
+  // Función para actualizar la info general del curso
+  const handleEditCourseChange = (e) => {
+    setEditCourseForm({ ...editCourseForm, [e.target.name]: e.target.value });
+  };
+  const handleEditCourseSubmit = async (e) => {
+    e.preventDefault();
+    setEditCourseLoading(true);
+    setEditCourseMsg('');
+    try {
+      // Transformar la URL a formato embed si es de YouTube
+      const embedUrl = toYoutubeEmbed(editCourseForm.videoUrl);
+      await api.put(`/courses/${id}`, {
+        ...editCourseForm,
+        videoUrl: embedUrl,
+      });
+      // Refrescar datos
+      const res = await api.get(`/courses/${id}`);
+      setCourse(res.data);
+      setEditCourseMsg('Información actualizada correctamente');
+      setShowEditCourse(false);
+    } catch (err) {
+      setEditCourseMsg('Error al actualizar el curso');
+    } finally {
+      setEditCourseLoading(false);
+    }
+  };
+
   const mainVideoUrl = course?.videoUrl;
 
   if (loading) return <p className="p-4">Cargando curso...</p>;
@@ -269,6 +310,69 @@ export default function CourseDetail() {
   return (
     <div className="p-6 max-w-5xl mx-auto">
       <h1 className="text-3xl font-bold mb-4 text-center">{course.title}</h1>
+      {/* Botón y formulario de edición de info general */}
+      {isOwner && !showEditCourse && (
+        <div className="flex justify-end mb-2">
+          <button
+            className="bg-yellow-500 text-white px-4 py-2 rounded-xl font-bold hover:bg-yellow-600 shadow"
+            onClick={() => setShowEditCourse(true)}
+          >
+            Editar información del curso
+          </button>
+        </div>
+      )}
+      {isOwner && showEditCourse && (
+        <form
+          onSubmit={handleEditCourseSubmit}
+          className="mb-6 border-2 border-yellow-200 bg-yellow-50 rounded-xl p-6 shadow-md"
+        >
+          <h3 className="text-lg font-bold mb-2 text-yellow-800">Editar información general del curso</h3>
+          <input
+            type="text"
+            name="title"
+            placeholder="Título del curso"
+            value={editCourseForm.title}
+            onChange={handleEditCourseChange}
+            className="w-full mb-3 p-3 border-2 border-yellow-200 rounded-xl focus:outline-none focus:border-yellow-400 text-lg shadow-sm"
+            required
+          />
+          <input
+            type="text"
+            name="videoUrl"
+            placeholder="URL del video principal"
+            value={editCourseForm.videoUrl}
+            onChange={handleEditCourseChange}
+            className="w-full mb-3 p-3 border-2 border-yellow-200 rounded-xl focus:outline-none focus:border-yellow-400 text-lg shadow-sm"
+            required
+          />
+          <textarea
+            name="description"
+            placeholder="Descripción del curso"
+            value={editCourseForm.description}
+            onChange={handleEditCourseChange}
+            className="w-full mb-3 p-3 border-2 border-yellow-200 rounded-xl focus:outline-none focus:border-yellow-400 text-lg shadow-sm"
+            required
+            rows={3}
+          ></textarea>
+          <div className="flex gap-3 mt-2">
+            <button
+              type="submit"
+              className="bg-green-600 text-white px-4 py-2 rounded-xl font-bold hover:bg-green-700 disabled:opacity-50"
+              disabled={editCourseLoading}
+            >
+              {editCourseLoading ? 'Guardando...' : 'Guardar cambios'}
+            </button>
+            <button
+              type="button"
+              className="bg-gray-300 text-gray-700 px-4 py-2 rounded-xl font-bold hover:bg-gray-400"
+              onClick={() => setShowEditCourse(false)}
+            >
+              Cancelar
+            </button>
+          </div>
+          {editCourseMsg && <div className={`mt-2 text-center font-semibold ${editCourseMsg.startsWith('Error') ? 'text-red-600' : 'text-green-700'}`}>{editCourseMsg}</div>}
+        </form>
+      )}
       <div className="flex flex-row gap-8">
         <div className="w-1/3">
           <EnrolledStudentsList students={enrolledStudents} />
