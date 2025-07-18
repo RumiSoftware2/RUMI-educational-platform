@@ -23,11 +23,13 @@ import AdminCourses from './pages/AdminCourses';
 import CourseStatistics from './pages/CourseStatistics';
 import AppLayout from './components/AppLayout';
 import CourseDetail from './pages/CourseDetail';
+import ScrollToTop from './components/ScrollToTop';
 
 
 function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <AppLayout>
         <Routes>
           <Route path="/register" element={<Register />} />
