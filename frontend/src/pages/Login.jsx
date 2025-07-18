@@ -165,7 +165,8 @@ export default function Login() {
                 </p>
               </div>
 
-              {/* Características */}
+              {/* Características (eliminadas para simplificar y evitar confusión) */}
+              {/*
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="bg-white/60 backdrop-blur-sm rounded-xl p-4 text-center">
                   <div className="text-2xl mb-2">📚</div>
@@ -184,6 +185,7 @@ export default function Login() {
                   <h4 className="font-semibold text-gray-800">Comunidad Activa</h4>
                 </div>
               </div>
+              */}
             </div>
           </div>
         </div>
