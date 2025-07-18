@@ -75,10 +75,10 @@ const CourseForm = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-100 via-blue-100 to-purple-200 py-12">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-100 via-blue-100 to-purple-200 py-8 px-2">
       <form
         onSubmit={handleSubmit}
-        className="relative bg-white/90 backdrop-blur-lg rounded-3xl shadow-2xl w-full max-w-xl border border-green-200 px-8 py-10 md:px-12 md:py-12"
+        className="relative bg-white/90 backdrop-blur-lg rounded-3xl shadow-2xl w-full max-w-md md:max-w-xl border border-green-200 px-4 py-8 md:px-8 md:py-10"
       >
         <div className="flex flex-col items-center mb-8">
           <img

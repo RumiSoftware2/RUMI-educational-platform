@@ -82,7 +82,7 @@ export default function TeacherCourses() {
         </div>
       </div>
       {message && <div className="mb-4 text-green-700 font-semibold text-center animate-fade-in">{message}</div>}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 max-w-md md:max-w-3xl mx-auto">
         {courses.map(course => {
           const thumbnail = getYoutubeThumbnail(course.videoUrl);
           return (

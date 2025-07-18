@@ -59,7 +59,7 @@ export default function Courses() {
         <p className="text-gray-600 text-center max-w-xl">Descubre cursos disponibles y aprende a tu ritmo. ¡Inscríbete y comienza tu aprendizaje!</p>
       </div>
       {message && <div className="max-w-2xl mx-auto mb-4 text-center text-lg font-semibold animate-pulse text-green-700 bg-white/80 rounded-xl py-2 shadow">{message}</div>}
-      <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-2xl md:max-w-4xl mx-auto">
         {courses.map(c => {
           const thumb = getYoutubeThumbnail(c.videoUrl);
           return (

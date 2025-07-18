@@ -66,8 +66,8 @@ export default function Login() {
       </div>
 
       {/* Contenido principal */}
-      <div className="container mx-auto px-6 py-12">
-        <div className="grid lg:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
+      <div className="container mx-auto px-2 py-8">
+        <div className="grid lg:grid-cols-2 gap-8 items-center max-w-2xl md:max-w-4xl mx-auto">
           
           {/* Columna izquierda - Formulario */}
           <div className="animate-fade-in-left">

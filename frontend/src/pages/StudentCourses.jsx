@@ -69,7 +69,7 @@ export default function StudentCourses() {
       {courses.length === 0 ? (
         <div className="text-center text-gray-500 mt-12">No estás inscrito en ningún curso.</div>
       ) : (
-        <div className="grid gap-8 max-w-3xl mx-auto">
+        <div className="grid gap-6 max-w-md md:max-w-2xl mx-auto">
           {courses.map(course => {
             const thumb = getYoutubeThumbnail(course.videoUrl);
             return (

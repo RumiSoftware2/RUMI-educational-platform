@@ -308,7 +308,7 @@ export default function CourseDetail() {
   }
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
+    <div className="p-4 max-w-md md:max-w-4xl mx-auto">
       <h1 className="text-3xl font-bold mb-4 text-center">{course.title}</h1>
       {/* Botón y formulario de edición de info general */}
       {isOwner && !showEditCourse && (

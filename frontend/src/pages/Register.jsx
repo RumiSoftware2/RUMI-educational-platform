@@ -60,8 +60,8 @@ const Register = () => {
       </div>
 
       {/* Contenido principal */}
-      <div className="container mx-auto px-6 py-12">
-        <div className="grid lg:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
+      <div className="container mx-auto px-2 py-8">
+        <div className="grid lg:grid-cols-2 gap-8 items-center max-w-2xl md:max-w-4xl mx-auto">
           
           {/* Columna izquierda - Formulario */}
           <div className="animate-fade-in-left">
@@ -181,37 +181,7 @@ const Register = () => {
                 </p>
               </div>
 
-              {/* Beneficios */}
-              <div className="space-y-4">
-                <div className="bg-white/60 backdrop-blur-sm rounded-xl p-4 flex items-center">
-                  <div className="text-2xl mr-4">🚀</div>
-                  <div>
-                    <h4 className="font-semibold text-gray-800">Acceso inmediato</h4>
-                    <p className="text-gray-600 text-sm">Comienza a aprender desde el primer momento</p>
-                  </div>
-                </div>
-                <div className="bg-white/60 backdrop-blur-sm rounded-xl p-4 flex items-center">
-                  <div className="text-2xl mr-4">🎯</div>
-                  <div>
-                    <h4 className="font-semibold text-gray-800">Contenido personalizado</h4>
-                    <p className="text-gray-600 text-sm">Adaptado a tu nivel y objetivos</p>
-                  </div>
-                </div>
-                <div className="bg-white/60 backdrop-blur-sm rounded-xl p-4 flex items-center">
-                  <div className="text-2xl mr-4">👥</div>
-                  <div>
-                    <h4 className="font-semibold text-gray-800">Comunidad activa</h4>
-                    <p className="text-gray-600 text-sm">Conecta con otros estudiantes</p>
-                  </div>
-                </div>
-                <div className="bg-white/60 backdrop-blur-sm rounded-xl p-4 flex items-center">
-                  <div className="text-2xl mr-4">🎮</div>
-                  <div>
-                    <h4 className="font-semibold text-gray-800">Juegos educativos</h4>
-                    <p className="text-gray-600 text-sm">Aprende de forma divertida e interactiva</p>
-                  </div>
-                </div>
-              </div>
+              {/* Beneficios (eliminados para simplificar) */}
             </div>
           </div>
         </div>
