@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import api from '../services/api';
 import { PieChart, Pie, Cell, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend } from 'recharts';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const COLORS = ['#00C49F', '#FF8042'];
 
@@ -93,110 +94,141 @@ export default function StudentStatistics() {
   if (error) return <div className="p-4 text-red-600">{error}</div>;
 
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-white rounded-xl shadow">
-      <div className="mb-4">
-        <button className="text-blue-600 underline" onClick={() => navigate(-1)}>
-          ← Volver a las lecciones
-        </button>
-      </div>
-      <h2 className="text-2xl font-bold mb-4">Estadísticas del Estudiante</h2>
-      {/* Resumen matemático y gráfico de pastel mejorado */}
-      <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-        <div>
-          <div className="mb-2 font-semibold">Curso: <span className="font-normal">{courseInfo?.title}</span></div>
-          <div>Total de lecciones: <b>{totalLessons}</b></div>
-          <div>Lecciones completadas: <b>{completedLessons}</b></div>
-          <div>Porcentaje de avance: <b>{percentComplete}%</b></div>
-        </div>
-        <div className="flex flex-col items-center">
-          <PieChart width={220} height={220}>
-            <Pie
-              data={pieData}
-              dataKey="value"
-              nameKey="name"
-              cx="50%"
-              cy="50%"
-              outerRadius={80}
-              label={({ name, value }) => `${name}: ${value}`}
-              labelLine={true}
-            >
-              {pieData.map((entry, idx) => (
-                <Cell key={`cell-${idx}`} fill={COLORS[idx % COLORS.length]} />
-              ))}
-            </Pie>
-            <Tooltip />
-          </PieChart>
-          <div className="mt-2 flex gap-4 text-sm">
-            <div className="flex items-center gap-1"><span style={{background: COLORS[0], width: 14, height: 14, display: 'inline-block', borderRadius: 3}}></span> Completadas</div>
-            <div className="flex items-center gap-1"><span style={{background: COLORS[1], width: 14, height: 14, display: 'inline-block', borderRadius: 3}}></span> Pendientes</div>
-          </div>
-        </div>
-      </div>
-      {/* Gráfico de barras de quizzes */}
-      <div className="mb-8">
-        <h3 className="text-lg font-semibold mb-2">Resultados de Quizzes</h3>
-        {quizBarData.length > 0 ? (
-          <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={quizBarData} margin={{ top: 10, right: 20, left: 0, bottom: 10 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis domain={[0, 100]} />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="score" fill="#8884d8" name="Puntaje" />
-            </BarChart>
-          </ResponsiveContainer>
-        ) : (
-          <div className="text-gray-400">No hay resultados de quizzes aún.</div>
-        )}
-      </div>
-      {/* Chat/Feedback */}
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold mb-2">Feedback y Chat</h3>
-        <div className="bg-gray-50 rounded p-3 mb-2 max-h-60 overflow-y-auto border">
-          {chat.length === 0 ? (
-            <div className="text-gray-400 text-center">No hay mensajes aún.</div>
-          ) : (
-            chat.map((msg, idx) => (
-              <div key={idx} className={`mb-2 ${msg.sender === user.role ? 'text-right' : 'text-left'}`}>
-                <span className="font-bold text-blue-700">{msg.sender === 'docente' ? 'Docente' : 'Estudiante'}:</span> {msg.text}
-                <div className="text-xs text-gray-400">
-                  {msg.date ? new Date(msg.date).toLocaleString() : ''}
-                  {msg.lessonOrder !== null && msg.lessonOrder !== undefined && (
-                    <span> | Lección: {msg.lessonOrder}</span>
-                  )}
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-        {/* Selector de lección opcional para el mensaje */}
-        <form onSubmit={handleSendMessage} className="flex gap-2 items-center">
-          <input
-            type="text"
-            value={newMessage}
-            onChange={e => setNewMessage(e.target.value)}
-            className="flex-1 border rounded p-2"
-            placeholder="Escribe un mensaje..."
-            disabled={sending}
-          />
-          <select
-            className="border rounded p-2 text-sm"
-            value={currentLessonOrder || ''}
-            onChange={e => setCurrentLessonOrder(e.target.value ? Number(e.target.value) : null)}
-          >
-            <option value="">Lección...</option>
-            {courseInfo && courseInfo.lessons && courseInfo.lessons.length > 0 &&
-              courseInfo.lessons.map((lesson, idx) => (
-                <option key={idx} value={lesson.order}>Lección {lesson.order}</option>
-              ))
-            }
-          </select>
-          <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded" disabled={sending}>
-            {sending ? 'Enviando...' : 'Enviar'}
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={courseInfo?.title || 'stats'}
+        initial={{ opacity: 0, y: 40 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -40 }}
+        transition={{ duration: 0.5, type: 'spring' }}
+        className="max-w-2xl mx-auto p-6 bg-white rounded-xl shadow animate-fade-in"
+      >
+        <div className="mb-4">
+          <button className="text-blue-600 underline" onClick={() => navigate(-1)}>
+            ← Volver a las lecciones
           </button>
-        </form>
-      </div>
-    </div>
+        </div>
+        <motion.h2
+          className="text-2xl font-bold mb-4"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          Estadísticas del Estudiante
+        </motion.h2>
+        {/* Resumen matemático y gráfico de pastel mejorado */}
+        <motion.div
+          className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-6 items-center"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+        >
+          <div>
+            <div className="mb-2 font-semibold">Curso: <span className="font-normal">{courseInfo?.title}</span></div>
+            <div>Total de lecciones: <b>{totalLessons}</b></div>
+            <div>Lecciones completadas: <b>{completedLessons}</b></div>
+            <div>Porcentaje de avance: <b>{percentComplete}%</b></div>
+          </div>
+          <div className="flex flex-col items-center">
+            <PieChart width={220} height={220}>
+              <Pie
+                data={pieData}
+                dataKey="value"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                outerRadius={80}
+                label={({ name, value }) => `${name}: ${value}`}
+                labelLine={true}
+              >
+                {pieData.map((entry, idx) => (
+                  <Cell key={`cell-${idx}`} fill={COLORS[idx % COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+            <div className="mt-2 flex gap-4 text-sm">
+              <div className="flex items-center gap-1"><span style={{background: COLORS[0], width: 14, height: 14, display: 'inline-block', borderRadius: 3}}></span> Completadas</div>
+              <div className="flex items-center gap-1"><span style={{background: COLORS[1], width: 14, height: 14, display: 'inline-block', borderRadius: 3}}></span> Pendientes</div>
+            </div>
+          </div>
+        </motion.div>
+        {/* Gráfico de barras de quizzes */}
+        <motion.div
+          className="mb-8"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <h3 className="text-lg font-semibold mb-2">Resultados de Quizzes</h3>
+          {quizBarData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={quizBarData} margin={{ top: 10, right: 20, left: 0, bottom: 10 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis domain={[0, 100]} />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="score" fill="#8884d8" name="Puntaje" />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="text-gray-400">No hay resultados de quizzes aún.</div>
+          )}
+        </motion.div>
+        {/* Chat/Feedback */}
+        <motion.div
+          className="mb-6"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 }}
+        >
+          <h3 className="text-lg font-semibold mb-2">Feedback y Chat</h3>
+          <div className="bg-gray-50 rounded p-3 mb-2 max-h-60 overflow-y-auto border">
+            {chat.length === 0 ? (
+              <div className="text-gray-400 text-center">No hay mensajes aún.</div>
+            ) : (
+              chat.map((msg, idx) => (
+                <div key={idx} className={`mb-2 ${msg.sender === user.role ? 'text-right' : 'text-left'}`}>
+                  <span className="font-bold text-blue-700">{msg.sender === 'docente' ? 'Docente' : 'Estudiante'}:</span> {msg.text}
+                  <div className="text-xs text-gray-400">
+                    {msg.date ? new Date(msg.date).toLocaleString() : ''}
+                    {msg.lessonOrder !== null && msg.lessonOrder !== undefined && (
+                      <span> | Lección: {msg.lessonOrder}</span>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+          {/* Selector de lección opcional para el mensaje */}
+          <form onSubmit={handleSendMessage} className="flex gap-2 items-center">
+            <input
+              type="text"
+              value={newMessage}
+              onChange={e => setNewMessage(e.target.value)}
+              className="flex-1 border rounded p-2"
+              placeholder="Escribe un mensaje..."
+              disabled={sending}
+            />
+            <select
+              className="border rounded p-2 text-sm"
+              value={currentLessonOrder || ''}
+              onChange={e => setCurrentLessonOrder(e.target.value ? Number(e.target.value) : null)}
+            >
+              <option value="">Lección...</option>
+              {courseInfo && courseInfo.lessons && courseInfo.lessons.length > 0 &&
+                courseInfo.lessons.map((lesson, idx) => (
+                  <option key={idx} value={lesson.order}>Lección {lesson.order}</option>
+                ))
+              }
+            </select>
+            <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded" disabled={sending}>
+              {sending ? 'Enviando...' : 'Enviar'}
+            </button>
+          </form>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
   );
 } 

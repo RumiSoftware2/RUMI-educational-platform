@@ -6,6 +6,7 @@ import EnrolledStudentsList from '../components/EnrolledStudentsList';
 import { saveLessonProgress } from '../services/api';
 import LessonQuiz from '../components/LessonQuiz';
 import { createQuiz } from '../services/api';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // Función para convertir cualquier URL de YouTube a formato embed
 function toYoutubeEmbed(url) {
@@ -278,56 +279,81 @@ export default function CourseDetail() {
     };
 
     return (
-      <div className="p-6 max-w-2xl mx-auto">
-        <div className="flex justify-between mb-4">
-          <button className="text-blue-600 underline" onClick={handleCloseStudentView}>← Volver</button>
-          <div className="flex gap-2">
-            <button
-              className={`px-3 py-1 rounded font-bold ${showStudentView === 0 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-green-600 text-white hover:bg-green-700'}`}
-              onClick={handlePrevLesson}
-              disabled={showStudentView === 0}
-            >
-              ← Lección anterior
-            </button>
-            <button
-              className={`px-3 py-1 rounded font-bold ${showStudentView === lessons.length - 1 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-green-600 text-white hover:bg-green-700'}`}
-              onClick={handleNextLesson}
-              disabled={showStudentView === lessons.length - 1}
-            >
-              Siguiente lección →
-            </button>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={showStudentView}
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -40 }}
+          transition={{ duration: 0.5, type: 'spring' }}
+          className="p-6 max-w-2xl mx-auto bg-white rounded-xl shadow-lg"
+        >
+          <div className="flex justify-between mb-4">
+            <button className="text-blue-600 underline" onClick={handleCloseStudentView}>← Volver</button>
+            <div className="flex gap-2">
+              <motion.button
+                whileHover={{ scale: showStudentView === 0 ? 1 : 1.07 }}
+                whileTap={{ scale: 0.97 }}
+                className={`px-3 py-1 rounded font-bold transition-all duration-200 ${showStudentView === 0 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-green-600 text-white hover:bg-green-700'}`}
+                onClick={handlePrevLesson}
+                disabled={showStudentView === 0}
+              >
+                ← Lección anterior
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: showStudentView === lessons.length - 1 ? 1 : 1.07 }}
+                whileTap={{ scale: 0.97 }}
+                className={`px-3 py-1 rounded font-bold transition-all duration-200 ${showStudentView === lessons.length - 1 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-green-600 text-white hover:bg-green-700'}`}
+                onClick={handleNextLesson}
+                disabled={showStudentView === lessons.length - 1}
+              >
+                Siguiente lección →
+              </motion.button>
+            </div>
           </div>
-        </div>
-        <h2 className="text-2xl font-bold mb-2">{lesson.title}</h2>
-        <div className="aspect-video mb-4">
-          <iframe
-            src={lesson.videoUrl}
-            title={lesson.title}
-            frameBorder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-            className="w-full h-full rounded"
-            onLoad={() => {}}
-            onEnded={handleVideoEnded}
-          />
-        </div>
-        <p className="mb-4 text-gray-700">{lesson.description}</p>
-        {progressMsg && <div className="mb-4 text-green-700 font-semibold text-center">{progressMsg}</div>}
-        <div className="mt-6 p-4 border rounded bg-gray-50 text-gray-500 text-center">
-          <LessonQuiz
-            quizId={lesson.quiz}
-            courseId={id}
-            lessonOrder={lesson.order}
-            onComplete={(score) => {
-              setProgressMsg(`¡Progreso guardado! Puntuación: ${score}`);
-              setVideoWatched(true);
-              // Guardar progreso actualizado
-              saveLessonProgress(id, lesson.order, { score, completed: true });
-            }}
-          />
-          {!lesson.quiz && videoWatched && <span>¡Has completado la lección!</span>}
-        </div>
-      </div>
+          <motion.h2
+            className="text-2xl font-bold mb-2 text-center"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            {lesson.title}
+          </motion.h2>
+          <motion.div
+            className="aspect-video mb-4"
+            initial={{ scale: 0.98, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.15 }}
+          >
+            <iframe
+              src={lesson.videoUrl}
+              title={lesson.title}
+              style={{ border: 0 }}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              className="w-full h-full rounded shadow-lg"
+              onLoad={() => {}}
+              onEnded={handleVideoEnded}
+            />
+          </motion.div>
+          <p className="mb-4 text-gray-700 text-center animate-fade-in-slow">{lesson.description}</p>
+          {progressMsg && <motion.div className="mb-4 text-green-700 font-semibold text-center animate-fade-in" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>{progressMsg}</motion.div>}
+          <motion.div className="mt-6 p-4 border rounded bg-gray-50 text-gray-500 text-center animate-fade-in-slow">
+            <LessonQuiz
+              quizId={lesson.quiz}
+              courseId={id}
+              lessonOrder={lesson.order}
+              onComplete={(score) => {
+                setProgressMsg(`¡Progreso guardado! Puntuación: ${score}`);
+                setVideoWatched(true);
+                // Guardar progreso actualizado
+                saveLessonProgress(id, lesson.order, { score, completed: true });
+              }}
+            />
+            {!lesson.quiz && videoWatched && <span>¡Has completado la lección!</span>}
+          </motion.div>
+        </motion.div>
+      </AnimatePresence>
     );
   }
 
@@ -341,275 +367,332 @@ export default function CourseDetail() {
   }
 
   return (
-    <div className="p-4 max-w-md md:max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold mb-4 text-center">{course.title}</h1>
-      {/* Botón y formulario de edición de info general */}
-      {isOwner && !showEditCourse && (
-        <div className="flex justify-end mb-2">
-          <button
-            className="bg-yellow-500 text-white px-4 py-2 rounded-xl font-bold hover:bg-yellow-600 shadow"
-            onClick={() => setShowEditCourse(true)}
-          >
-            Editar información del curso
-          </button>
-        </div>
-      )}
-      {isOwner && showEditCourse && (
-        <form
-          onSubmit={handleEditCourseSubmit}
-          className="mb-6 border-2 border-yellow-200 bg-yellow-50 rounded-xl p-6 shadow-md"
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={course?.id}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+        transition={{ duration: 0.6, type: 'spring' }}
+        className="p-4 max-w-md md:max-w-4xl mx-auto bg-white rounded-xl shadow-xl"
+      >
+        <motion.h1
+          className="text-3xl font-bold mb-4 text-center"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
         >
-          <h3 className="text-lg font-bold mb-2 text-yellow-800">Editar información general del curso</h3>
-          <input
-            type="text"
-            name="title"
-            placeholder="Título del curso"
-            value={editCourseForm.title}
-            onChange={handleEditCourseChange}
-            className="w-full mb-3 p-3 border-2 border-yellow-200 rounded-xl focus:outline-none focus:border-yellow-400 text-lg shadow-sm"
-            required
-          />
-          <input
-            type="text"
-            name="videoUrl"
-            placeholder="URL del video principal"
-            value={editCourseForm.videoUrl}
-            onChange={handleEditCourseChange}
-            className="w-full mb-3 p-3 border-2 border-yellow-200 rounded-xl focus:outline-none focus:border-yellow-400 text-lg shadow-sm"
-            required
-          />
-          <textarea
-            name="description"
-            placeholder="Descripción del curso"
-            value={editCourseForm.description}
-            onChange={handleEditCourseChange}
-            className="w-full mb-3 p-3 border-2 border-yellow-200 rounded-xl focus:outline-none focus:border-yellow-400 text-lg shadow-sm"
-            required
-            rows={3}
-          ></textarea>
-          <div className="flex gap-3 mt-2">
+          {course.title}
+        </motion.h1>
+        {/* Botón y formulario de edición de info general */}
+        {isOwner && !showEditCourse && (
+          <div className="flex justify-end mb-2">
             <button
-              type="submit"
-              className="bg-green-600 text-white px-4 py-2 rounded-xl font-bold hover:bg-green-700 disabled:opacity-50"
-              disabled={editCourseLoading}
+              className="bg-yellow-500 text-white px-4 py-2 rounded-xl font-bold hover:bg-yellow-600 shadow"
+              onClick={() => setShowEditCourse(true)}
             >
-              {editCourseLoading ? 'Guardando...' : 'Guardar cambios'}
-            </button>
-            <button
-              type="button"
-              className="bg-gray-300 text-gray-700 px-4 py-2 rounded-xl font-bold hover:bg-gray-400"
-              onClick={() => setShowEditCourse(false)}
-            >
-              Cancelar
+              Editar información del curso
             </button>
           </div>
-          {editCourseMsg && <div className={`mt-2 text-center font-semibold ${editCourseMsg.startsWith('Error') ? 'text-red-600' : 'text-green-700'}`}>{editCourseMsg}</div>}
-        </form>
-      )}
-      <div className="flex flex-row gap-8">
-        <div className="w-1/3">
-          <EnrolledStudentsList students={enrolledStudents} />
-        </div>
-        <div className="flex-1">
-          <div className="aspect-video mb-4">
-            {mainVideoUrl ? (
-              <iframe
-                src={mainVideoUrl}
-                title={course.title}
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                className="w-full h-full rounded"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gray-200 rounded text-gray-500">
-                Sin video principal
-              </div>
-            )}
-          </div>
-          <p className="mb-8 text-lg text-center text-gray-700">{course.description}</p>
-
-          {/* Sección de lecciones */}
-          <div className="mb-8">
-            <h2 className="text-2xl font-extrabold mb-4 text-green-700 border-b-2 border-green-200 pb-2">Lecciones del curso</h2>
-            {isOwner && lessons.length === 0 && !showForm && (
-              <div className="flex flex-col items-center my-8">
-                <p className="mb-4 text-gray-600">Aún no hay lecciones en este curso.</p>
-                <button
-                  className="bg-green-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-green-700 shadow"
-                  onClick={() => { setShowForm(true); setEditingIndex(null); }}
-                >
-                  Crear primera lección
-                </button>
-              </div>
-            )}
-            {isOwner && lessons.length > 0 && !showForm && (
-              <div className="flex flex-col items-center my-8">
-                <button
-                  className="bg-green-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-green-700 shadow"
-                  onClick={() => { setShowForm(true); setEditingIndex(null); }}
-                >
-                  Agregar otra lección
-                </button>
-              </div>
-            )}
-            {isOwner && showForm && (
-              <>
-                <div className="mb-8 border-2 border-green-200 bg-green-50 rounded-xl p-6 shadow-md">
-                  <h3 className="text-lg font-bold mb-2 text-green-800">{editingIndex === null ? 'Crear lección' : `Editar lección #${lessonForm.order}`}</h3>
-                  <form onSubmit={handleAddOrUpdateLesson} className="flex flex-col gap-3">
-                    <input
-                      type="text"
-                      name="title"
-                      placeholder="Título"
-                      value={lessonForm.title}
-                      onChange={handleLessonChange}
-                      className="p-2 border-2 border-green-300 rounded-lg focus:outline-none focus:border-green-500"
-                      required
-                    />
-                    <input
-                      type="text"
-                      name="videoUrl"
-                      placeholder="URL del video"
-                      value={lessonForm.videoUrl}
-                      onChange={handleLessonChange}
-                      className="p-2 border-2 border-green-300 rounded-lg focus:outline-none focus:border-green-500"
-                      required
-                    />
-                    <textarea
-                      name="description"
-                      placeholder="Descripción de la lección"
-                      value={lessonForm.description}
-                      onChange={handleLessonChange}
-                      className="p-2 border-2 border-green-300 rounded-lg focus:outline-none focus:border-green-500"
-                      required
-                      rows={2}
-                    ></textarea>
-                    <button
-                      type="submit"
-                      className="px-4 py-2 rounded-xl font-bold transition text-white bg-green-600 hover:bg-green-700"
-                    >
-                      {editingIndex === null ? 'Crear lección' : 'Actualizar'}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => { setShowForm(false); setEditingIndex(null); setLessonForm({ order: lessons.length + 1, title: '', description: '', videoUrl: '' }); }}
-                      className="text-sm text-gray-600 hover:underline mt-2"
-                    >
-                      Cancelar
-                    </button>
-                  </form>
-                </div>
-                <button
-                  type="button"
-                  className="px-4 py-2 rounded-xl font-bold transition text-white bg-yellow-500 hover:bg-yellow-600 mt-2"
-                  onClick={() => setShowQuizForm((v) => !v)}
-                >
-                  {showQuizForm ? 'Ocultar Quiz' : 'Agregar Quiz'}
-                </button>
-                {showQuizForm && (
-                  <div className="mt-4 border-2 border-yellow-200 bg-yellow-50 rounded-xl p-4 shadow-md">
-                    <h4 className="text-lg font-bold mb-2 text-yellow-800">Crear Quiz para la lección</h4>
-                    <input
-                      type="text"
-                      name="title"
-                      placeholder="Título del quiz"
-                      value={quizForm.title}
-                      onChange={handleQuizInputChange}
-                      className="p-2 border-2 border-yellow-300 rounded-lg w-full mb-2"
-                    />
-                    <div className="mb-2">
-                      <input
-                        type="text"
-                        placeholder="Pregunta"
-                        value={currentQuestion.questionText}
-                        onChange={e => setCurrentQuestion({ ...currentQuestion, questionText: e.target.value })}
-                        className="p-2 border border-yellow-300 rounded-lg w-full mb-2"
-                      />
-                      {currentQuestion.options.map((opt, idx) => (
-                        <input
-                          key={idx}
-                          type="text"
-                          placeholder={`Opción ${idx + 1}`}
-                          value={opt}
-                          onChange={e => handleQuestionInputChange(e, idx)}
-                          name="options"
-                          className="p-2 border border-yellow-200 rounded-lg w-full mb-1"
-                        />
-                      ))}
-                      <button type="button" className="text-sm text-blue-600 hover:underline" onClick={handleAddOption}>+ Agregar opción</button>
-                      <input
-                        type="text"
-                        placeholder="Respuesta correcta"
-                        value={currentQuestion.correctAnswer}
-                        onChange={e => setCurrentQuestion({ ...currentQuestion, correctAnswer: e.target.value })}
-                        className="p-2 border border-yellow-300 rounded-lg w-full mt-2"
-                      />
-                      <button type="button" className="mt-2 bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700" onClick={handleAddQuestion}>Agregar pregunta</button>
-                    </div>
-                    <div className="mt-2">
-                      {quizForm.questions.map((q, idx) => (
-                        <div key={idx} className="mb-2 p-2 bg-white rounded shadow flex justify-between items-center">
-                          <span>{q.questionText}</span>
-                          <button type="button" className="text-red-500 ml-2" onClick={() => handleRemoveQuestion(idx)}>Eliminar</button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </>
-            )}
-            <div className="grid gap-6">
-              {lessons
-                .sort((a, b) => a.order - b.order)
-                .map((lesson, idx) => (
-                  <div key={idx} className="bg-white border border-gray-200 rounded-xl shadow-lg p-6 flex flex-col gap-3">
-                    <div className="flex items-center gap-3">
-                      <LessonNumber number={lesson.order} />
-                      <div>
-                        <span className="font-bold text-lg text-green-800">{lesson.title}</span>
-                        <span className="block text-gray-600 mt-1">{lesson.description}</span>
-                      </div>
-                      {isOwner && (
-                        <div className="flex gap-2 ml-auto">
-                          <button
-                            className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
-                            onClick={() => handleEditLesson(idx)}
-                          >
-                            Editar
-                          </button>
-                          <button
-                            className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
-                            onClick={() => handleOpenStudentView(idx)}
-                          >
-                            Abrir
-                          </button>
-                          <button
-                            className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
-                            onClick={() => handleDeleteLesson(idx)}
-                          >
-                            Eliminar
-                          </button>
-                        </div>
-                      )}
-                      {!isOwner && (
-                        <div className="flex gap-2 ml-auto">
-                          <button
-                            className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
-                            onClick={() => handleOpenStudentView(idx)}
-                          >
-                            Abrir
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
+        )}
+        {isOwner && showEditCourse && (
+          <form
+            onSubmit={handleEditCourseSubmit}
+            className="mb-6 border-2 border-yellow-200 bg-yellow-50 rounded-xl p-6 shadow-md"
+          >
+            <h3 className="text-lg font-bold mb-2 text-yellow-800">Editar información general del curso</h3>
+            <input
+              type="text"
+              name="title"
+              placeholder="Título del curso"
+              value={editCourseForm.title}
+              onChange={handleEditCourseChange}
+              className="w-full mb-3 p-3 border-2 border-yellow-200 rounded-xl focus:outline-none focus:border-yellow-400 text-lg shadow-sm"
+              required
+            />
+            <input
+              type="text"
+              name="videoUrl"
+              placeholder="URL del video principal"
+              value={editCourseForm.videoUrl}
+              onChange={handleEditCourseChange}
+              className="w-full mb-3 p-3 border-2 border-yellow-200 rounded-xl focus:outline-none focus:border-yellow-400 text-lg shadow-sm"
+              required
+            />
+            <textarea
+              name="description"
+              placeholder="Descripción del curso"
+              value={editCourseForm.description}
+              onChange={handleEditCourseChange}
+              className="w-full mb-3 p-3 border-2 border-yellow-200 rounded-xl focus:outline-none focus:border-yellow-400 text-lg shadow-sm"
+              required
+              rows={3}
+            ></textarea>
+            <div className="flex gap-3 mt-2">
+              <button
+                type="submit"
+                className="bg-green-600 text-white px-4 py-2 rounded-xl font-bold hover:bg-green-700 disabled:opacity-50"
+                disabled={editCourseLoading}
+              >
+                {editCourseLoading ? 'Guardando...' : 'Guardar cambios'}
+              </button>
+              <button
+                type="button"
+                className="bg-gray-300 text-gray-700 px-4 py-2 rounded-xl font-bold hover:bg-gray-400"
+                onClick={() => setShowEditCourse(false)}
+              >
+                Cancelar
+              </button>
             </div>
+            {editCourseMsg && <div className={`mt-2 text-center font-semibold ${editCourseMsg.startsWith('Error') ? 'text-red-600' : 'text-green-700'}`}>{editCourseMsg}</div>}
+          </form>
+        )}
+        <div className="flex flex-row gap-8">
+          <div className="w-1/3">
+            <EnrolledStudentsList students={enrolledStudents} />
           </div>
-          {message && <div className="mt-4 text-green-700 font-semibold text-center">{message}</div>}
+          <div className="flex-1">
+            <motion.div
+              className="aspect-video mb-4"
+              initial={{ scale: 0.98, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.1 }}
+            >
+              {mainVideoUrl ? (
+                <iframe
+                  src={mainVideoUrl}
+                  title={course.title}
+                  style={{ border: 0 }}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="w-full h-full rounded shadow-lg"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-gray-200 rounded text-gray-500">
+                  Sin video principal
+                </div>
+              )}
+            </motion.div>
+            <motion.p
+              className="mb-8 text-lg text-center text-gray-700"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              {course.description}
+            </motion.p>
+
+            {/* Sección de lecciones */}
+            <motion.div
+              className="mb-8"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <h2 className="text-2xl font-extrabold mb-4 text-green-700 border-b-2 border-green-200 pb-2">Lecciones del curso</h2>
+              {isOwner && lessons.length === 0 && !showForm && (
+                <div className="flex flex-col items-center my-8">
+                  <p className="mb-4 text-gray-600">Aún no hay lecciones en este curso.</p>
+                  <button
+                    className="bg-green-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-green-700 shadow"
+                    onClick={() => { setShowForm(true); setEditingIndex(null); }}
+                  >
+                    Crear primera lección
+                  </button>
+                </div>
+              )}
+              {isOwner && lessons.length > 0 && !showForm && (
+                <div className="flex flex-col items-center my-8">
+                  <button
+                    className="bg-green-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-green-700 shadow"
+                    onClick={() => { setShowForm(true); setEditingIndex(null); }}
+                  >
+                    Agregar otra lección
+                  </button>
+                </div>
+              )}
+              {isOwner && showForm && (
+                <>
+                  <motion.div
+                    className="mb-8 border-2 border-green-200 bg-green-50 rounded-xl p-6 shadow-md"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                  >
+                    <h3 className="text-lg font-bold mb-2 text-green-800">{editingIndex === null ? 'Crear lección' : `Editar lección #${lessonForm.order}`}</h3>
+                    <form onSubmit={handleAddOrUpdateLesson} className="flex flex-col gap-3">
+                      <input
+                        type="text"
+                        name="title"
+                        placeholder="Título"
+                        value={lessonForm.title}
+                        onChange={handleLessonChange}
+                        className="p-2 border-2 border-green-300 rounded-lg focus:outline-none focus:border-green-500"
+                        required
+                      />
+                      <input
+                        type="text"
+                        name="videoUrl"
+                        placeholder="URL del video"
+                        value={lessonForm.videoUrl}
+                        onChange={handleLessonChange}
+                        className="p-2 border-2 border-green-300 rounded-lg focus:outline-none focus:border-green-500"
+                        required
+                      />
+                      <textarea
+                        name="description"
+                        placeholder="Descripción de la lección"
+                        value={lessonForm.description}
+                        onChange={handleLessonChange}
+                        className="p-2 border-2 border-green-300 rounded-lg focus:outline-none focus:border-green-500"
+                        required
+                        rows={2}
+                      ></textarea>
+                      <button
+                        type="submit"
+                        className="px-4 py-2 rounded-xl font-bold transition text-white bg-green-600 hover:bg-green-700"
+                      >
+                        {editingIndex === null ? 'Crear lección' : 'Actualizar'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setShowForm(false); setEditingIndex(null); setLessonForm({ order: lessons.length + 1, title: '', description: '', videoUrl: '' }); }}
+                        className="text-sm text-gray-600 hover:underline mt-2"
+                      >
+                        Cancelar
+                      </button>
+                    </form>
+                  </motion.div>
+                  <motion.button
+                    type="button"
+                    className="px-4 py-2 rounded-xl font-bold transition text-white bg-yellow-500 hover:bg-yellow-600 mt-2"
+                    onClick={() => setShowQuizForm((v) => !v)}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                  >
+                    {showQuizForm ? 'Ocultar Quiz' : 'Agregar Quiz'}
+                  </motion.button>
+                  {showQuizForm && (
+                    <motion.div
+                      className="mt-4 border-2 border-yellow-200 bg-yellow-50 rounded-xl p-4 shadow-md"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.1 }}
+                    >
+                      <h4 className="text-lg font-bold mb-2 text-yellow-800">Crear Quiz para la lección</h4>
+                      <input
+                        type="text"
+                        name="title"
+                        placeholder="Título del quiz"
+                        value={quizForm.title}
+                        onChange={handleQuizInputChange}
+                        className="p-2 border-2 border-yellow-300 rounded-lg w-full mb-2"
+                      />
+                      <div className="mb-2">
+                        <input
+                          type="text"
+                          placeholder="Pregunta"
+                          value={currentQuestion.questionText}
+                          onChange={e => setCurrentQuestion({ ...currentQuestion, questionText: e.target.value })}
+                          className="p-2 border border-yellow-300 rounded-lg w-full mb-2"
+                        />
+                        {currentQuestion.options.map((opt, idx) => (
+                          <input
+                            key={idx}
+                            type="text"
+                            placeholder={`Opción ${idx + 1}`}
+                            value={opt}
+                            onChange={e => handleQuestionInputChange(e, idx)}
+                            name="options"
+                            className="p-2 border border-yellow-200 rounded-lg w-full mb-1"
+                          />
+                        ))}
+                        <button type="button" className="text-sm text-blue-600 hover:underline" onClick={handleAddOption}>+ Agregar opción</button>
+                        <input
+                          type="text"
+                          placeholder="Respuesta correcta"
+                          value={currentQuestion.correctAnswer}
+                          onChange={e => setCurrentQuestion({ ...currentQuestion, correctAnswer: e.target.value })}
+                          className="p-2 border border-yellow-300 rounded-lg w-full mt-2"
+                        />
+                        <button type="button" className="mt-2 bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700" onClick={handleAddQuestion}>Agregar pregunta</button>
+                      </div>
+                      <div className="mt-2">
+                        {quizForm.questions.map((q, idx) => (
+                          <div key={idx} className="mb-2 p-2 bg-white rounded shadow flex justify-between items-center">
+                            <span>{q.questionText}</span>
+                            <button type="button" className="text-red-500 ml-2" onClick={() => handleRemoveQuestion(idx)}>Eliminar</button>
+                          </div>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </>
+              )}
+              <motion.div
+                className="grid gap-6"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+              >
+                {lessons
+                  .sort((a, b) => a.order - b.order)
+                  .map((lesson, idx) => (
+                    <motion.div
+                      key={idx}
+                      className="bg-white border border-gray-200 rounded-xl shadow-lg p-6 flex flex-col gap-3"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.1 + idx * 0.05 }}
+                    >
+                      <div className="flex items-center gap-3">
+                        <LessonNumber number={lesson.order} />
+                        <div>
+                          <span className="font-bold text-lg text-green-800">{lesson.title}</span>
+                          <span className="block text-gray-600 mt-1">{lesson.description}</span>
+                        </div>
+                        {isOwner && (
+                          <div className="flex gap-2 ml-auto">
+                            <button
+                              className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
+                              onClick={() => handleEditLesson(idx)}
+                            >
+                              Editar
+                            </button>
+                            <button
+                              className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+                              onClick={() => handleOpenStudentView(idx)}
+                            >
+                              Abrir
+                            </button>
+                            <button
+                              className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                              onClick={() => handleDeleteLesson(idx)}
+                            >
+                              Eliminar
+                            </button>
+                          </div>
+                        )}
+                        {!isOwner && (
+                          <div className="flex gap-2 ml-auto">
+                            <button
+                              className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+                              onClick={() => handleOpenStudentView(idx)}
+                            >
+                              Abrir
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </motion.div>
+                  ))}
+              </motion.div>
+            </motion.div>
+            {message && <motion.div className="mt-4 text-green-700 font-semibold text-center" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>{message}</motion.div>}
+          </div>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </AnimatePresence>
   );
 }
