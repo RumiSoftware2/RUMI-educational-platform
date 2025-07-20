@@ -7,6 +7,7 @@ import { saveLessonProgress } from '../services/api';
 import LessonQuiz from '../components/LessonQuiz';
 import { createQuiz } from '../services/api';
 import { motion, AnimatePresence } from 'framer-motion';
+import logo1 from '../assets/logo1zeus.png';
 
 // Función para convertir cualquier URL de YouTube a formato embed
 function toYoutubeEmbed(url) {
@@ -376,14 +377,24 @@ export default function CourseDetail() {
         transition={{ duration: 0.6, type: 'spring' }}
         className="p-4 max-w-md md:max-w-4xl mx-auto bg-white rounded-xl shadow-xl"
       >
-        <motion.h1
-          className="text-3xl font-bold mb-4 text-center"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-        >
-          {course.title}
-        </motion.h1>
+        <div className="flex flex-col items-center mb-4">
+          <motion.img
+            src={logo1}
+            alt="Logo decorativo"
+            className="w-16 h-16 mb-2 animate-bounce"
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.1 }}
+          />
+          <motion.h1
+            className="text-3xl font-bold mb-4 text-center bg-gradient-to-r from-blue-700 via-green-400 to-yellow-400 bg-clip-text text-transparent drop-shadow animate-fade-in"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            {course.title}
+          </motion.h1>
+        </div>
         {/* Botón y formulario de edición de info general */}
         {isOwner && !showEditCourse && (
           <div className="flex justify-end mb-2">

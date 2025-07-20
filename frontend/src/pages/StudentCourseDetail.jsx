@@ -4,6 +4,7 @@ import api from '../services/api';
 import { AuthContext } from '../context/AuthContext';
 import LessonQuiz from '../components/LessonQuiz';
 import { motion, AnimatePresence } from 'framer-motion';
+import logo2 from '../assets/logo2zeus.png';
 
 export default function StudentCourseDetail() {
   const { id: courseId } = useParams();
@@ -53,12 +54,21 @@ export default function StudentCourseDetail() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -40 }}
           transition={{ duration: 0.5, type: 'spring' }}
-          className="p-6 max-w-2xl mx-auto"
+          className="p-6 max-w-2xl mx-auto bg-white rounded-xl shadow-xl"
         >
-          <div className="flex justify-between mb-4">
-            <button className="text-blue-600 underline" onClick={() => navigate(-1)}>← Volver</button>
+          <div className="flex flex-col items-center mb-4">
+            <motion.img
+              src={logo2}
+              alt="Logo decorativo"
+              className="w-16 h-16 mb-2 animate-bounce"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.1 }}
+            />
+            <h1 className="text-3xl font-bold mb-4 text-center bg-gradient-to-r from-green-700 via-blue-400 to-yellow-400 bg-clip-text text-transparent drop-shadow animate-fade-in">
+              {course.title}
+            </h1>
           </div>
-          <h1 className="text-3xl font-bold mb-4 text-center animate-fade-in">{course.title}</h1>
           <motion.div
             className="aspect-video mb-4"
             initial={{ scale: 0.95, opacity: 0 }}
@@ -86,14 +96,24 @@ export default function StudentCourseDetail() {
               <motion.button
                 whileHover={{ scale: 1.07 }}
                 whileTap={{ scale: 0.97 }}
-                className="bg-green-600 text-white px-6 py-3 rounded-xl font-bold text-lg hover:bg-green-700 shadow-lg transition-all duration-300"
+                className="bg-gradient-to-r from-green-600 to-blue-400 text-white px-6 py-3 rounded-xl font-bold text-lg hover:from-blue-700 hover:to-green-500 shadow-lg transition-all duration-300"
                 onClick={() => setShowIntro(false)}
               >
                 Comenzar lecciones
               </motion.button>
             </div>
           ) : (
-            <div className="text-center text-gray-500 mt-8">Este curso aún no tiene lecciones disponibles.</div>
+            <motion.div
+              className="flex flex-col items-center justify-center mt-8 p-6 bg-gradient-to-br from-blue-50 via-green-50 to-yellow-50 rounded-xl shadow-lg border border-blue-100"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2 }}
+            >
+              <img src={logo2} alt="Logo TUMI" className="w-20 h-20 mb-2 animate-pulse" />
+              <h2 className="text-xl font-bold text-blue-700 mb-2">¡Próximamente lecciones!</h2>
+              <p className="text-gray-600 text-center mb-2">Este curso aún no tiene lecciones disponibles.<br/>Vuelve pronto para comenzar a aprender con TUMI.</p>
+              <span className="text-yellow-500 font-bold animate-bounce">🚀</span>
+            </motion.div>
           )}
         </motion.div>
       </AnimatePresence>

@@ -4,6 +4,7 @@ import { AuthContext } from '../context/AuthContext';
 import api from '../services/api';
 import { PieChart, Pie, Cell, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend } from 'recharts';
 import { motion, AnimatePresence } from 'framer-motion';
+import logo3 from '../assets/logo3zeus.png';
 
 const COLORS = ['#00C49F', '#FF8042'];
 
@@ -103,19 +104,24 @@ export default function StudentStatistics() {
         transition={{ duration: 0.5, type: 'spring' }}
         className="max-w-2xl mx-auto p-6 bg-white rounded-xl shadow animate-fade-in"
       >
-        <div className="mb-4">
-          <button className="text-blue-600 underline" onClick={() => navigate(-1)}>
-            ← Volver a las lecciones
-          </button>
+        <div className="flex flex-col items-center mb-4">
+          <motion.img
+            src={logo3}
+            alt="Logo decorativo"
+            className="w-16 h-16 mb-2 animate-bounce"
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.1 }}
+          />
+          <motion.h2
+            className="text-2xl font-bold mb-4 bg-gradient-to-r from-yellow-500 via-blue-400 to-green-400 bg-clip-text text-transparent drop-shadow"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            Estadísticas del Estudiante
+          </motion.h2>
         </div>
-        <motion.h2
-          className="text-2xl font-bold mb-4"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-        >
-          Estadísticas del Estudiante
-        </motion.h2>
         {/* Resumen matemático y gráfico de pastel mejorado */}
         <motion.div
           className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-6 items-center"
