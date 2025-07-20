@@ -14,6 +14,7 @@ export default function StudentCourseDetail() {
   const [currentLessonIdx, setCurrentLessonIdx] = useState(0);
   const [videoWatched, setVideoWatched] = useState(false);
   const [progressMsg, setProgressMsg] = useState('');
+  const [showIntro, setShowIntro] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -40,6 +41,43 @@ export default function StudentCourseDetail() {
   if (loading) return <div className="p-4">Cargando curso...</div>;
   if (error) return <div className="p-4 text-red-600">{error}</div>;
   if (!course || lessons.length === 0) return <div className="p-4">Curso no encontrado o sin lecciones.</div>;
+
+  // Pantalla introductoria
+  if (showIntro) {
+    return (
+      <div className="p-6 max-w-2xl mx-auto">
+        <div className="flex justify-between mb-4">
+          <button className="text-blue-600 underline" onClick={() => navigate(-1)}>← Volver</button>
+        </div>
+        <h1 className="text-3xl font-bold mb-4 text-center">{course.title}</h1>
+        <div className="aspect-video mb-4">
+          {course.videoUrl ? (
+            <iframe
+              src={course.videoUrl}
+              title={course.title}
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              className="w-full h-full rounded"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-gray-200 rounded text-gray-500">
+              Sin video principal
+            </div>
+          )}
+        </div>
+        <p className="mb-8 text-lg text-center text-gray-700">{course.description}</p>
+        <div className="flex justify-center mt-6">
+          <button
+            className="bg-green-600 text-white px-6 py-3 rounded-xl font-bold text-lg hover:bg-green-700 shadow-lg"
+            onClick={() => setShowIntro(false)}
+          >
+            Comenzar lecciones
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const lesson = lessons[currentLessonIdx];
 

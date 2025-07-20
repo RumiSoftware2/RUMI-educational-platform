@@ -15,7 +15,7 @@ exports.getThread = async (req, res) => {
 
 exports.addMessage = async (req, res) => {
   const { courseId, studentId } = req.params;
-  const { text } = req.body;
+  const { text, lessonOrder } = req.body;
   const sender = req.user.role;
   if (!text) return res.status(400).json({ error: 'Mensaje vacío' });
 
@@ -24,7 +24,7 @@ exports.addMessage = async (req, res) => {
     if (!thread) {
       thread = await FeedbackThread.create({ course: courseId, student: studentId, messages: [] });
     }
-    thread.messages.push({ sender, text });
+    thread.messages.push({ sender, text, lessonOrder });
     await thread.save();
     res.json(thread.messages);
   } catch (err) {

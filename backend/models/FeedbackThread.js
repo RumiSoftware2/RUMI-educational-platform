@@ -3,7 +3,8 @@ const mongoose = require('mongoose');
 const messageSchema = new mongoose.Schema({
   sender: { type: String, enum: ['docente', 'estudiante'], required: true },
   text: { type: String, required: true },
-  date: { type: Date, default: Date.now }
+  date: { type: Date, default: Date.now },
+  lessonOrder: { type: Number, default: null } // Nueva propiedad para identificar la lección
 });
 
 const feedbackThreadSchema = new mongoose.Schema({

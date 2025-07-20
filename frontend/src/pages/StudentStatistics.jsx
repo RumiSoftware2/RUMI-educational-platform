@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import api from '../services/api';
 
 export default function StudentStatistics() {
   // id = courseId, studentId = id del estudiante
-  const { id: courseId, studentId } = useParams();
+  const { id: courseId, studentId, lessonOrder } = useParams();
   const { user } = useContext(AuthContext);
   const [progress, setProgress] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -13,6 +13,8 @@ export default function StudentStatistics() {
   const [chat, setChat] = useState([]); // Mensajes de feedback/chat
   const [newMessage, setNewMessage] = useState('');
   const [sending, setSending] = useState(false);
+  const [currentLessonOrder, setCurrentLessonOrder] = useState(null); // Para enviar la lección si se desea
+  const navigate = useNavigate();
 
   // Obtener progreso y chat reales del backend
   useEffect(() => {
@@ -41,7 +43,10 @@ export default function StudentStatistics() {
     if (!newMessage.trim()) return;
     setSending(true);
     try {
-      const res = await api.post(`/feedback/course/${courseId}/student/${studentId}`, { text: newMessage });
+      const res = await api.post(`/feedback/course/${courseId}/student/${studentId}`, {
+        text: newMessage,
+        lessonOrder: currentLessonOrder // Puede ser null si no se selecciona
+      });
       setChat(res.data); // Actualiza el chat con la respuesta del backend
       setNewMessage('');
     } catch (err) {
@@ -56,6 +61,11 @@ export default function StudentStatistics() {
 
   return (
     <div className="max-w-2xl mx-auto p-6 bg-white rounded-xl shadow">
+      <div className="mb-4">
+        <button className="text-blue-600 underline" onClick={() => navigate(-1)}>
+          ← Volver a las lecciones
+        </button>
+      </div>
       <h2 className="text-2xl font-bold mb-4">Estadísticas del Estudiante</h2>
       {/* Progreso y resultados */}
       <div className="mb-6">
@@ -77,12 +87,18 @@ export default function StudentStatistics() {
             chat.map((msg, idx) => (
               <div key={idx} className={`mb-2 ${msg.sender === user.role ? 'text-right' : 'text-left'}`}>
                 <span className="font-bold text-blue-700">{msg.sender === 'docente' ? 'Docente' : 'Estudiante'}:</span> {msg.text}
-                <div className="text-xs text-gray-400">{msg.date ? new Date(msg.date).toLocaleString() : ''}</div>
+                <div className="text-xs text-gray-400">
+                  {msg.date ? new Date(msg.date).toLocaleString() : ''}
+                  {msg.lessonOrder !== null && msg.lessonOrder !== undefined && (
+                    <span> | Lección: {msg.lessonOrder}</span>
+                  )}
+                </div>
               </div>
             ))
           )}
         </div>
-        <form onSubmit={handleSendMessage} className="flex gap-2">
+        {/* Selector de lección opcional para el mensaje */}
+        <form onSubmit={handleSendMessage} className="flex gap-2 items-center">
           <input
             type="text"
             value={newMessage}
@@ -91,6 +107,18 @@ export default function StudentStatistics() {
             placeholder="Escribe un mensaje..."
             disabled={sending}
           />
+          <select
+            className="border rounded p-2 text-sm"
+            value={currentLessonOrder || ''}
+            onChange={e => setCurrentLessonOrder(e.target.value ? Number(e.target.value) : null)}
+          >
+            <option value="">Lección...</option>
+            {progress && progress.completedLessons && progress.completedLessons.length > 0 &&
+              progress.completedLessons.map((order, idx) => (
+                <option key={idx} value={order}>Lección {order}</option>
+              ))
+            }
+          </select>
           <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded" disabled={sending}>
             {sending ? 'Enviando...' : 'Enviar'}
           </button>
