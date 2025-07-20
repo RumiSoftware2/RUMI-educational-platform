@@ -24,6 +24,8 @@ import CourseStatistics from './pages/CourseStatistics';
 import AppLayout from './components/AppLayout';
 import CourseDetail from './pages/CourseDetail';
 import ScrollToTop from './components/ScrollToTop';
+import StudentStatistics from './pages/StudentStatistics';
+import StudentCourseDetail from './pages/StudentCourseDetail';
 
 
 function App() {
@@ -136,10 +138,26 @@ function App() {
             }
           />
           <Route
+            path="/courses/:id/students/:studentId/statistics"
+            element={
+              <ProtectedRoute requiredRoles={['docente', 'estudiante']}>
+                <StudentStatistics />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/courses/:id"
             element={
               <ProtectedRoute requiredRoles={['docente', 'admin']}>
                 <CourseDetail />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/course/:id"
+            element={
+              <ProtectedRoute requiredRoles={['estudiante']}>
+                <StudentCourseDetail />
               </ProtectedRoute>
             }
           />

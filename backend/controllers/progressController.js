@@ -42,6 +42,18 @@ exports.getAllProgress = async (req, res) => {
   }
 };
 
+// Obtener progreso de un estudiante específico en un curso
+exports.getStudentProgressInCourse = async (req, res) => {
+  const { courseId, studentId } = req.params;
+  try {
+    const progress = await Progress.findOne({ course: courseId, user: studentId });
+    if (!progress) return res.status(404).json({ error: 'No hay progreso registrado' });
+    res.json(progress);
+  } catch (err) {
+    res.status(500).json({ error: 'Error al obtener progreso individual' });
+  }
+};
+
 // Guardar progreso de una lección (quiz o visualización)
 exports.saveLessonProgress = async (req, res) => {
   try {

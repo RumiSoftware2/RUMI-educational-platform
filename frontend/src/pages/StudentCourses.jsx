@@ -91,7 +91,7 @@ export default function StudentCourses() {
                 <div className="flex gap-3 mt-4 md:mt-0">
                   <button
                     className="bg-gradient-to-r from-blue-600 to-emerald-500 text-white px-5 py-2 rounded-xl font-bold hover:from-blue-700 hover:to-emerald-600 transform hover:scale-105 transition-all duration-300 shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-200"
-                    onClick={() => navigate(`/courses/${course._id}`)}
+                    onClick={() => navigate(`/student/course/${course._id}`)}
                   >
                     Abrir
                   </button>

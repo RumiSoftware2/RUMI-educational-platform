@@ -5,6 +5,7 @@ const cors = require('cors'); // 👈 AÑADE ESTO
 const connectDB = require('./config/db');
 const cron = require('node-cron');
 const User = require('./models/User');
+const feedbackRoutes = require('./routes/feedbackRoutes');
 
 // 2. Configuramos dotenv
 dotenv.config();
@@ -37,6 +38,7 @@ app.use('/api/courses', require('./routes/courseRoutes'));
 app.use('/api/quizzes', require('./routes/quizRoutes'));
 app.use('/api/progress', require('./routes/progressRoutes'));
 app.use('/api/grades', require('./routes/gradeRoutes'));
+app.use('/api/feedback', feedbackRoutes);
 
 // Cleanup diario a las 2:00 AM UTC
 // cron.schedule('0 2 * * *', async () => {
