@@ -17,6 +17,13 @@ export default function LessonQuiz({ quizId, courseId, lessonOrder, onComplete }
     api.get(`/quizzes/${quizId}`).then(res => setQuiz(res.data));
   }, [quizId]);
 
+  // Reiniciar estado al cambiar de lección o quiz
+  useEffect(() => {
+    setAnswers({});
+    setScore(null);
+    setFeedback('');
+  }, [quizId, lessonOrder, courseId]);
+
   const handleChange = (qIdx, value) => {
     setAnswers({ ...answers, [qIdx]: value });
   };
