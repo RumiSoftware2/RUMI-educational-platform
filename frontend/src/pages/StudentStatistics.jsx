@@ -2,6 +2,9 @@ import React, { useEffect, useState, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import api from '../services/api';
+import { PieChart, Pie, Cell, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend } from 'recharts';
+
+const COLORS = ['#00C49F', '#FF8042'];
 
 export default function StudentStatistics() {
   // id = courseId, studentId = id del estudiante
@@ -14,9 +17,10 @@ export default function StudentStatistics() {
   const [newMessage, setNewMessage] = useState('');
   const [sending, setSending] = useState(false);
   const [currentLessonOrder, setCurrentLessonOrder] = useState(null); // Para enviar la lección si se desea
+  const [courseInfo, setCourseInfo] = useState(null); // Para saber total de lecciones
   const navigate = useNavigate();
 
-  // Obtener progreso y chat reales del backend
+  // Obtener progreso, info de curso y chat reales del backend
   useEffect(() => {
     async function fetchData() {
       setLoading(true);
@@ -25,6 +29,9 @@ export default function StudentStatistics() {
         // Progreso individual
         const progressRes = await api.get(`/progress/course/${courseId}/student/${studentId}`);
         setProgress(progressRes.data);
+        // Info de curso (para total de lecciones)
+        const courseRes = await api.get(`/courses/${courseId}`);
+        setCourseInfo(courseRes.data);
         // Chat/feedback
         const chatRes = await api.get(`/feedback/course/${courseId}/student/${studentId}`);
         setChat(chatRes.data);
@@ -56,6 +63,32 @@ export default function StudentStatistics() {
     }
   };
 
+  // Preparar datos para gráficos
+  let totalLessons = courseInfo?.lessons?.length || 0;
+  let completedLessons = progress?.completedLessons?.length || 0;
+  let percentComplete = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+  let pieData = [
+    { name: 'Completadas', value: completedLessons },
+    { name: 'Pendientes', value: Math.max(totalLessons - completedLessons, 0) }
+  ];
+  // Quiz scores por lección
+  let quizBarData = [];
+  if (progress?.quizScores && courseInfo?.lessons) {
+    quizBarData = courseInfo.lessons.map((lesson, idx) => {
+      // Buscar score por quizId o por lesson-#
+      let score = null;
+      if (lesson.quiz && progress.quizScores[lesson.quiz]) {
+        score = progress.quizScores[lesson.quiz];
+      } else if (progress.quizScores[`lesson-${lesson.order}`]) {
+        score = progress.quizScores[`lesson-${lesson.order}`];
+      }
+      return {
+        name: `Lección ${lesson.order}`,
+        score: score !== null && score !== undefined ? score : 0
+      };
+    });
+  }
+
   if (loading) return <div className="p-4">Cargando estadísticas...</div>;
   if (error) return <div className="p-4 text-red-600">{error}</div>;
 
@@ -67,14 +100,50 @@ export default function StudentStatistics() {
         </button>
       </div>
       <h2 className="text-2xl font-bold mb-4">Estadísticas del Estudiante</h2>
-      {/* Progreso y resultados */}
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold mb-2">Progreso y Resultados</h3>
-        {/* Mostrar progreso real */}
-        {progress ? (
-          <pre className="bg-gray-100 rounded p-2 text-sm">{JSON.stringify(progress, null, 2)}</pre>
+      {/* Resumen matemático */}
+      <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+        <div>
+          <div className="mb-2 font-semibold">Curso: <span className="font-normal">{courseInfo?.title}</span></div>
+          <div>Total de lecciones: <b>{totalLessons}</b></div>
+          <div>Lecciones completadas: <b>{completedLessons}</b></div>
+          <div>Porcentaje de avance: <b>{percentComplete}%</b></div>
+        </div>
+        <div>
+          <PieChart width={180} height={180}>
+            <Pie
+              data={pieData}
+              dataKey="value"
+              nameKey="name"
+              cx="50%"
+              cy="50%"
+              outerRadius={60}
+              label={({ name, value }) => `${name}: ${value}`}
+            >
+              {pieData.map((entry, idx) => (
+                <Cell key={`cell-${idx}`} fill={COLORS[idx % COLORS.length]} />
+              ))}
+            </Pie>
+            <Tooltip />
+            <Legend />
+          </PieChart>
+        </div>
+      </div>
+      {/* Gráfico de barras de quizzes */}
+      <div className="mb-8">
+        <h3 className="text-lg font-semibold mb-2">Resultados de Quizzes</h3>
+        {quizBarData.length > 0 ? (
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart data={quizBarData} margin={{ top: 10, right: 20, left: 0, bottom: 10 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis domain={[0, 100]} />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="score" fill="#8884d8" name="Puntaje" />
+            </BarChart>
+          </ResponsiveContainer>
         ) : (
-          <div className="text-gray-400">No hay progreso registrado.</div>
+          <div className="text-gray-400">No hay resultados de quizzes aún.</div>
         )}
       </div>
       {/* Chat/Feedback */}
@@ -113,9 +182,9 @@ export default function StudentStatistics() {
             onChange={e => setCurrentLessonOrder(e.target.value ? Number(e.target.value) : null)}
           >
             <option value="">Lección...</option>
-            {progress && progress.completedLessons && progress.completedLessons.length > 0 &&
-              progress.completedLessons.map((order, idx) => (
-                <option key={idx} value={order}>Lección {order}</option>
+            {courseInfo && courseInfo.lessons && courseInfo.lessons.length > 0 &&
+              courseInfo.lessons.map((lesson, idx) => (
+                <option key={idx} value={lesson.order}>Lección {lesson.order}</option>
               ))
             }
           </select>
