@@ -179,52 +179,85 @@ exports.login = async (req, res) => {
   }
 };
 
-// Solicitar recuperación de contraseña
+// Solicitar recuperación de contraseña con código
 exports.forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
+
+    // Validar formato de email
+    if (!validator.isEmail(email)) {
+      return res.status(400).json({ message: 'Correo electrónico inválido' });
+    }
 
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(404).json({ message: 'Usuario no encontrado' });
     }
 
-    // Generar token de recuperación
-    const resetToken = crypto.randomBytes(32).toString('hex');
-    const resetExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
+    // Generar código de recuperación (6 dígitos)
+    const code = generateVerificationCode();
+    const codeExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutos
 
-    user.passwordResetToken = resetToken;
-    user.passwordResetExpires = resetExpires;
+    user.passwordResetCode = code;
+    user.passwordResetCodeExpires = codeExpires;
     await user.save();
 
-    // Enviar email de recuperación
-    await sendPasswordResetEmail(email, resetToken);
+    // Enviar email con el código
+    await sendVerificationEmail(email, code);
 
-    res.status(200).json({ message: 'Email de recuperación enviado' });
+    res.status(200).json({ message: 'Código de recuperación enviado al email' });
   } catch (error) {
     res.status(500).json({ message: 'Error al procesar solicitud', error });
   }
 };
 
-// Resetear contraseña
+// Verificar código de recuperación de contraseña
+exports.verifyPasswordResetCode = async (req, res) => {
+  try {
+    const { email, code } = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+
+    if (!user.passwordResetCode || user.passwordResetCode !== code) {
+      return res.status(400).json({ message: 'Código incorrecto' });
+    }
+
+    if (user.passwordResetCodeExpires < new Date()) {
+      return res.status(400).json({ message: 'El código ha expirado' });
+    }
+
+    res.status(200).json({ message: 'Código válido' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error al verificar código', error });
+  }
+};
+
+// Resetear contraseña usando código
 exports.resetPassword = async (req, res) => {
   try {
-    const { token, newPassword } = req.body;
+    const { email, code, newPassword } = req.body;
 
-    const user = await User.findOne({
-      passwordResetToken: token,
-      passwordResetExpires: { $gt: new Date() }
-    });
-
+    const user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ message: 'Token inválido o expirado' });
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+
+    if (!user.passwordResetCode || user.passwordResetCode !== code) {
+      return res.status(400).json({ message: 'Código incorrecto' });
+    }
+
+    if (user.passwordResetCodeExpires < new Date()) {
+      return res.status(400).json({ message: 'El código ha expirado' });
     }
 
     // Encriptar nueva contraseña
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     user.password = hashedPassword;
-    user.passwordResetToken = null;
-    user.passwordResetExpires = null;
+    user.passwordResetCode = null;
+    user.passwordResetCodeExpires = null;
     await user.save();
 
     res.status(200).json({ message: 'Contraseña actualizada exitosamente' });

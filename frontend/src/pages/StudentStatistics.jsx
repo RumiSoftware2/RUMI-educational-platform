@@ -100,7 +100,7 @@ export default function StudentStatistics() {
         </button>
       </div>
       <h2 className="text-2xl font-bold mb-4">Estadísticas del Estudiante</h2>
-      {/* Resumen matemático */}
+      {/* Resumen matemático y gráfico de pastel mejorado */}
       <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
         <div>
           <div className="mb-2 font-semibold">Curso: <span className="font-normal">{courseInfo?.title}</span></div>
@@ -108,24 +108,28 @@ export default function StudentStatistics() {
           <div>Lecciones completadas: <b>{completedLessons}</b></div>
           <div>Porcentaje de avance: <b>{percentComplete}%</b></div>
         </div>
-        <div>
-          <PieChart width={180} height={180}>
+        <div className="flex flex-col items-center">
+          <PieChart width={220} height={220}>
             <Pie
               data={pieData}
               dataKey="value"
               nameKey="name"
               cx="50%"
               cy="50%"
-              outerRadius={60}
+              outerRadius={80}
               label={({ name, value }) => `${name}: ${value}`}
+              labelLine={true}
             >
               {pieData.map((entry, idx) => (
                 <Cell key={`cell-${idx}`} fill={COLORS[idx % COLORS.length]} />
               ))}
             </Pie>
             <Tooltip />
-            <Legend />
           </PieChart>
+          <div className="mt-2 flex gap-4 text-sm">
+            <div className="flex items-center gap-1"><span style={{background: COLORS[0], width: 14, height: 14, display: 'inline-block', borderRadius: 3}}></span> Completadas</div>
+            <div className="flex items-center gap-1"><span style={{background: COLORS[1], width: 14, height: 14, display: 'inline-block', borderRadius: 3}}></span> Pendientes</div>
+          </div>
         </div>
       </div>
       {/* Gráfico de barras de quizzes */}

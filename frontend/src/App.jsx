@@ -26,6 +26,7 @@ import CourseDetail from './pages/CourseDetail';
 import ScrollToTop from './components/ScrollToTop';
 import StudentStatistics from './pages/StudentStatistics';
 import StudentCourseDetail from './pages/StudentCourseDetail';
+import VerifyResetCode from './pages/VerifyResetCode';
 
 
 function App() {
@@ -39,6 +40,7 @@ function App() {
           <Route path="/verify-email" element={<EmailVerification />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/verify-reset-code" element={<VerifyResetCode />} />
           <Route path="/" element={<Home />} />
           <Route path="/person-rumi" element={<PersonRumi />} />
           <Route path="/enterprise-rumi" element={<EnterpriseRumi />} />

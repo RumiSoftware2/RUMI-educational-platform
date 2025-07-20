@@ -7,7 +7,8 @@ const {
   resendVerificationCode,
   forgotPassword,
   resetPassword,
-  changePassword
+  changePassword,
+  verifyPasswordResetCode
 } = require('../controllers/authController');
 const authMiddleware = require('../middleware/authMiddleware');
 
@@ -24,6 +25,7 @@ router.post('/resend-verification', resendVerificationCode);
 // Rutas para recuperación de contraseña
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password', resetPassword);
+router.post('/verify-reset-code', verifyPasswordResetCode);
 
 // Ruta para cambiar contraseña (requiere autenticación)
 router.post('/change-password', authMiddleware, changePassword);

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import logo from '../assets/logo3zeus.png';
 
@@ -9,10 +9,21 @@ const ForgotPassword = () => {
   const [message, setMessage] = useState('');
   const [emailSent, setEmailSent] = useState(false);
 
+  const navigate = useNavigate();
+
+  const emailRegex = /^[\w-.]+@[\w-]+\.[a-zA-Z]{2,}$/;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setMessage('');
+
+    // Validar formato de email antes de enviar
+    if (!emailRegex.test(email)) {
+      setMessage('❌ Ingresa un correo electrónico válido');
+      setLoading(false);
+      return;
+    }
 
     try {
       await api.post('/auth/forgot-password', { email });
@@ -46,12 +57,12 @@ const ForgotPassword = () => {
                 className="w-20 h-20 mx-auto mb-4 object-contain rounded-xl shadow-lg"
               />
               <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                {emailSent ? 'Email Enviado' : '¿Olvidaste tu contraseña?'}
+                {emailSent ? 'Código Enviado' : '¿Olvidaste tu contraseña?'}
               </h2>
               <p className="text-gray-600">
                 {emailSent 
-                  ? 'Revisa tu email para continuar con la recuperación'
-                  : 'Ingresa tu email y te enviaremos un enlace para recuperar tu contraseña'
+                  ? 'Revisa tu email y copia el código de recuperación para continuar.'
+                  : 'Ingresa tu email y te enviaremos un código para recuperar tu contraseña.'
                 }
               </p>
               {emailSent && (
@@ -104,11 +115,16 @@ const ForgotPassword = () => {
                   <ol className="text-blue-700 text-sm space-y-1">
                     <li>1. Revisa tu bandeja de entrada</li>
                     <li>2. Busca el email de "Recupera tu contraseña - RUMI"</li>
-                    <li>3. Haz clic en el enlace del email</li>
-                    <li>4. Crea una nueva contraseña</li>
+                    <li>3. Copia el código de recuperación</li>
+                    <li>4. Haz clic en el botón de abajo para ingresar el código</li>
                   </ol>
                 </div>
-
+                <button
+                  onClick={() => navigate('/verify-reset-code')}
+                  className="w-full bg-yellow-600 text-white py-3 rounded-xl font-semibold hover:bg-yellow-700 transition-all duration-300"
+                >
+                  Ingresar Código de Recuperación
+                </button>
                 <button
                   onClick={() => setEmailSent(false)}
                   className="w-full bg-gray-600 text-white py-3 rounded-xl font-semibold hover:bg-gray-700 transition-all duration-300"
@@ -119,9 +135,12 @@ const ForgotPassword = () => {
             )}
 
             <div className="mt-6 text-center">
-              <Link to="/login" className="text-blue-600 hover:text-blue-800 font-semibold transition-colors duration-300">
-                ← Volver al login
-              </Link>
+              <button
+                onClick={() => navigate('/verify-reset-code')}
+                className="text-blue-600 hover:text-blue-800 font-semibold transition-colors duration-300"
+              >
+                ¿Ya tienes un código? Ingresa aquí
+              </button>
             </div>
           </div>
         </div>
