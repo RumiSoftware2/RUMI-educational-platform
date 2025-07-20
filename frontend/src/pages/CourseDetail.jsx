@@ -250,9 +250,6 @@ export default function CourseDetail() {
   // Vista de estudiante para una lección
   if (showStudentView !== null && lessons[showStudentView]) {
     const lesson = lessons[showStudentView];
-    // Elimina los hooks de aquí, ya están arriba
-    // const [videoWatched, setVideoWatched] = useState(false);
-    // const [progressMsg, setProgressMsg] = useState('');
     // Handler para guardar progreso por visualización
     const handleVideoEnded = async () => {
       try {
@@ -264,9 +261,43 @@ export default function CourseDetail() {
       }
     };
 
+    // Navegación entre lecciones
+    const handlePrevLesson = () => {
+      if (showStudentView > 0) {
+        setShowStudentView(showStudentView - 1);
+        setProgressMsg('');
+        setVideoWatched(false);
+      }
+    };
+    const handleNextLesson = () => {
+      if (showStudentView < lessons.length - 1) {
+        setShowStudentView(showStudentView + 1);
+        setProgressMsg('');
+        setVideoWatched(false);
+      }
+    };
+
     return (
       <div className="p-6 max-w-2xl mx-auto">
-        <button className="mb-4 text-blue-600 underline" onClick={handleCloseStudentView}>← Volver</button>
+        <div className="flex justify-between mb-4">
+          <button className="text-blue-600 underline" onClick={handleCloseStudentView}>← Volver</button>
+          <div className="flex gap-2">
+            <button
+              className={`px-3 py-1 rounded font-bold ${showStudentView === 0 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-green-600 text-white hover:bg-green-700'}`}
+              onClick={handlePrevLesson}
+              disabled={showStudentView === 0}
+            >
+              ← Lección anterior
+            </button>
+            <button
+              className={`px-3 py-1 rounded font-bold ${showStudentView === lessons.length - 1 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-green-600 text-white hover:bg-green-700'}`}
+              onClick={handleNextLesson}
+              disabled={showStudentView === lessons.length - 1}
+            >
+              Siguiente lección →
+            </button>
+          </div>
+        </div>
         <h2 className="text-2xl font-bold mb-2">{lesson.title}</h2>
         <div className="aspect-video mb-4">
           <iframe
@@ -276,21 +307,23 @@ export default function CourseDetail() {
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
             className="w-full h-full rounded"
-            onLoad={() => {
-              // Aquí podrías integrar lógica para detectar porcentaje visto usando la API de YouTube
-            }}
+            onLoad={() => {}}
             onEnded={handleVideoEnded}
           />
         </div>
         <p className="mb-4 text-gray-700">{lesson.description}</p>
         {progressMsg && <div className="mb-4 text-green-700 font-semibold text-center">{progressMsg}</div>}
         <div className="mt-6 p-4 border rounded bg-gray-50 text-gray-500 text-center">
-          {/* Siempre renderizar LessonQuiz, dejar que el propio componente decida si hay quiz o no */}
           <LessonQuiz
             quizId={lesson.quiz}
             courseId={id}
             lessonOrder={lesson.order}
-            onComplete={(score) => setProgressMsg(`¡Progreso guardado! Puntuación: ${score}`)}
+            onComplete={(score) => {
+              setProgressMsg(`¡Progreso guardado! Puntuación: ${score}`);
+              setVideoWatched(true);
+              // Guardar progreso actualizado
+              saveLessonProgress(id, lesson.order, { score, completed: true });
+            }}
           />
           {!lesson.quiz && videoWatched && <span>¡Has completado la lección!</span>}
         </div>
