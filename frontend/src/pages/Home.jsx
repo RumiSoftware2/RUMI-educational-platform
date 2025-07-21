@@ -153,90 +153,33 @@ export default function Home() {
           </div>
         </motion.div>
 
-        {/* Cards */}
-        <div className="flex flex-col md:flex-row gap-8 md:gap-6 w-full md:w-auto">
-          {/* RUMI Personal */}
-          <motion.div
-            className="flex-1 bg-white/80 backdrop-blur-lg rounded-3xl shadow-xl border-2 border-[#2ca6e0]/20 p-6 flex flex-col items-center hover:scale-105 hover:shadow-2xl transition-all duration-300"
-            initial="hidden"
-            animate="visible"
-            variants={fadeInUp}
-            transition={{ delay: 0.1 }}
+        {/* Card solo de RUMI Personal */}
+        <motion.div
+          className="flex-1 bg-white/80 backdrop-blur-lg rounded-3xl shadow-xl border-2 border-[#2ca6e0]/20 p-6 flex flex-col items-center hover:scale-105 hover:shadow-2xl transition-all duration-300 max-w-md w-full mt-8 md:mt-0"
+          initial="hidden"
+          animate="visible"
+          variants={fadeInUp}
+          transition={{ delay: 0.1 }}
+        >
+          <div className="w-16 h-16 bg-gradient-to-br from-[#2ca6e0] to-[#ffd700] rounded-full flex items-center justify-center mb-4 shadow-lg">
+            <span className="text-3xl">👤</span>
+          </div>
+          <h3 className="text-2xl font-bold text-[#0a2342] mb-2">RUMI Personal</h3>
+          <ul className="text-gray-700 text-base space-y-1 mb-4">
+            <li>✓ Cursos de YouTube con quizzes</li>
+            <li>✓ Seguimiento de progreso</li>
+            <li>✓ Juegos educativos</li>
+            <li>✓ Comunidad de aprendizaje</li>
+            <li>✓ Gratis para uso básico</li>
+          </ul>
+          <Link
+            to="/person-rumi"
+            className="bg-gradient-to-r from-[#2ca6e0] to-[#ffd700] text-[#0a2342] px-6 py-2 rounded-xl font-bold text-base hover:from-[#0a2342] hover:to-[#ffd700] hover:text-white transition-all duration-300 shadow-md"
           >
-            <div className="w-16 h-16 bg-gradient-to-br from-[#2ca6e0] to-[#ffd700] rounded-full flex items-center justify-center mb-4 shadow-lg">
-              <span className="text-3xl">👤</span>
-            </div>
-            <h3 className="text-2xl font-bold text-[#0a2342] mb-2">RUMI Personal</h3>
-            <ul className="text-gray-700 text-base space-y-1 mb-4">
-              <li>✓ Cursos de YouTube con quizzes</li>
-              <li>✓ Seguimiento de progreso</li>
-              <li>✓ Juegos educativos</li>
-              <li>✓ Comunidad de aprendizaje</li>
-              <li>✓ Gratis para uso básico</li>
-            </ul>
-            <Link
-              to="/person-rumi"
-              className="bg-gradient-to-r from-[#2ca6e0] to-[#ffd700] text-[#0a2342] px-6 py-2 rounded-xl font-bold text-base hover:from-[#0a2342] hover:to-[#ffd700] hover:text-white transition-all duration-300 shadow-md"
-            >
-              Explorar RUMI Personal
-            </Link>
-          </motion.div>
-
-          {/* RUMI Enterprise */}
-          <motion.div
-            className="flex-1 bg-white/80 backdrop-blur-lg rounded-3xl shadow-xl border-2 border-[#ffd700]/20 p-6 flex flex-col items-center hover:scale-105 hover:shadow-2xl transition-all duration-300"
-            initial="hidden"
-            animate="visible"
-            variants={fadeInUp}
-            transition={{ delay: 0.2 }}
-          >
-            <div className="w-16 h-16 bg-gradient-to-br from-[#ffd700] to-[#2ca6e0] rounded-full flex items-center justify-center mb-4 shadow-lg">
-              <span className="text-3xl">🏢</span>
-            </div>
-            <h3 className="text-2xl font-bold text-[#0a2342] mb-2">RUMI Enterprise</h3>
-            <ul className="text-gray-700 text-base space-y-1 mb-4">
-              <li>✓ IA pedagógica especializada</li>
-              <li>✓ Analytics avanzados</li>
-              <li>✓ Gestión multi-usuario</li>
-              <li>✓ Branding y personalización</li>
-              <li>✓ Soporte dedicado</li>
-            </ul>
-            <Link
-              to="/enterprise-rumi"
-              className="bg-gradient-to-r from-[#ffd700] to-[#2ca6e0] text-[#0a2342] px-6 py-2 rounded-xl font-bold text-base hover:from-[#0a2342] hover:to-[#ffd700] hover:text-white transition-all duration-300 shadow-md"
-            >
-              Explorar RUMI Enterprise
-            </Link>
-          </motion.div>
-        </div>
+            Explorar RUMI Personal
+          </Link>
+        </motion.div>
       </div>
-
-      {/* Comparación */}
-      <motion.div
-        className="mt-8 md:mt-0 max-w-4xl mx-auto w-full bg-white/90 rounded-3xl p-8 shadow-xl border border-[#2ca6e0]/10"
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.3 }}
-        variants={fadeIn}
-      >
-        <h3 className="text-xl md:text-2xl font-bold text-center text-[#0a2342] mb-6">
-          ¿No estás seguro? Compara las versiones
-        </h3>
-        <div className="grid md:grid-cols-2 gap-8">
-          <div className="text-center">
-            <h4 className="text-lg font-bold text-[#2ca6e0] mb-2">RUMI Personal</h4>
-            <p className="text-gray-600">
-              Ideal para estudiantes autodidactas, docentes que quieren compartir conocimiento, y personas que buscan una plataforma educativa simple y efectiva.
-            </p>
-          </div>
-          <div className="text-center">
-            <h4 className="text-lg font-bold text-[#ffd700] mb-2">RUMI Enterprise</h4>
-            <p className="text-gray-600">
-              Perfecto para universidades, colegios, empresas de capacitación y cualquier institución que necesite una solución educativa completa con IA y analytics avanzados.
-            </p>
-          </div>
-        </div>
-      </motion.div>
 
       {/* Contacto */}
       <motion.div

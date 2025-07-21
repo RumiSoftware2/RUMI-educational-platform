@@ -54,78 +54,81 @@ export default function StudentCourseDetail() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -40 }}
           transition={{ duration: 0.5, type: 'spring' }}
-          className="p-6 max-w-2xl mx-auto bg-white rounded-xl shadow-xl"
+          className="min-h-screen flex flex-col justify-center items-center bg-gradient-to-br from-[#0a2342] via-[#2ca6e0] to-[#ffd700] py-12 px-2 animate-fade-in"
         >
-          {/* Botón para volver a Mis Cursos */}
-          <div className="flex justify-start mb-4">
-            <button
-              onClick={() => navigate('/student/courses')}
-              className="bg-gradient-to-r from-blue-500 to-emerald-500 text-white px-5 py-2 rounded-xl font-bold shadow-lg hover:from-blue-600 hover:to-emerald-600 transition-all duration-300"
-            >
-              ← Volver a Mis Cursos
-            </button>
-          </div>
-          <div className="flex flex-col items-center mb-4">
-            <motion.img
-              src={logo2}
-              alt="Logo decorativo"
-              className="w-16 h-16 mb-2 animate-bounce"
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.1 }}
-            />
-            <h1 className="text-3xl font-bold mb-4 text-center bg-gradient-to-r from-green-700 via-blue-400 to-yellow-400 bg-clip-text text-transparent drop-shadow animate-fade-in">
-              {course.title}
-            </h1>
-          </div>
-          {/* Modern video container */}
-          <motion.div
-            className="aspect-video mb-4 flex items-center justify-center bg-gradient-to-br from-blue-100 via-green-100 to-yellow-100 rounded-3xl shadow-2xl border-4 border-transparent bg-clip-padding relative overflow-hidden"
-            style={{ boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.15)' }}
-            initial={{ scale: 0.95, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-          >
-            {course.videoUrl ? (
-              <iframe
-                src={course.videoUrl}
-                title={course.title}
-                style={{ border: 0 }}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                className="w-full h-full rounded-2xl shadow-lg"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gray-200 rounded text-gray-500">
-                Sin video principal
-              </div>
-            )}
-          </motion.div>
-          <p className="mb-8 text-lg text-center text-gray-700 animate-fade-in-slow">{course.description}</p>
-          {lessons.length > 0 ? (
-            <div className="flex justify-center mt-6">
-              <motion.button
-                whileHover={{ scale: 1.07 }}
-                whileTap={{ scale: 0.97 }}
-                className="bg-gradient-to-r from-green-600 to-blue-400 text-white px-6 py-3 rounded-xl font-bold text-lg hover:from-blue-700 hover:to-green-500 shadow-lg transition-all duration-300"
-                onClick={() => setShowIntro(false)}
+          <div className="max-w-3xl w-full bg-white/90 rounded-3xl shadow-2xl border border-[#2ca6e0]/20 p-6 md:p-12 flex flex-col items-center animate-fade-in">
+            {/* Botón para volver a Mis Cursos */}
+            <div className="flex justify-start mb-4 w-full">
+              <button
+                onClick={() => navigate('/student/courses')}
+                className="bg-gradient-to-r from-blue-500 to-emerald-500 text-white px-5 py-2 rounded-xl font-bold shadow-lg hover:from-blue-600 hover:to-emerald-600 transition-all duration-300"
               >
-                Comenzar lecciones
-              </motion.button>
+                ← Volver a Mis Cursos
+              </button>
             </div>
-          ) : (
+            <div className="flex flex-col items-center mb-4 w-full">
+              <motion.img
+                src={logo2}
+                alt="Logo decorativo"
+                className="w-16 h-16 mb-2 animate-bounce"
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: 0.1 }}
+              />
+              <h1 className="text-4xl md:text-5xl font-extrabold mb-2 text-center bg-gradient-to-r from-green-700 via-blue-400 to-yellow-400 bg-clip-text text-transparent drop-shadow animate-gradient-x animate-pulse" style={{ backgroundSize: '200% 200%' }}>
+                {course.title}
+              </h1>
+              <p className="text-lg md:text-xl text-center text-gray-700 mb-4 animate-fade-in-slow animate-pulse">Bienvenido a tu curso, explora el video introductorio y comienza a aprender.</p>
+            </div>
+            {/* Modern video container */}
             <motion.div
-              className="flex flex-col items-center justify-center mt-8 p-6 bg-gradient-to-br from-blue-50 via-green-50 to-yellow-50 rounded-xl shadow-lg border border-blue-100"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2 }}
+              className="aspect-video mb-4 flex items-center justify-center bg-gradient-to-br from-blue-100 via-green-100 to-yellow-100 rounded-3xl shadow-2xl border-4 border-transparent bg-clip-padding relative overflow-hidden"
+              style={{ boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.15)' }}
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.2, duration: 0.5 }}
             >
-              <img src={logo2} alt="Logo TUMI" className="w-20 h-20 mb-2 animate-pulse" />
-              <h2 className="text-xl font-bold text-blue-700 mb-2">¡Próximamente lecciones!</h2>
-              <p className="text-gray-600 text-center mb-2">Este curso aún no tiene lecciones disponibles.<br/>Vuelve pronto para comenzar a aprender con TUMI.</p>
-              <span className="text-yellow-500 font-bold animate-bounce">🚀</span>
+              {course.videoUrl ? (
+                <iframe
+                  src={course.videoUrl}
+                  title={course.title}
+                  style={{ border: 0 }}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="w-full h-full rounded-2xl shadow-lg"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-gray-200 rounded text-gray-500">
+                  Sin video principal
+                </div>
+              )}
             </motion.div>
-          )}
+            <p className="mb-8 text-lg text-center text-gray-700 animate-fade-in-slow">{course.description}</p>
+            {lessons.length > 0 ? (
+              <div className="flex justify-center mt-6">
+                <motion.button
+                  whileHover={{ scale: 1.07 }}
+                  whileTap={{ scale: 0.97 }}
+                  className="bg-gradient-to-r from-green-600 to-blue-400 text-white px-6 py-3 rounded-xl font-bold text-lg hover:from-blue-700 hover:to-green-500 shadow-lg transition-all duration-300"
+                  onClick={() => setShowIntro(false)}
+                >
+                  Comenzar lecciones
+                </motion.button>
+              </div>
+            ) : (
+              <motion.div
+                className="flex flex-col items-center justify-center mt-8 p-6 bg-gradient-to-br from-blue-50 via-green-50 to-yellow-50 rounded-xl shadow-lg border border-blue-100"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.2 }}
+              >
+                <img src={logo2} alt="Logo TUMI" className="w-20 h-20 mb-2 animate-pulse" />
+                <h2 className="text-xl font-bold text-blue-700 mb-2">¡Próximamente lecciones!</h2>
+                <p className="text-gray-600 text-center mb-2">Este curso aún no tiene lecciones disponibles.<br/>Vuelve pronto para comenzar a aprender con TUMI.</p>
+                <span className="text-yellow-500 font-bold animate-bounce">🚀</span>
+              </motion.div>
+            )}
+          </div>
         </motion.div>
       </AnimatePresence>
     );
@@ -161,7 +164,7 @@ export default function StudentCourseDetail() {
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-[#0a2342] via-[#2ca6e0] to-[#ffd700] flex flex-col py-8 px-2 animate-fade-in">
       {/* Botón para volver a Mis Cursos */}
-      <div className="flex justify-start mb-4 max-w-4xl mx-auto w-full">
+      <div className="flex justify-start mb-4 max-w-5xl mx-auto w-full">
         <button
           onClick={() => navigate('/student/courses')}
           className="bg-gradient-to-r from-blue-500 to-emerald-500 text-white px-5 py-2 rounded-xl font-bold shadow-lg hover:from-blue-600 hover:to-emerald-600 transition-all duration-300"
@@ -169,8 +172,8 @@ export default function StudentCourseDetail() {
           ← Volver a Mis Cursos
         </button>
       </div>
-      <div className="max-w-4xl mx-auto w-full bg-white/90 rounded-3xl shadow-2xl border border-[#2ca6e0]/20 p-4 md:p-8 flex flex-col gap-6 animate-fade-in">
-        <div className="flex flex-col md:flex-row md:items-start gap-6">
+      <div className="max-w-5xl mx-auto w-full bg-white/90 rounded-3xl shadow-2xl border border-[#2ca6e0]/20 p-4 md:p-12 flex flex-col gap-6 animate-fade-in">
+        <div className="flex flex-col md:flex-row md:items-start gap-8">
           {/* Video y descripción */}
           <div className="flex-1 flex flex-col gap-4">
             <motion.h2

@@ -95,14 +95,14 @@ export default function StudentStatistics() {
   if (error) return <div className="p-4 text-red-600">{error}</div>;
 
   return (
-    <AnimatePresence mode="wait">
+    <div className="min-h-screen w-full bg-gradient-to-br from-[#0a2342] via-[#2ca6e0] to-[#ffd700] flex flex-col py-8 px-2 animate-fade-in">
       <motion.div
         key={courseInfo?.title || 'stats'}
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -40 }}
         transition={{ duration: 0.5, type: 'spring' }}
-        className="max-w-2xl mx-auto p-4 md:p-6 bg-white rounded-xl shadow animate-fade-in overflow-x-auto"
+        className="max-w-2xl mx-auto p-4 md:p-8 bg-white/90 rounded-3xl shadow-2xl border border-[#2ca6e0]/20 animate-fade-in overflow-x-auto"
       >
         <div className="flex flex-col items-center mb-4">
           <motion.img
@@ -113,18 +113,18 @@ export default function StudentStatistics() {
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.1 }}
           />
-          <motion.h2
-            className="text-2xl font-bold mb-4 bg-gradient-to-r from-yellow-500 via-blue-400 to-green-400 bg-clip-text text-transparent drop-shadow"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-          >
-            Estadísticas del Estudiante
-          </motion.h2>
+         <motion.h2
+           className="text-3xl md:text-4xl font-extrabold mb-4 bg-gradient-to-r from-yellow-400 via-blue-400 to-green-400 bg-clip-text text-transparent drop-shadow animate-pulse"
+           initial={{ opacity: 0, y: 20 }}
+           animate={{ opacity: 1, y: 0 }}
+           transition={{ delay: 0.1 }}
+         >
+           Estadísticas de {user?.name || user?.username || user?.email || 'Estudiante'}
+         </motion.h2>
         </div>
         {/* Resumen matemático y gráfico de pastel mejorado */}
         <motion.div
-          className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-6 items-center"
+          className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-6 items-center bg-gradient-to-br from-blue-50 via-yellow-50 to-green-50 rounded-2xl shadow-lg border border-[#ffd700]/30 p-4"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
@@ -161,12 +161,12 @@ export default function StudentStatistics() {
         </motion.div>
         {/* Gráfico de barras de quizzes */}
         <motion.div
-          className="mb-8"
+          className="mb-8 bg-gradient-to-br from-blue-50 via-yellow-50 to-green-50 rounded-2xl shadow-lg border border-[#2ca6e0]/20 p-4"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <h3 className="text-lg font-semibold mb-2">Resultados de Quizzes</h3>
+          <h3 className="text-lg font-semibold mb-2 bg-gradient-to-r from-blue-400 via-yellow-400 to-green-400 bg-clip-text text-transparent drop-shadow animate-fade-in">Resultados de Quizzes</h3>
           {quizBarData.length > 0 ? (
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={quizBarData} margin={{ top: 10, right: 20, left: 0, bottom: 10 }}>
@@ -184,27 +184,36 @@ export default function StudentStatistics() {
         </motion.div>
         {/* Chat/Feedback */}
         <motion.div
-          className="mb-6"
+          className="mb-6 bg-gradient-to-br from-blue-50 via-yellow-50 to-green-50 rounded-2xl shadow-lg border border-[#2ca6e0]/20 p-4"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25 }}
         >
-          <h3 className="text-lg font-semibold mb-2">Feedback y Chat</h3>
-          <div className="bg-gray-50 rounded p-3 mb-2 max-h-60 overflow-y-auto border">
+          <h3 className="text-lg font-semibold mb-2 bg-gradient-to-r from-blue-400 via-yellow-400 to-green-400 bg-clip-text text-transparent drop-shadow animate-fade-in">Feedback y Chat</h3>
+          <div className="bg-white/80 rounded p-3 mb-2 max-h-60 overflow-y-auto border border-[#ffd700]/30">
             {chat.length === 0 ? (
               <div className="text-gray-400 text-center">No hay mensajes aún.</div>
             ) : (
-              chat.map((msg, idx) => (
-                <div key={idx} className={`mb-2 ${msg.sender === user.role ? 'text-right' : 'text-left'}`}>
-                  <span className="font-bold text-blue-700">{msg.sender === 'docente' ? 'Docente' : 'Estudiante'}:</span> {msg.text}
-                  <div className="text-xs text-gray-400">
-                    {msg.date ? new Date(msg.date).toLocaleString() : ''}
-                    {msg.lessonOrder !== null && msg.lessonOrder !== undefined && (
-                      <span> | Lección: {msg.lessonOrder}</span>
-                    )}
+              chat.map((msg, idx) => {
+                // Determinar nombre a mostrar
+                let senderName = '';
+                if (msg.sender === 'estudiante') {
+                  senderName = user?.name || user?.username || user?.email || 'Estudiante';
+                } else if (msg.sender === 'docente') {
+                  senderName = courseInfo?.teacher?.username || courseInfo?.teacher?.name || courseInfo?.teacher?.email || 'Docente';
+                }
+                return (
+                  <div key={idx} className={`mb-2 ${msg.sender === user.role ? 'text-right' : 'text-left'}`}>
+                    <span className="font-bold text-blue-700">{senderName}:</span> {msg.text}
+                    <div className="text-xs text-gray-400">
+                      {msg.date ? new Date(msg.date).toLocaleString() : ''}
+                      {msg.lessonOrder !== null && msg.lessonOrder !== undefined && (
+                        <span> | Lección: {msg.lessonOrder}</span>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
           {/* Selector de lección opcional para el mensaje */}
@@ -235,6 +244,6 @@ export default function StudentStatistics() {
           </form>
         </motion.div>
       </motion.div>
-    </AnimatePresence>
+    </div>
   );
 } 
