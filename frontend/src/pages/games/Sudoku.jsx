@@ -254,7 +254,8 @@ export default function Sudoku() {
                 i === 8 ? 'border-b-4 border-b-[#0a2342]' : 'border-b',
                 j === 8 ? 'border-r-4 border-r-[#0a2342]' : 'border-r',
                 'focus:outline-none focus:ring-2 focus:ring-[#2ca6e0] focus:z-10',
-                isSelected ? 'ring-8 ring-[#ffd700] z-20 scale-110 transition-transform duration-200' : '',
+                // Solo la celda seleccionada (libre) tiene borde azul grueso
+                isSelected ? 'border-4 border-blue-500 z-20' : '',
                 isError ? 'border-red-500 bg-red-100' : '',
               ].join(' ');
               return (

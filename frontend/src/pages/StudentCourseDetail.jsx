@@ -56,6 +56,15 @@ export default function StudentCourseDetail() {
           transition={{ duration: 0.5, type: 'spring' }}
           className="p-6 max-w-2xl mx-auto bg-white rounded-xl shadow-xl"
         >
+          {/* Botón para volver a Mis Cursos */}
+          <div className="flex justify-start mb-4">
+            <button
+              onClick={() => navigate('/student/courses')}
+              className="bg-gradient-to-r from-blue-500 to-emerald-500 text-white px-5 py-2 rounded-xl font-bold shadow-lg hover:from-blue-600 hover:to-emerald-600 transition-all duration-300"
+            >
+              ← Volver a Mis Cursos
+            </button>
+          </div>
           <div className="flex flex-col items-center mb-4">
             <motion.img
               src={logo2}
@@ -69,8 +78,10 @@ export default function StudentCourseDetail() {
               {course.title}
             </h1>
           </div>
+          {/* Modern video container */}
           <motion.div
-            className="aspect-video mb-4"
+            className="aspect-video mb-4 flex items-center justify-center bg-gradient-to-br from-blue-100 via-green-100 to-yellow-100 rounded-3xl shadow-2xl border-4 border-transparent bg-clip-padding relative overflow-hidden"
+            style={{ boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.15)' }}
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.2, duration: 0.5 }}
@@ -82,7 +93,7 @@ export default function StudentCourseDetail() {
                 style={{ border: 0 }}
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
-                className="w-full h-full rounded shadow-lg"
+                className="w-full h-full rounded-2xl shadow-lg"
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-gray-200 rounded text-gray-500">
@@ -157,6 +168,15 @@ export default function StudentCourseDetail() {
         transition={{ duration: 0.5, type: 'spring' }}
         className="p-6 max-w-2xl mx-auto bg-white rounded-xl shadow-lg"
       >
+        {/* Botón para volver a Mis Cursos */}
+        <div className="flex justify-start mb-4">
+          <button
+            onClick={() => navigate('/student/courses')}
+            className="bg-gradient-to-r from-blue-500 to-emerald-500 text-white px-5 py-2 rounded-xl font-bold shadow-lg hover:from-blue-600 hover:to-emerald-600 transition-all duration-300"
+          >
+            ← Volver a Mis Cursos
+          </button>
+        </div>
         <div className="flex justify-between mb-4">
           <button className="text-blue-600 underline" onClick={() => navigate(-1)}>← Volver</button>
           <div className="flex gap-2">
@@ -188,8 +208,10 @@ export default function StudentCourseDetail() {
         >
           {lesson.title}
         </motion.h2>
+        {/* Modern video container for lesson */}
         <motion.div
-          className="aspect-video mb-4"
+          className="aspect-video mb-4 flex items-center justify-center bg-gradient-to-br from-blue-100 via-green-100 to-yellow-100 rounded-3xl shadow-2xl border-4 border-transparent bg-clip-padding relative overflow-hidden"
+          style={{ boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.15)' }}
           initial={{ scale: 0.98, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ delay: 0.15 }}
@@ -200,7 +222,7 @@ export default function StudentCourseDetail() {
             style={{ border: 0 }}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
-            className="w-full h-full rounded shadow-lg"
+            className="w-full h-full rounded-2xl shadow-lg"
             onLoad={() => {}}
             onEnded={handleVideoEnded}
           />
@@ -230,6 +252,10 @@ export default function StudentCourseDetail() {
             Ver mis estadísticas y feedback
           </motion.button>
         </div>
+        {/*
+          El Header/navbar ya está presente y es responsive porque AppLayout lo incluye automáticamente
+          para rutas de estudiante. No se requiere cambio de código para el header.
+        */}
       </motion.div>
     </AnimatePresence>
   );
