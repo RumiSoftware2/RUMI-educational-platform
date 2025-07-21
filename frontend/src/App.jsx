@@ -27,6 +27,7 @@ import ScrollToTop from './components/ScrollToTop';
 import StudentStatistics from './pages/StudentStatistics';
 import StudentCourseDetail from './pages/StudentCourseDetail';
 import VerifyResetCode from './pages/VerifyResetCode';
+import Sudoku from './pages/games/Sudoku';
 
 
 function App() {
@@ -72,20 +73,13 @@ function App() {
           />
          <Route
             path="/games"
-            element={
-              <ProtectedRoute>
-                <GameMenu />
-              </ProtectedRoute>
-            }
+            element={<GameMenu />}
           />
           <Route
             path="/games/blackjack"
-            element={
-              <ProtectedRoute>
-                 <Blackjack />
-              </ProtectedRoute>
-            }
+            element={<Blackjack />}
           />
+          <Route path="/games/sudoku" element={<Sudoku />} />
 
 
 
