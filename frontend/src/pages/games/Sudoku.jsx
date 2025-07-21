@@ -139,19 +139,30 @@ export default function Sudoku() {
         <button onClick={handleReset} className="ml-4 px-3 py-1 bg-[#2ca6e0] text-white rounded shadow hover:bg-[#0a2342] transition">Reiniciar</button>
         <button onClick={handleValidate} className="ml-2 px-3 py-1 bg-[#ffd700] text-[#0a2342] rounded shadow hover:bg-[#2ca6e0] transition">Validar</button>
       </div>
-      <div className="grid grid-cols-9 gap-1 bg-white rounded shadow p-2">
+      <div className="grid grid-cols-9 gap-0 bg-white rounded shadow p-2">
         {board.map((row, i) =>
-          row.map((cell, j) => (
-            <input
-              key={`${i}-${j}`}
-              type="text"
-              maxLength={1}
-              className={`w-8 h-8 text-center border rounded ${initialBoard[i][j] !== '' ? 'bg-gray-200 font-bold' : 'bg-white'}`}
-              value={cell}
-              onChange={e => handleChange(i, j, e.target.value.replace(/[^1-9]/, ''))}
-              readOnly={initialBoard[i][j] !== ''}
-            />
-          ))
+          row.map((cell, j) => {
+            // Bordes gruesos cada 3 filas/columnas
+            const borderClasses = [
+              'w-8 h-8 text-center border',
+              initialBoard[i][j] !== '' ? 'bg-gray-200 font-bold' : 'bg-white',
+              i % 3 === 0 ? 'border-t-4 border-t-[#0a2342]' : 'border-t',
+              j % 3 === 0 ? 'border-l-4 border-l-[#0a2342]' : 'border-l',
+              i === 8 ? 'border-b-4 border-b-[#0a2342]' : 'border-b',
+              j === 8 ? 'border-r-4 border-r-[#0a2342]' : 'border-r',
+            ].join(' ');
+            return (
+              <input
+                key={`${i}-${j}`}
+                type="text"
+                maxLength={1}
+                className={borderClasses}
+                value={cell}
+                onChange={e => handleChange(i, j, e.target.value.replace(/[^1-9]/, ''))}
+                readOnly={initialBoard[i][j] !== ''}
+              />
+            );
+          })
         )}
       </div>
       {message && (
