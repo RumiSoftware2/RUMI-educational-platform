@@ -10,11 +10,31 @@ const BlackjackSVG = () => (
   </svg>
 );
 
+// SVG de ejemplo para Sudoku
+const SudokuSVG = () => (
+  <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
+    <rect x="5" y="5" width="50" height="50" rx="8" fill="#fff" stroke="#0a2342" strokeWidth="3"/>
+    {/* Cuadrícula Sudoku */}
+    {[1,2].map(i => (
+      <line key={i} x1={5 + i*50/3} y1={5} x2={5 + i*50/3} y2={55} stroke="#2ca6e0" strokeWidth="2" />
+    ))}
+    {[1,2].map(i => (
+      <line key={i} x1={5} y1={5 + i*50/3} x2={55} y2={5 + i*50/3} stroke="#2ca6e0" strokeWidth="2" />
+    ))}
+    <text x="15" y="38" fontSize="20" fill="#0a2342" fontWeight="bold">9x9</text>
+  </svg>
+);
+
 const games = [
   {
     id: 'blackjack',
     name: 'Blackjack: Probabilidad Condicional',
     image: <BlackjackSVG />,
+  },
+  {
+    id: 'sudoku',
+    name: 'Sudoku',
+    image: <SudokuSVG />,
   },
   // más juegos futuros aquí
 ];
