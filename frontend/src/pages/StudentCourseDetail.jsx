@@ -159,89 +159,89 @@ export default function StudentCourseDetail() {
   };
 
   return (
-    <AnimatePresence mode="wait">
-      <motion.div
-        key={currentLessonIdx}
-        initial={{ opacity: 0, y: 40 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -40 }}
-        transition={{ duration: 0.5, type: 'spring' }}
-        className="p-6 max-w-2xl mx-auto bg-white rounded-xl shadow-lg"
-      >
-        {/* Botón para volver a Mis Cursos */}
-        <div className="flex justify-start mb-4">
-          <button
-            onClick={() => navigate('/student/courses')}
-            className="bg-gradient-to-r from-blue-500 to-emerald-500 text-white px-5 py-2 rounded-xl font-bold shadow-lg hover:from-blue-600 hover:to-emerald-600 transition-all duration-300"
-          >
-            ← Volver a Mis Cursos
-          </button>
-        </div>
-        <div className="flex justify-between mb-4">
-          <button className="text-blue-600 underline" onClick={() => navigate(-1)}>← Volver</button>
-          <div className="flex gap-2">
-            <motion.button
-              whileHover={{ scale: currentLessonIdx === 0 ? 1 : 1.07 }}
-              whileTap={{ scale: 0.97 }}
-              className={`px-3 py-1 rounded font-bold transition-all duration-200 ${currentLessonIdx === 0 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-green-600 text-white hover:bg-green-700'}`}
-              onClick={handlePrevLesson}
-              disabled={currentLessonIdx === 0}
+    <div className="min-h-screen w-full bg-gradient-to-br from-[#0a2342] via-[#2ca6e0] to-[#ffd700] flex flex-col py-8 px-2 animate-fade-in">
+      {/* Botón para volver a Mis Cursos */}
+      <div className="flex justify-start mb-4 max-w-4xl mx-auto w-full">
+        <button
+          onClick={() => navigate('/student/courses')}
+          className="bg-gradient-to-r from-blue-500 to-emerald-500 text-white px-5 py-2 rounded-xl font-bold shadow-lg hover:from-blue-600 hover:to-emerald-600 transition-all duration-300"
+        >
+          ← Volver a Mis Cursos
+        </button>
+      </div>
+      <div className="max-w-4xl mx-auto w-full bg-white/90 rounded-3xl shadow-2xl border border-[#2ca6e0]/20 p-4 md:p-8 flex flex-col gap-6 animate-fade-in">
+        <div className="flex flex-col md:flex-row md:items-start gap-6">
+          {/* Video y descripción */}
+          <div className="flex-1 flex flex-col gap-4">
+            <motion.h2
+              className="text-2xl font-bold mb-2 text-center md:text-left bg-gradient-to-r from-yellow-500 via-blue-400 to-green-400 bg-clip-text text-transparent drop-shadow"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
             >
-              ← Lección anterior
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: currentLessonIdx === lessons.length - 1 ? 1 : 1.07 }}
-              whileTap={{ scale: 0.97 }}
-              className={`px-3 py-1 rounded font-bold transition-all duration-200 ${currentLessonIdx === lessons.length - 1 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-green-600 text-white hover:bg-green-700'}`}
-              onClick={handleNextLesson}
-              disabled={currentLessonIdx === lessons.length - 1}
+              {lesson.title}
+            </motion.h2>
+            <motion.div
+              className="aspect-video flex items-center justify-center bg-gradient-to-br from-blue-100 via-green-100 to-yellow-100 rounded-2xl shadow-xl border-4 border-transparent bg-clip-padding relative overflow-hidden"
+              style={{ boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.15)' }}
+              initial={{ scale: 0.98, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.15 }}
             >
-              Siguiente lección →
-            </motion.button>
+              <iframe
+                src={lesson.videoUrl}
+                title={lesson.title}
+                style={{ border: 0 }}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="w-full h-full rounded-xl shadow-lg"
+                onLoad={() => {}}
+                onEnded={handleVideoEnded}
+              />
+            </motion.div>
+            <p className="mb-2 text-gray-700 text-center md:text-left animate-fade-in-slow">{lesson.description}</p>
+            <div className="flex gap-2 justify-center md:justify-start mt-2">
+              <motion.button
+                whileHover={{ scale: currentLessonIdx === 0 ? 1 : 1.07 }}
+                whileTap={{ scale: 0.97 }}
+                className={`px-3 py-1 rounded font-bold transition-all duration-200 ${currentLessonIdx === 0 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-green-600 text-white hover:bg-green-700'}`}
+                onClick={handlePrevLesson}
+                disabled={currentLessonIdx === 0}
+              >
+                ← Lección anterior
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: currentLessonIdx === lessons.length - 1 ? 1 : 1.07 }}
+                whileTap={{ scale: 0.97 }}
+                className={`px-3 py-1 rounded font-bold transition-all duration-200 ${currentLessonIdx === lessons.length - 1 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-green-600 text-white hover:bg-green-700'}`}
+                onClick={handleNextLesson}
+                disabled={currentLessonIdx === lessons.length - 1}
+              >
+                Siguiente lección →
+              </motion.button>
+            </div>
+            {progressMsg && <motion.div className="mt-2 mb-2 text-green-700 font-semibold text-center md:text-left animate-fade-in" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>{progressMsg}</motion.div>}
           </div>
+          {/* Quiz alineado a la derecha */}
+          <motion.div
+            className="flex-1 flex flex-col justify-center md:justify-start md:items-center bg-gradient-to-br from-yellow-50 via-blue-50 to-green-50 rounded-2xl shadow-lg border border-[#ffd700]/30 p-4 animate-fade-in-slow"
+            initial={{ opacity: 0, x: 40 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <LessonQuiz
+              quizId={lesson.quiz}
+              courseId={courseId}
+              lessonOrder={lesson.order}
+              onComplete={(score) => {
+                setProgressMsg(`¡Progreso guardado! Puntuación: ${score}`);
+                setVideoWatched(true);
+                api.post(`/progress/lesson/${courseId}/${lesson.order}`, { score, completed: true });
+              }}
+            />
+            {!lesson.quiz && videoWatched && <span className="block mt-2 text-green-700 font-semibold">¡Has completado la lección!</span>}
+          </motion.div>
         </div>
-        <motion.h2
-          className="text-2xl font-bold mb-2 text-center"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-        >
-          {lesson.title}
-        </motion.h2>
-        {/* Modern video container for lesson */}
-        <motion.div
-          className="aspect-video mb-4 flex items-center justify-center bg-gradient-to-br from-blue-100 via-green-100 to-yellow-100 rounded-3xl shadow-2xl border-4 border-transparent bg-clip-padding relative overflow-hidden"
-          style={{ boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.15)' }}
-          initial={{ scale: 0.98, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.15 }}
-        >
-          <iframe
-            src={lesson.videoUrl}
-            title={lesson.title}
-            style={{ border: 0 }}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-            className="w-full h-full rounded-2xl shadow-lg"
-            onLoad={() => {}}
-            onEnded={handleVideoEnded}
-          />
-        </motion.div>
-        <p className="mb-4 text-gray-700 text-center animate-fade-in-slow">{lesson.description}</p>
-        {progressMsg && <motion.div className="mb-4 text-green-700 font-semibold text-center animate-fade-in" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>{progressMsg}</motion.div>}
-        <motion.div className="mt-6 p-4 border rounded bg-gray-50 text-gray-500 text-center animate-fade-in-slow">
-          <LessonQuiz
-            quizId={lesson.quiz}
-            courseId={courseId}
-            lessonOrder={lesson.order}
-            onComplete={(score) => {
-              setProgressMsg(`¡Progreso guardado! Puntuación: ${score}`);
-              setVideoWatched(true);
-              api.post(`/progress/lesson/${courseId}/${lesson.order}`, { score, completed: true });
-            }}
-          />
-          {!lesson.quiz && videoWatched && <span>¡Has completado la lección!</span>}
-        </motion.div>
         <div className="flex justify-end mt-6">
           <motion.button
             whileHover={{ scale: 1.07 }}
@@ -252,11 +252,7 @@ export default function StudentCourseDetail() {
             Ver mis estadísticas y feedback
           </motion.button>
         </div>
-        {/*
-          El Header/navbar ya está presente y es responsive porque AppLayout lo incluye automáticamente
-          para rutas de estudiante. No se requiere cambio de código para el header.
-        */}
-      </motion.div>
-    </AnimatePresence>
+      </div>
+    </div>
   );
 } 
