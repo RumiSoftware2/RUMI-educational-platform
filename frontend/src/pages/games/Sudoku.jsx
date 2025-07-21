@@ -200,19 +200,33 @@ export default function Sudoku() {
   const errorCells = getErrorCells(board);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-[#0a2342] via-[#2ca6e0] to-[#ffd700] py-12">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300 py-12">
       <h1 className="text-3xl font-bold mb-6">Sudoku</h1>
       <div className="mb-4 flex flex-wrap items-center gap-4">
         <label className="font-semibold text-lg">Nivel:</label>
-        <select
-          value={level}
-          onChange={handleLevelChange}
-          className="p-2 rounded border border-gray-300 text-lg shadow"
-        >
-          {LEVELS.map(lvl => (
-            <option key={lvl.value} value={lvl.value}>{lvl.label}</option>
-          ))}
-        </select>
+        <div className="relative">
+          <select
+            value={level}
+            onChange={handleLevelChange}
+            className="p-2 pr-8 rounded-lg border-2 border-[#0a2342] text-lg shadow bg-white font-bold focus:outline-none focus:ring-2 focus:ring-[#ffd700] transition"
+            style={{ minWidth: '120px', backgroundPosition: 'right 0.5rem center' }}
+          >
+            {LEVELS.map(lvl => (
+              <option
+                key={lvl.value}
+                value={lvl.value}
+                className={
+                  lvl.value === level
+                    ? 'bg-[#ffd700] text-[#0a2342] font-extrabold'
+                    : 'bg-white text-[#0a2342]'
+                }
+              >
+                {lvl.label}
+              </option>
+            ))}
+          </select>
+          <span className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-[#0a2342] text-xl">▼</span>
+        </div>
         <button onClick={handleReset} className="px-4 py-2 bg-[#0a2342] text-white rounded-lg shadow font-bold text-lg hover:bg-[#2ca6e0] transition">Reiniciar</button>
         <button onClick={handleValidate} className="px-4 py-2 bg-[#ffd700] text-[#0a2342] rounded-lg shadow font-bold text-lg hover:bg-[#2ca6e0] hover:text-white transition">Revisar</button>
       </div>
