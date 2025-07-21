@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const LEVELS = [
   { label: 'Fácil', value: 'easy' },
@@ -135,6 +135,33 @@ export default function Sudoku() {
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState(''); // 'success' o 'error'
   const [selectedCell, setSelectedCell] = useState(null); // [i, j] o null
+
+  // Mantener pantalla encendida mientras el Sudoku está activo
+  useEffect(() => {
+    let wakeLock = null;
+    async function requestWakeLock() {
+      if ('wakeLock' in navigator) {
+        try {
+          wakeLock = await navigator.wakeLock.request('screen');
+          // Si el wake lock se libera (por ejemplo, por cambio de visibilidad), intentar recuperarlo
+          wakeLock.addEventListener('release', () => {
+            if (wakeLock.released) {
+              requestWakeLock();
+            }
+          });
+        } catch (err) {
+          // Puede fallar si el usuario no interactuó o por política de permisos
+          // No hacer nada
+        }
+      }
+    }
+    requestWakeLock();
+    return () => {
+      if (wakeLock && wakeLock.release) {
+        wakeLock.release();
+      }
+    };
+  }, []);
 
   // Cambiar de nivel y reiniciar tablero
   const handleLevelChange = (e) => {

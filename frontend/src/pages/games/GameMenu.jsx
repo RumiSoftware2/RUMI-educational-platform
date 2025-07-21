@@ -1,3 +1,5 @@
+// IMPORTANTE: Todos los juegos deben implementar la lógica de wake lock (Screen Wake Lock API)
+// para mantener la pantalla encendida mientras el usuario juega. Ver ejemplos en Sudoku.jsx y Blackjack.jsx.
 // src/pages/games/GameMenu.jsx
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';

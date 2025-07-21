@@ -84,6 +84,31 @@ export default function Blackjack() {
   const [result, setResult] = useState('');
   const [playerStands, setPlayerStands] = useState(false);
 
+  // Mantener pantalla encendida mientras el juego está activo
+  useEffect(() => {
+    let wakeLock = null;
+    async function requestWakeLock() {
+      if ('wakeLock' in navigator) {
+        try {
+          wakeLock = await navigator.wakeLock.request('screen');
+          wakeLock.addEventListener('release', () => {
+            if (wakeLock.released) {
+              requestWakeLock();
+            }
+          });
+        } catch (err) {
+          // Puede fallar si el usuario no interactuó o por política de permisos
+        }
+      }
+    }
+    requestWakeLock();
+    return () => {
+      if (wakeLock && wakeLock.release) {
+        wakeLock.release();
+      }
+    };
+  }, []);
+
   useEffect(() => {
     startGame();
     // eslint-disable-next-line
