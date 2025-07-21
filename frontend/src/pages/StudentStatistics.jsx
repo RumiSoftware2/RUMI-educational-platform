@@ -102,7 +102,7 @@ export default function StudentStatistics() {
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -40 }}
         transition={{ duration: 0.5, type: 'spring' }}
-        className="max-w-2xl mx-auto p-6 bg-white rounded-xl shadow animate-fade-in"
+        className="max-w-2xl mx-auto p-4 md:p-6 bg-white rounded-xl shadow animate-fade-in overflow-x-auto"
       >
         <div className="flex flex-col items-center mb-4">
           <motion.img
@@ -208,17 +208,17 @@ export default function StudentStatistics() {
             )}
           </div>
           {/* Selector de lección opcional para el mensaje */}
-          <form onSubmit={handleSendMessage} className="flex gap-2 items-center">
+          <form onSubmit={handleSendMessage} className="flex flex-col sm:flex-row gap-2 items-stretch w-full">
             <input
               type="text"
               value={newMessage}
               onChange={e => setNewMessage(e.target.value)}
-              className="flex-1 border rounded p-2"
+              className="flex-1 border rounded p-2 min-w-0"
               placeholder="Escribe un mensaje..."
               disabled={sending}
             />
             <select
-              className="border rounded p-2 text-sm"
+              className="border rounded p-2 text-sm min-w-[110px]"
               value={currentLessonOrder || ''}
               onChange={e => setCurrentLessonOrder(e.target.value ? Number(e.target.value) : null)}
             >
@@ -229,7 +229,7 @@ export default function StudentStatistics() {
                 ))
               }
             </select>
-            <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded" disabled={sending}>
+            <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded w-full sm:w-auto" disabled={sending}>
               {sending ? 'Enviando...' : 'Enviar'}
             </button>
           </form>
