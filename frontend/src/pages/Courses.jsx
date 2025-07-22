@@ -53,6 +53,20 @@ export default function Courses() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-100 via-blue-100 to-purple-200 py-8 px-2">
+      {/* Mensaje para usuarios no logueados */}
+      {!user && (
+        <div className="flex flex-col items-center mb-6">
+          <div className="bg-white/90 border border-blue-200 rounded-xl px-6 py-4 shadow-lg flex flex-col items-center gap-2">
+            <span className="text-lg text-blue-700 font-semibold">Si quieres inscribirte en algún curso, inicia sesión</span>
+            <a
+              href="/login"
+              className="mt-2 bg-gradient-to-r from-blue-600 to-emerald-500 text-white px-6 py-2 rounded-xl font-bold text-base shadow-lg hover:from-blue-700 hover:to-emerald-600 transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-blue-200"
+            >
+              Iniciar sesión
+            </a>
+          </div>
+        </div>
+      )}
       <div className="flex flex-col items-center mb-8">
         <img src={logo3} alt="Logo RUMI" className="w-28 h-28 object-contain rounded-2xl shadow-lg mb-2 animate-bounce" />
         <h1 className="text-4xl font-extrabold text-green-700 drop-shadow mb-1 text-center">Explora los Cursos</h1>
