@@ -1,5 +1,6 @@
 import { useState, useEffect, useContext } from 'react';
 import { useParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import api from '../services/api';
 import { AuthContext } from '../context/AuthContext';
 import EnrolledStudentsList from '../components/EnrolledStudentsList';
@@ -287,15 +288,15 @@ export default function CourseDetail() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -40 }}
           transition={{ duration: 0.5, type: 'spring' }}
-          className="p-6 max-w-2xl mx-auto bg-white rounded-xl shadow-lg"
+          className="p-2 sm:p-4 max-w-lg md:max-w-2xl mx-auto bg-gradient-to-br from-blue-50 via-green-50 to-purple-100 rounded-3xl shadow-2xl border-4 border-blue-200/40"
         >
           <div className="flex justify-between mb-4">
-            <button className="text-blue-600 underline" onClick={handleCloseStudentView}>← Volver</button>
+            <button className="text-blue-600 font-bold underline hover:text-blue-800 transition text-base sm:text-lg" onClick={handleCloseStudentView}>← Volver</button>
             <div className="flex gap-2">
               <motion.button
                 whileHover={{ scale: showStudentView === 0 ? 1 : 1.07 }}
                 whileTap={{ scale: 0.97 }}
-                className={`px-3 py-1 rounded font-bold transition-all duration-200 ${showStudentView === 0 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-green-600 text-white hover:bg-green-700'}`}
+                className={`px-3 py-1 rounded-xl font-bold transition-all duration-200 ${showStudentView === 0 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-gradient-to-r from-green-600 to-emerald-500 text-white hover:from-green-700 hover:to-emerald-600 shadow'}`}
                 onClick={handlePrevLesson}
                 disabled={showStudentView === 0}
               >
@@ -304,7 +305,7 @@ export default function CourseDetail() {
               <motion.button
                 whileHover={{ scale: showStudentView === lessons.length - 1 ? 1 : 1.07 }}
                 whileTap={{ scale: 0.97 }}
-                className={`px-3 py-1 rounded font-bold transition-all duration-200 ${showStudentView === lessons.length - 1 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-green-600 text-white hover:bg-green-700'}`}
+                className={`px-3 py-1 rounded-xl font-bold transition-all duration-200 ${showStudentView === lessons.length - 1 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-gradient-to-r from-green-600 to-emerald-500 text-white hover:from-green-700 hover:to-emerald-600 shadow'}`}
                 onClick={handleNextLesson}
                 disabled={showStudentView === lessons.length - 1}
               >
@@ -313,7 +314,7 @@ export default function CourseDetail() {
             </div>
           </div>
           <motion.h2
-            className="text-2xl font-bold mb-2 text-center"
+            className="text-3xl sm:text-4xl font-extrabold mb-3 text-center bg-gradient-to-r from-blue-700 via-green-400 to-yellow-400 bg-clip-text text-transparent drop-shadow-xl animate-gradient-x"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
@@ -321,7 +322,7 @@ export default function CourseDetail() {
             {lesson.title}
           </motion.h2>
           <motion.div
-            className="aspect-video mb-4"
+            className="aspect-video mb-4 rounded-3xl border-4 border-green-200 shadow-2xl bg-white/80 flex items-center justify-center overflow-hidden animate-fade-in"
             initial={{ scale: 0.98, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.15 }}
@@ -332,14 +333,14 @@ export default function CourseDetail() {
               style={{ border: 0 }}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
-              className="w-full h-full rounded shadow-lg"
+              className="w-full h-full rounded-2xl shadow-lg border-none"
               onLoad={() => {}}
               onEnded={handleVideoEnded}
             />
           </motion.div>
-          <p className="mb-4 text-gray-700 text-center animate-fade-in-slow">{lesson.description}</p>
+          <p className="mb-4 text-lg sm:text-xl text-center text-gray-700 font-medium animate-fade-in-slow">{lesson.description}</p>
           {progressMsg && <motion.div className="mb-4 text-green-700 font-semibold text-center animate-fade-in" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>{progressMsg}</motion.div>}
-          <motion.div className="mt-6 p-4 border rounded bg-gray-50 text-gray-500 text-center animate-fade-in-slow">
+          <motion.div className="mt-6 p-4 border-4 border-blue-200 rounded-2xl bg-gradient-to-br from-blue-50 via-green-50 to-purple-100 text-gray-700 text-center animate-fade-in-slow shadow-lg">
             <LessonQuiz
               quizId={lesson.quiz}
               courseId={id}
@@ -351,8 +352,25 @@ export default function CourseDetail() {
                 saveLessonProgress(id, lesson.order, { score, completed: true });
               }}
             />
-            {!lesson.quiz && videoWatched && <span>¡Has completado la lección!</span>}
+            {!lesson.quiz && videoWatched && <span className="block mt-2 text-green-700 font-bold animate-bounce">¡Has completado la lección!</span>}
           </motion.div>
+          {/* Animaciones personalizadas para la vista de estudiante */}
+          <style jsx>{`
+            @keyframes gradient-x {
+              0%, 100% { background-position: 0% 50%; }
+              50% { background-position: 100% 50%; }
+            }
+            .animate-gradient-x { background-size: 200% 200%; animation: gradient-x 3s ease-in-out infinite; }
+            .animate-fade-in-slow { animation: fade-in 1.5s cubic-bezier(0.4,0,0.2,1); }
+            @keyframes fade-in {
+              from { opacity: 0; }
+              to { opacity: 1; }
+            }
+            .animate-bounce { animation: bounce 1.5s infinite; }
+            @media (max-width: 640px) {
+              .aspect-video { min-height: 180px; }
+            }
+          `}</style>
         </motion.div>
       </AnimatePresence>
     );
@@ -375,19 +393,29 @@ export default function CourseDetail() {
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -20 }}
         transition={{ duration: 0.6, type: 'spring' }}
-        className="p-4 max-w-md md:max-w-4xl mx-auto bg-white rounded-xl shadow-xl"
+        className="p-2 sm:p-4 max-w-2xl md:max-w-4xl mx-auto bg-gradient-to-br from-blue-50 via-green-50 to-purple-100 rounded-3xl shadow-2xl border-4 border-blue-200/40"
       >
+        {/* Botón para volver a TeacherCourses */}
+        <div className="mb-4 flex justify-start">
+          <Link
+            to="/teacher/courses"
+            className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-emerald-500 text-white px-5 py-2 rounded-xl font-bold text-base shadow-lg hover:from-blue-700 hover:to-emerald-600 transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-blue-200 animate-fade-in-up"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
+            Volver a mis cursos
+          </Link>
+        </div>
         <div className="flex flex-col items-center mb-4">
           <motion.img
             src={logo1}
             alt="Logo decorativo"
-            className="w-16 h-16 mb-2 animate-bounce"
+            className="w-20 h-20 mb-2 animate-bounce-slow drop-shadow-xl"
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.1 }}
           />
           <motion.h1
-            className="text-3xl font-bold mb-4 text-center bg-gradient-to-r from-blue-700 via-green-400 to-yellow-400 bg-clip-text text-transparent drop-shadow animate-fade-in"
+            className="text-4xl sm:text-5xl font-extrabold mb-4 text-center bg-gradient-to-r from-blue-700 via-green-400 to-yellow-400 bg-clip-text text-transparent drop-shadow-xl animate-gradient-x"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
@@ -458,13 +486,13 @@ export default function CourseDetail() {
             {editCourseMsg && <div className={`mt-2 text-center font-semibold ${editCourseMsg.startsWith('Error') ? 'text-red-600' : 'text-green-700'}`}>{editCourseMsg}</div>}
           </form>
         )}
-        <div className="flex flex-row gap-8">
-          <div className="w-1/3">
+        <div className="flex flex-col md:flex-row gap-8">
+          <div className="md:w-1/3 w-full mb-4 md:mb-0">
             <EnrolledStudentsList students={enrolledStudents} />
           </div>
-          <div className="flex-1">
+          <div className="flex-1 w-full">
             <motion.div
-              className="aspect-video mb-4"
+              className="aspect-video mb-4 rounded-3xl border-4 border-green-200 shadow-2xl bg-white/80 flex items-center justify-center overflow-hidden animate-fade-in"
               initial={{ scale: 0.98, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.1 }}
@@ -476,16 +504,16 @@ export default function CourseDetail() {
                   style={{ border: 0 }}
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
-                  className="w-full h-full rounded shadow-lg"
+                  className="w-full h-full rounded-2xl shadow-lg border-none"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center bg-gray-200 rounded text-gray-500">
+                <div className="w-full h-full flex items-center justify-center bg-gradient-to-r from-gray-200 via-blue-100 to-green-100 rounded-2xl text-gray-500 font-bold text-xl animate-pulse">
                   Sin video principal
                 </div>
               )}
             </motion.div>
             <motion.p
-              className="mb-8 text-lg text-center text-gray-700"
+              className="mb-8 text-lg sm:text-xl text-center text-gray-700 font-medium animate-fade-in-slow"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
@@ -500,7 +528,7 @@ export default function CourseDetail() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
             >
-              <h2 className="text-2xl font-extrabold mb-4 text-green-700 border-b-2 border-green-200 pb-2">Lecciones del curso</h2>
+              <h2 className="text-3xl font-extrabold mb-4 text-green-700 border-b-2 border-green-200 pb-2 animate-gradient-x bg-gradient-to-r from-blue-600 via-green-500 to-purple-600 bg-clip-text text-transparent drop-shadow">Lecciones del curso</h2>
               {isOwner && lessons.length === 0 && !showForm && (
                 <div className="flex flex-col items-center my-8">
                   <p className="mb-4 text-gray-600">Aún no hay lecciones en este curso.</p>
@@ -525,7 +553,7 @@ export default function CourseDetail() {
               {isOwner && showForm && (
                 <>
                   <motion.div
-                    className="mb-8 border-2 border-green-200 bg-green-50 rounded-xl p-6 shadow-md"
+                    className="mb-8 border-4 border-green-300 bg-green-50 rounded-2xl p-4 sm:p-6 shadow-xl w-full max-w-xl mx-auto animate-fade-in-up"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 }}
@@ -538,7 +566,7 @@ export default function CourseDetail() {
                         placeholder="Título"
                         value={lessonForm.title}
                         onChange={handleLessonChange}
-                        className="p-2 border-2 border-green-300 rounded-lg focus:outline-none focus:border-green-500"
+                        className="p-3 border-2 border-green-400 rounded-xl focus:outline-none focus:border-green-600 text-lg shadow-sm"
                         required
                       />
                       <input
@@ -547,7 +575,7 @@ export default function CourseDetail() {
                         placeholder="URL del video"
                         value={lessonForm.videoUrl}
                         onChange={handleLessonChange}
-                        className="p-2 border-2 border-green-300 rounded-lg focus:outline-none focus:border-green-500"
+                        className="p-3 border-2 border-green-400 rounded-xl focus:outline-none focus:border-green-600 text-lg shadow-sm"
                         required
                       />
                       <textarea
@@ -555,13 +583,13 @@ export default function CourseDetail() {
                         placeholder="Descripción de la lección"
                         value={lessonForm.description}
                         onChange={handleLessonChange}
-                        className="p-2 border-2 border-green-300 rounded-lg focus:outline-none focus:border-green-500"
+                        className="p-3 border-2 border-green-400 rounded-xl focus:outline-none focus:border-green-600 text-lg shadow-sm"
                         required
                         rows={2}
                       ></textarea>
                       <button
                         type="submit"
-                        className="px-4 py-2 rounded-xl font-bold transition text-white bg-green-600 hover:bg-green-700"
+                        className="px-4 py-2 rounded-xl font-bold transition text-white bg-gradient-to-r from-green-600 to-emerald-500 hover:from-green-700 hover:to-emerald-600 shadow-lg"
                       >
                         {editingIndex === null ? 'Crear lección' : 'Actualizar'}
                       </button>
@@ -645,7 +673,7 @@ export default function CourseDetail() {
                 className="grid gap-6"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
+                transition={{ delay: 0.1 + idx * 0.05 }}
               >
                 {lessons
                   .sort((a, b) => a.order - b.order)
@@ -657,7 +685,7 @@ export default function CourseDetail() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.1 + idx * 0.05 }}
                     >
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3 flex-wrap sm:flex-nowrap">
                         <LessonNumber number={lesson.order} />
                         <div>
                           <span className="font-bold text-lg text-green-800">{lesson.title}</span>
@@ -704,6 +732,29 @@ export default function CourseDetail() {
           </div>
         </div>
       </motion.div>
+      {/* Animaciones personalizadas para el diseño */}
+      <style jsx>{`
+        @keyframes bounce-slow {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-16px); }
+        }
+        @keyframes gradient-x {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+        }
+        .animate-bounce-slow { animation: bounce-slow 2.5s infinite; }
+        .animate-gradient-x { background-size: 200% 200%; animation: gradient-x 3s ease-in-out infinite; }
+        .animate-fade-in-slow { animation: fade-in 1.5s cubic-bezier(0.4,0,0.2,1); }
+        .animate-fade-in-up { animation: fade-in-up 1s cubic-bezier(0.4,0,0.2,1); }
+        @keyframes fade-in {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes fade-in-up {
+          from { opacity: 0; transform: translateY(40px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
     </AnimatePresence>
   );
 }
