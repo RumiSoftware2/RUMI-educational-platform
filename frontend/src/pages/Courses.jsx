@@ -53,25 +53,37 @@ export default function Courses() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-100 via-blue-100 to-purple-200 py-8 px-2">
-      {/* Mensaje para usuarios no logueados */}
+      {/* Vista pública animada para usuarios no logueados */}
       {!user && (
-        <div className="flex flex-col items-center mb-6">
-          <div className="bg-white/90 border border-blue-200 rounded-xl px-6 py-4 shadow-lg flex flex-col items-center gap-2">
-            <span className="text-lg text-blue-700 font-semibold">Si quieres inscribirte en algún curso, inicia sesión</span>
-            <a
-              href="/login"
-              className="mt-2 bg-gradient-to-r from-blue-600 to-emerald-500 text-white px-6 py-2 rounded-xl font-bold text-base shadow-lg hover:from-blue-700 hover:to-emerald-600 transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-blue-200"
-            >
-              Iniciar sesión
-            </a>
+        <>
+          <div className="relative flex flex-col items-center mb-6 animate-fade-in-down">
+            <div className="absolute -top-8 left-1/2 -translate-x-1/2 w-72 h-72 bg-gradient-to-tr from-blue-300 via-purple-200 to-green-200 rounded-full blur-2xl opacity-60 z-0 animate-pulse"></div>
+            <div className="z-10 bg-white/90 border border-blue-200 rounded-xl px-6 py-4 shadow-lg flex flex-col items-center gap-2">
+              <span className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-green-500 to-purple-600 animate-text-gradient">Bienvenido a RUMI Cursos</span>
+              <span className="text-lg text-blue-700 font-semibold">Si quieres inscribirte en algún curso, inicia sesión</span>
+              <a
+                href="/login"
+                className="mt-2 bg-gradient-to-r from-blue-600 to-emerald-500 text-white px-6 py-2 rounded-xl font-bold text-base shadow-lg hover:from-blue-700 hover:to-emerald-600 transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-blue-200 animate-bounce"
+              >
+                Iniciar sesión
+              </a>
+            </div>
           </div>
+          <div className="flex flex-col items-center mb-8 animate-fade-in-up">
+            <img src={logo3} alt="Logo RUMI" className="w-32 h-32 object-contain rounded-2xl shadow-lg mb-2 animate-bounce-slow" />
+            <h1 className="text-5xl font-extrabold text-green-700 drop-shadow mb-1 text-center animate-gradient-x bg-gradient-to-r from-blue-600 via-green-500 to-purple-600 bg-clip-text text-transparent">Explora los Cursos</h1>
+            <p className="text-gray-700 text-center max-w-xl text-lg font-medium animate-fade-in">Descubre cursos disponibles y aprende a tu ritmo. ¡Inscríbete y comienza tu aprendizaje!</p>
+          </div>
+        </>
+      )}
+      {/* Si está logueado, usa el diseño normal */}
+      {user && (
+        <div className="flex flex-col items-center mb-8">
+          <img src={logo3} alt="Logo RUMI" className="w-28 h-28 object-contain rounded-2xl shadow-lg mb-2 animate-bounce" />
+          <h1 className="text-4xl font-extrabold text-green-700 drop-shadow mb-1 text-center">Explora los Cursos</h1>
+          <p className="text-gray-600 text-center max-w-xl">Descubre cursos disponibles y aprende a tu ritmo. ¡Inscríbete y comienza tu aprendizaje!</p>
         </div>
       )}
-      <div className="flex flex-col items-center mb-8">
-        <img src={logo3} alt="Logo RUMI" className="w-28 h-28 object-contain rounded-2xl shadow-lg mb-2 animate-bounce" />
-        <h1 className="text-4xl font-extrabold text-green-700 drop-shadow mb-1 text-center">Explora los Cursos</h1>
-        <p className="text-gray-600 text-center max-w-xl">Descubre cursos disponibles y aprende a tu ritmo. ¡Inscríbete y comienza tu aprendizaje!</p>
-      </div>
       {message && <div className="max-w-2xl mx-auto mb-4 text-center text-lg font-semibold animate-pulse text-green-700 bg-white/80 rounded-xl py-2 shadow">{message}</div>}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-2xl md:max-w-4xl mx-auto">
         {courses.map(c => {
@@ -139,6 +151,30 @@ export default function Courses() {
           </div>
         </div>
       )}
+      {/* Animaciones Tailwind personalizadas */}
+      <style jsx>{`
+        @keyframes fade-in-down {
+          from { opacity: 0; transform: translateY(-40px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fade-in-up {
+          from { opacity: 0; transform: translateY(40px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes bounce-slow {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-16px); }
+        }
+        @keyframes gradient-x {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+        }
+        .animate-fade-in-down { animation: fade-in-down 1s cubic-bezier(0.4,0,0.2,1); }
+        .animate-fade-in-up { animation: fade-in-up 1s cubic-bezier(0.4,0,0.2,1); }
+        .animate-bounce-slow { animation: bounce-slow 2.5s infinite; }
+        .animate-gradient-x { background-size: 200% 200%; animation: gradient-x 3s ease-in-out infinite; }
+        .animate-text-gradient { background-size: 200% 200%; animation: gradient-x 4s ease-in-out infinite; }
+      `}</style>
     </div>
   );
 }
