@@ -96,6 +96,18 @@ export default function StudentStatistics() {
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-[#0a2342] via-[#2ca6e0] to-[#ffd700] flex flex-col py-8 px-2 animate-fade-in">
+      {/* Botón para volver al curso, solo para docentes */}
+      {user?.role === 'docente' && (
+        <div className="max-w-2xl mx-auto mb-4 flex justify-start">
+          <a
+            href={`/courses/${courseId}`}
+            className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-emerald-500 text-white px-5 py-2 rounded-xl font-bold text-base shadow-lg hover:from-blue-700 hover:to-emerald-600 transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-blue-200 animate-fade-in-up"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
+            Volver al curso
+          </a>
+        </div>
+      )}
       <motion.div
         key={courseInfo?.title || 'stats'}
         initial={{ opacity: 0, y: 40 }}
@@ -198,9 +210,11 @@ export default function StudentStatistics() {
                 // Determinar nombre a mostrar
                 let senderName = '';
                 if (msg.sender === 'estudiante') {
-                  senderName = user?.name || user?.username || user?.email || 'Estudiante';
+                  // Mostrar SIEMPRE el nombre real del estudiante
+                  senderName = courseInfo?.student?.name || courseInfo?.student?.username || courseInfo?.student?.email || 'Estudiante';
                 } else if (msg.sender === 'docente') {
-                  senderName = courseInfo?.teacher?.username || courseInfo?.teacher?.name || courseInfo?.teacher?.email || 'Docente';
+                  // Mostrar el nombre real del docente
+                  senderName = courseInfo?.teacher?.name || courseInfo?.teacher?.username || courseInfo?.teacher?.email || 'Docente';
                 }
                 return (
                   <div key={idx} className={`mb-2 ${msg.sender === user.role ? 'text-right' : 'text-left'}`}>
