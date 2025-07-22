@@ -88,6 +88,7 @@ export default function Courses() {
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.25v13.5l13.5-6.75-13.5-6.75z" /></svg>
                   Ver
                 </button>
+                {/* Mostrar botón Inscribirse solo si el usuario está logueado y es estudiante */}
                 {user && user.role === 'estudiante' && (
                   <button
                     className="bg-gradient-to-r from-blue-600 to-emerald-500 text-white px-6 py-2 rounded-xl font-bold text-base shadow-lg hover:from-blue-700 hover:to-emerald-600 transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-blue-200 animate-bounce"
