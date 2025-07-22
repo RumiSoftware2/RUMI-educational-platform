@@ -1,4 +1,6 @@
 const FeedbackThread = require('../models/FeedbackThread');
+const User = require('../models/User');
+const Course = require('../models/Course');
 
 exports.getThread = async (req, res) => {
   const { courseId, studentId } = req.params;
@@ -7,7 +9,15 @@ exports.getThread = async (req, res) => {
     if (!thread) {
       thread = await FeedbackThread.create({ course: courseId, student: studentId, messages: [] });
     }
-    res.json(thread.messages);
+    // Obtener info del estudiante
+    const student = await User.findById(studentId).select('name username email');
+    // Obtener info del docente (teacher) del curso
+    const course = await Course.findById(courseId).populate('teacher', 'name username email');
+    res.json({
+      messages: thread.messages,
+      student,
+      teacher: course.teacher
+    });
   } catch (err) {
     res.status(500).json({ error: 'Error al obtener el chat de feedback' });
   }

@@ -1,10 +1,13 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import api from '../services/api';
 import { PieChart, Pie, Cell, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend } from 'recharts';
 import { motion, AnimatePresence } from 'framer-motion';
 import logo3 from '../assets/logo3zeus.png';
+import { Link } from 'react-router-dom';
+// Hook para poblar info real de estudiante y docente si no está en courseInfo
+import { useRef } from 'react';
 
 const COLORS = ['#00C49F', '#FF8042'];
 
@@ -20,6 +23,10 @@ export default function StudentStatistics() {
   const [sending, setSending] = useState(false);
   const [currentLessonOrder, setCurrentLessonOrder] = useState(null); // Para enviar la lección si se desea
   const [courseInfo, setCourseInfo] = useState(null); // Para saber total de lecciones
+  const [studentInfo, setStudentInfo] = useState(null);
+  const [teacherInfo, setTeacherInfo] = useState(null);
+  const fetchedStudent = useRef(false);
+  const fetchedTeacher = useRef(false);
   const navigate = useNavigate();
 
   // Obtener progreso, info de curso y chat reales del backend
@@ -36,7 +43,9 @@ export default function StudentStatistics() {
         setCourseInfo(courseRes.data);
         // Chat/feedback
         const chatRes = await api.get(`/feedback/course/${courseId}/student/${studentId}`);
-        setChat(chatRes.data);
+        setChat(chatRes.data.messages);
+        setStudentInfo(chatRes.data.student);
+        setTeacherInfo(chatRes.data.teacher);
       } catch (err) {
         setError('Error al cargar estadísticas o chat');
       } finally {
@@ -99,13 +108,13 @@ export default function StudentStatistics() {
       {/* Botón para volver al curso, solo para docentes */}
       {user?.role === 'docente' && (
         <div className="max-w-2xl mx-auto mb-4 flex justify-start">
-          <a
-            href={`/courses/${courseId}`}
+          <Link
+            to={`/courses/${courseId}`}
             className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-emerald-500 text-white px-5 py-2 rounded-xl font-bold text-base shadow-lg hover:from-blue-700 hover:to-emerald-600 transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-blue-200 animate-fade-in-up"
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
             Volver al curso
-          </a>
+          </Link>
         </div>
       )}
       <motion.div
@@ -210,11 +219,9 @@ export default function StudentStatistics() {
                 // Determinar nombre a mostrar
                 let senderName = '';
                 if (msg.sender === 'estudiante') {
-                  // Mostrar SIEMPRE el nombre real del estudiante
-                  senderName = courseInfo?.student?.name || courseInfo?.student?.username || courseInfo?.student?.email || 'Estudiante';
+                  senderName = studentInfo?.name || studentInfo?.username || studentInfo?.email || '';
                 } else if (msg.sender === 'docente') {
-                  // Mostrar el nombre real del docente
-                  senderName = courseInfo?.teacher?.name || courseInfo?.teacher?.username || courseInfo?.teacher?.email || 'Docente';
+                  senderName = teacherInfo?.name || teacherInfo?.username || teacherInfo?.email || '';
                 }
                 return (
                   <div key={idx} className={`mb-2 ${msg.sender === user.role ? 'text-right' : 'text-left'}`}>
