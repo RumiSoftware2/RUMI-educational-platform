@@ -52,14 +52,8 @@ export default function Header() {
     if (active) {
       return "bg-gradient-to-r from-yellow-400 to-orange-400 text-white px-4 py-2 rounded-xl hover:from-yellow-500 hover:to-orange-500 hover:scale-105 transition-all duration-300 font-semibold shadow-lg border-2 border-white/50";
     } else {
-      // Clases específicas por rol cuando no está activo
-      if (role === 'estudiante') {
-        return "bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-xl hover:from-blue-600 hover:to-blue-700 hover:scale-105 transition-all duration-300 font-semibold shadow-lg";
-      } else if (role === 'docente') {
-        return "bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-4 py-2 rounded-xl hover:from-yellow-600 hover:to-orange-600 hover:scale-105 transition-all duration-300 font-semibold shadow-lg";
-      } else if (role === 'admin') {
-        return "bg-gradient-to-r from-red-500 to-pink-500 text-white px-4 py-2 rounded-xl hover:from-red-600 hover:to-pink-600 hover:scale-105 transition-all duration-300 font-semibold shadow-lg";
-      }
+      // Todos los roles: fondo transparente como los otros botones
+      return "bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-xl hover:bg-white/30 hover:scale-105 transition-all duration-300 font-semibold border border-white/30";
     }
   };
 
