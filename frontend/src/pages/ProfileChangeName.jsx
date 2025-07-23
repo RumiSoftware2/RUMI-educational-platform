@@ -21,7 +21,7 @@ export default function ProfileChangeName() {
       setSuccess('Nombre actualizado correctamente');
       // Actualizar contexto de usuario
       login(user.token, { ...user, name });
-      setTimeout(() => navigate('/profile'), 1200);
+      setTimeout(() => navigate('/teacher/courses'), 1200);
     } catch (err) {
       setError('Error al actualizar el nombre');
     } finally {
@@ -53,10 +53,10 @@ export default function ProfileChangeName() {
           </button>
         </form>
         <button
-          onClick={() => navigate('/profile')}
+          onClick={() => navigate('/teacher/courses')}
           className="mt-6 text-blue-600 hover:text-blue-800 font-semibold transition-colors duration-300"
         >
-          ← Volver al perfil
+          ← Volver a mis cursos
         </button>
       </div>
     </div>
