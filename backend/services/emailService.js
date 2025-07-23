@@ -63,8 +63,28 @@ const sendPasswordResetEmail = async (email, resetToken) => {
   return transporter.sendMail(mailOptions);
 };
 
+// Enviar notificación de nueva lección a estudiantes
+const sendLessonNotification = async (emails, courseTitle, lessonTitle) => {
+  if (!emails || emails.length === 0) return;
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: emails.join(','),
+    subject: `Nueva lección en tu curso: ${courseTitle}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #2563eb;">¡Nueva lección disponible!</h2>
+        <p>Se ha agregado una nueva lección <b>"${lessonTitle}"</b> en el curso <b>"${courseTitle}"</b>.</p>
+        <p>Ingresa a la plataforma para revisarla y continuar aprendiendo.</p>
+        <p style="margin-top: 24px; color: #888; font-size: 13px;">No respondas a este correo. RUMI Plataforma Educativa.</p>
+      </div>
+    `
+  };
+  return transporter.sendMail(mailOptions);
+};
+
 module.exports = {
   generateVerificationCode,
   sendVerificationEmail,
-  sendPasswordResetEmail
+  sendPasswordResetEmail,
+  sendLessonNotification
 }; 

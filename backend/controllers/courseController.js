@@ -1,4 +1,6 @@
 const Course = require('../models/Course');
+const { sendLessonNotification } = require('../services/emailService');
+const User = require('../models/User');
 
 // Crear un nuevo curso (con lecciones)
 const createCourse = async (req, res) => {
@@ -73,6 +75,7 @@ const updateCourse = async (req, res) => {
     if (description) course.description = description;
     if (price !== undefined) course.price = price;
     if (videoUrl) course.videoUrl = videoUrl;
+    let newLesson = null;
     if (Array.isArray(lessons)) {
       // Validar lecciones
       for (const lesson of lessons) {
@@ -80,9 +83,24 @@ const updateCourse = async (req, res) => {
           return res.status(400).json({ message: 'Cada lección debe tener orden, título, descripción y videoUrl' });
         }
       }
+      // Detectar si se agregó una nueva lección
+      if (lessons.length > course.lessons.length) {
+        // Buscar la lección nueva (por orden o por título)
+        const prevTitles = course.lessons.map(l => l.title);
+        newLesson = lessons.find(l => !prevTitles.includes(l.title));
+      }
       course.lessons = lessons;
     }
     await course.save();
+    // Si hay nueva lección y hay estudiantes inscritos, enviar notificación
+    if (newLesson && course.students && course.students.length > 0) {
+      // Obtener emails de los estudiantes
+      const students = await User.find({ _id: { $in: course.students } });
+      const emails = students.map(s => s.email).filter(Boolean);
+      if (emails.length > 0) {
+        await sendLessonNotification(emails, course.title, newLesson.title);
+      }
+    }
     res.json({ message: 'Curso actualizado', course });
   } catch (error) {
     res.status(500).json({ message: 'Error al actualizar el curso', error });
