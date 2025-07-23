@@ -116,11 +116,9 @@ export default function Header() {
         <div className="hidden md:flex items-center space-x-4">
           {user ? (
             <>
-              <div className="bg-white/20 backdrop-blur-sm rounded-xl px-4 py-2 border border-white/30">
+              <div className="flex flex-col items-start">
                 <span className="text-sm opacity-90">Bienvenido,</span>
-                <div className="font-bold text-white">
-                  {user.name || user.email}
-                </div>
+                <span className="font-bold text-white">{user.name || user.email}</span>
               </div>
               <button
                 onClick={handleLogout}
