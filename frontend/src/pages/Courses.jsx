@@ -3,6 +3,7 @@ import { AuthContext } from '../context/AuthContext';
 import api, { enrollInCourse } from '../services/api';
 import logo3 from '../assets/logo3zeus.png';
 import CourseSearchBar from '../components/CourseSearchBar';
+import { useNavigate } from 'react-router-dom';
 
 // Función mejorada para extraer el ID de YouTube y devolver la miniatura (igual que TeacherCourses.jsx)
 function getYoutubeThumbnail(url) {
@@ -33,6 +34,7 @@ export default function Courses() {
   const [videoUrl, setVideoUrl] = useState('');
   // Referencias para cada curso
   const courseRefs = useRef({});
+  const navigate = useNavigate();
 
   useEffect(() => {
     api.get('/courses')
@@ -51,7 +53,11 @@ export default function Courses() {
         if (messageRef.current) {
           messageRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
-      }, 100); // Espera breve para que el mensaje se renderice
+      }, 100);
+      setTimeout(() => {
+        setMessage('');
+        navigate('/student/courses');
+      }, 2000);
     } catch (err) {
       setMessage('Error al inscribirse o ya estás inscrito');
       setTimeout(() => {
@@ -59,6 +65,9 @@ export default function Courses() {
           messageRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
       }, 100);
+      setTimeout(() => {
+        setMessage('');
+      }, 2000);
     }
   };
 

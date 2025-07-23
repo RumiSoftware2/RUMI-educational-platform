@@ -28,6 +28,7 @@ export default function StudentCourses() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState('');
+  const messageRef = useRef(null);
   const [showChangePassword, setShowChangePassword] = useState(false);
   const navigate = useNavigate();
   const courseRefs = useRef({});
@@ -45,8 +46,24 @@ export default function StudentCourses() {
       await leaveCourse(courseId);
       setCourses(courses.filter(c => c._id !== courseId));
       setMessage('Has abandonado el curso.');
+      setTimeout(() => {
+        if (messageRef.current) {
+          messageRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
+      setTimeout(() => {
+        setMessage('');
+      }, 2000);
     } catch (err) {
       setMessage('Error al abandonar el curso');
+      setTimeout(() => {
+        if (messageRef.current) {
+          messageRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
+      setTimeout(() => {
+        setMessage('');
+      }, 2000);
     }
   };
 
@@ -69,7 +86,16 @@ export default function StudentCourses() {
           🔐 Cambiar Contraseña
         </button>
       </div>
-      {message && <div className="mb-4 text-green-700 font-semibold text-center animate-pulse bg-white/80 rounded-xl py-2 shadow max-w-xl mx-auto">{message}</div>}
+      {message && (
+        <div
+          ref={messageRef}
+          className="fixed top-1/2 left-1/2 z-50 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-br from-green-400 via-blue-200 to-yellow-200 border-4 border-green-600 shadow-2xl rounded-3xl px-8 py-6 text-center text-2xl font-extrabold text-green-900 animate-pulse flex flex-col items-center gap-2"
+          style={{ maxWidth: 480 }}
+        >
+          <span className="text-4xl">{message.startsWith('Error') ? '❌' : '👋'}</span>
+          {message}
+        </div>
+      )}
       {courses.length === 0 ? (
         <div className="text-center text-gray-500 mt-12">No estás inscrito en ningún curso.</div>
       ) : (
