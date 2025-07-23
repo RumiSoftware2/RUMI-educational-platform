@@ -181,7 +181,7 @@ export default function Header() {
             {user && user.role === 'estudiante' && (
               <Link 
                 to="/student/courses" 
-                className={`block px-4 py-3 rounded-xl transition-all duration-300 font-semibold ${isActive('/student/courses') ? 'bg-gradient-to-r from-yellow-400 to-orange-400 text-white border-2 border-white/50' : 'bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700'}`}
+                className={`block px-4 py-3 rounded-xl transition-all duration-300 font-semibold ${isActive('/student/courses') ? 'bg-gradient-to-r from-yellow-400 to-orange-400 text-white border-2 border-white/50' : 'bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 border border-white/30'}`}
                 onClick={() => setIsMenuOpen(false)}
               >
                 📖 Mis Cursos
@@ -190,7 +190,7 @@ export default function Header() {
             {user && user.role === 'docente' && (
               <Link 
                 to="/teacher/courses" 
-                className={`block px-4 py-3 rounded-xl transition-all duration-300 font-semibold ${isActive('/teacher/courses') ? 'bg-gradient-to-r from-yellow-400 to-orange-400 text-white border-2 border-white/50' : 'bg-gradient-to-r from-yellow-500 to-orange-500 text-white hover:from-yellow-600 hover:to-orange-600'}`}
+                className={`block px-4 py-3 rounded-xl transition-all duration-300 font-semibold ${isActive('/teacher/courses') ? 'bg-gradient-to-r from-yellow-400 to-orange-400 text-white border-2 border-white/50' : 'bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 border border-white/30'}`}
                 onClick={() => setIsMenuOpen(false)}
               >
                 👨‍🏫 Mis Cursos
