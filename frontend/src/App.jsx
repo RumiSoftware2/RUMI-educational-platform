@@ -6,6 +6,7 @@ import EmailVerification from './pages/EmailVerification';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import Profile from './pages/Profile';
+import ProfileChangeName from './pages/ProfileChangeName';
 import Courses from './pages/Courses';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminPage from './pages/AdminPage';
@@ -52,6 +53,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Profile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile/change-name"
+            element={
+              <ProtectedRoute>
+                <ProfileChangeName />
               </ProtectedRoute>
             }
           />

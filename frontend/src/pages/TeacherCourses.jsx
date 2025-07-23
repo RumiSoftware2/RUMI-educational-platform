@@ -67,6 +67,12 @@ export default function TeacherCourses() {
       </div>
       <div className="flex flex-col sm:flex-row sm:justify-between items-center mb-8 gap-4 animate-fade-in-up">
         <div className="flex gap-2">
+          <Link
+            to="/profile/change-name"
+            className="bg-yellow-500 text-white px-4 py-2 rounded-xl hover:bg-yellow-600 transition font-semibold shadow-md"
+          >
+            ✏️ Cambiar nombre de usuario
+          </Link>
           <button
             onClick={() => setShowChangePassword(true)}
             className="bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700 transition font-semibold shadow-md"
