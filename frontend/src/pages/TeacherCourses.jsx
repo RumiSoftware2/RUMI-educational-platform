@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { getMyCourses } from '../services/api';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
 import ChangePasswordModal from '../components/ChangePasswordModal';
 import logo1 from '../assets/logo1zeus.png';
+import CourseSearchBar from '../components/CourseSearchBar';
 
 // Función para extraer el ID de YouTube y devolver la miniatura
 function getYoutubeThumbnail(url) {
@@ -26,6 +27,7 @@ export default function TeacherCourses() {
   const [error, setError] = useState(null);
   const [message, setMessage] = useState('');
   const [showChangePassword, setShowChangePassword] = useState(false);
+  const courseRefs = useRef({});
 
   useEffect(() => {
     fetchCourses();
@@ -65,6 +67,8 @@ export default function TeacherCourses() {
         <h1 className="text-3xl md:text-4xl font-extrabold text-blue-900 drop-shadow mb-2 text-center">Mis Cursos como Docente</h1>
         <p className="text-gray-700 text-center max-w-xl">Gestiona, edita y elimina tus cursos. ¡Haz crecer tu biblioteca educativa!</p>
       </div>
+      {/* Barra de búsqueda reutilizable */}
+      <CourseSearchBar courses={courses} courseRefs={courseRefs} placeholder="Buscar en mis cursos..." />
       <div className="flex flex-col sm:flex-row sm:justify-between items-center mb-8 gap-4 animate-fade-in-up">
         <div className="flex gap-2">
           <Link
@@ -92,7 +96,7 @@ export default function TeacherCourses() {
         {courses.map(course => {
           const thumbnail = getYoutubeThumbnail(course.videoUrl);
           return (
-            <div key={course._id} className="bg-white/90 border rounded-2xl shadow-xl flex flex-col h-full hover:shadow-2xl transition-all duration-300 animate-fade-in-up">
+            <div key={course._id} ref={el => courseRefs.current[course._id] = el} className="bg-white/90 border rounded-2xl shadow-xl flex flex-col h-full hover:shadow-2xl transition-all duration-300 animate-fade-in-up">
               {thumbnail && (
                 <img
                   src={thumbnail}

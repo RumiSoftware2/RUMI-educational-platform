@@ -1,7 +1,8 @@
-import { useEffect, useState, useContext } from 'react';
+import { useEffect, useState, useContext, useRef } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import api, { enrollInCourse } from '../services/api';
 import logo3 from '../assets/logo3zeus.png';
+import CourseSearchBar from '../components/CourseSearchBar';
 
 // Función mejorada para extraer el ID de YouTube y devolver la miniatura (igual que TeacherCourses.jsx)
 function getYoutubeThumbnail(url) {
@@ -29,6 +30,8 @@ export default function Courses() {
   const { user } = useContext(AuthContext);
   const [showVideo, setShowVideo] = useState(false);
   const [videoUrl, setVideoUrl] = useState('');
+  // Referencias para cada curso
+  const courseRefs = useRef({});
 
   useEffect(() => {
     api.get('/courses')
@@ -53,6 +56,8 @@ export default function Courses() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-100 via-blue-100 to-purple-200 py-8 px-2">
+      {/* Barra de búsqueda pública reutilizable */}
+      <CourseSearchBar courses={courses} courseRefs={courseRefs} placeholder="Buscar curso..." />
       {/* Vista pública animada para usuarios no logueados */}
       {!user && (
         <>
@@ -91,6 +96,7 @@ export default function Courses() {
           return (
             <div
               key={c._id}
+              ref={el => courseRefs.current[c._id] = el}
               className="group bg-white/90 border border-green-200 rounded-3xl shadow-xl p-4 flex flex-col items-center transition-transform duration-300 hover:scale-105 hover:shadow-2xl relative overflow-hidden"
             >
               {thumb ? (
@@ -133,10 +139,10 @@ export default function Courses() {
         <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl shadow-2xl p-4 max-w-2xl w-full relative flex flex-col items-center">
             <button
-              className="absolute top-2 right-2 text-gray-600 hover:text-red-600 text-2xl font-bold"
+              className="absolute top-3 right-3 bg-red-500 hover:bg-red-600 text-white rounded-full w-12 h-12 flex items-center justify-center text-4xl font-extrabold shadow-lg border-4 border-white transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-red-300 z-50"
               onClick={() => setShowVideo(false)}
             >
-              ×
+              &times;
             </button>
             <div className="w-full aspect-video mb-4">
               <iframe

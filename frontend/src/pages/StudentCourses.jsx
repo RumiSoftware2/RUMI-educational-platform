@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getEnrolledCourses, leaveCourse } from '../services/api';
 import ChangePasswordModal from '../components/ChangePasswordModal';
 import logo2 from '../assets/logo2zeus.png';
+import CourseSearchBar from '../components/CourseSearchBar';
 
 // Función para extraer el ID de YouTube y devolver la miniatura (igual que TeacherCourses.jsx)
 function getYoutubeThumbnail(url) {
@@ -29,6 +30,7 @@ export default function StudentCourses() {
   const [message, setMessage] = useState('');
   const [showChangePassword, setShowChangePassword] = useState(false);
   const navigate = useNavigate();
+  const courseRefs = useRef({});
 
   useEffect(() => {
     getEnrolledCourses()
@@ -57,6 +59,8 @@ export default function StudentCourses() {
         <img src={logo2} alt="Logo RUMI" className="w-24 h-24 object-contain rounded-2xl shadow-lg mb-2 animate-pulse" />
         <h1 className="text-3xl md:text-4xl font-extrabold text-blue-900 drop-shadow mb-1 text-center">Mis Cursos Inscritos</h1>
       </div>
+      {/* Barra de búsqueda reutilizable */}
+      <CourseSearchBar courses={courses} courseRefs={courseRefs} placeholder="Buscar en mis cursos..." />
       <div className="flex flex-col sm:flex-row sm:justify-between items-center mb-6 gap-4">
         <button
           onClick={() => setShowChangePassword(true)}
@@ -75,6 +79,7 @@ export default function StudentCourses() {
             return (
               <div
                 key={course._id}
+                ref={el => courseRefs.current[course._id] = el}
                 className="group bg-white/90 border border-blue-200 rounded-3xl shadow-xl p-6 flex flex-col md:flex-row items-center justify-between gap-4 hover:scale-105 hover:shadow-2xl transition-transform duration-300 relative overflow-hidden"
               >
                 {thumb && (
