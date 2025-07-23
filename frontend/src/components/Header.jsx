@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 
@@ -7,6 +7,19 @@ export default function Header() {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  // Auto-cerrar menú móvil después de 2 minutos
+  useEffect(() => {
+    let timer;
+    if (isMenuOpen) {
+      timer = setTimeout(() => {
+        setIsMenuOpen(false);
+      }, 120000); // 2 minutos
+    }
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [isMenuOpen]);
 
   const handleLogout = () => {
     logout();
@@ -30,6 +43,23 @@ export default function Header() {
       return "bg-gradient-to-r from-yellow-400 to-orange-400 text-white px-4 py-2 rounded-xl hover:from-yellow-500 hover:to-orange-500 hover:scale-105 transition-all duration-300 font-semibold shadow-lg border-2 border-white/50";
     } else {
       return "bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-xl hover:bg-white/30 hover:scale-105 transition-all duration-300 font-semibold border border-white/30";
+    }
+  };
+
+  // Función para obtener las clases CSS específicas para roles (no siempre activas)
+  const getRoleClasses = (path, role) => {
+    const active = isActive(path);
+    if (active) {
+      return "bg-gradient-to-r from-yellow-400 to-orange-400 text-white px-4 py-2 rounded-xl hover:from-yellow-500 hover:to-orange-500 hover:scale-105 transition-all duration-300 font-semibold shadow-lg border-2 border-white/50";
+    } else {
+      // Clases específicas por rol cuando no está activo
+      if (role === 'estudiante') {
+        return "bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-xl hover:from-blue-600 hover:to-blue-700 hover:scale-105 transition-all duration-300 font-semibold shadow-lg";
+      } else if (role === 'docente') {
+        return "bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-4 py-2 rounded-xl hover:from-yellow-600 hover:to-orange-600 hover:scale-105 transition-all duration-300 font-semibold shadow-lg";
+      } else if (role === 'admin') {
+        return "bg-gradient-to-r from-red-500 to-pink-500 text-white px-4 py-2 rounded-xl hover:from-red-600 hover:to-pink-600 hover:scale-105 transition-all duration-300 font-semibold shadow-lg";
+      }
     }
   };
 
@@ -64,7 +94,7 @@ export default function Header() {
             {user && user.role === 'estudiante' && (
               <Link 
                 to="/student/courses" 
-                className={getActiveClasses('/student/courses')}
+                className={getRoleClasses('/student/courses', 'estudiante')}
               >
                 📖 Mis Cursos
               </Link>
@@ -72,7 +102,7 @@ export default function Header() {
             {user && user.role === 'docente' && (
               <Link 
                 to="/teacher/courses" 
-                className={getActiveClasses('/teacher/courses')}
+                className={getRoleClasses('/teacher/courses', 'docente')}
               >
                 👨‍🏫 Mis Cursos
               </Link>
@@ -80,7 +110,7 @@ export default function Header() {
             {user && user.role === 'admin' && (
               <Link 
                 to="/admin/courses" 
-                className={getActiveClasses('/admin/courses')}
+                className={getRoleClasses('/admin/courses', 'admin')}
               >
                 ⚙️ Gestión
               </Link>
