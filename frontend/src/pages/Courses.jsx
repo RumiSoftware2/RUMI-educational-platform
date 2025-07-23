@@ -27,6 +27,7 @@ export default function Courses() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState('');
+  const messageRef = useRef(null);
   const { user } = useContext(AuthContext);
   const [showVideo, setShowVideo] = useState(false);
   const [videoUrl, setVideoUrl] = useState('');
@@ -43,11 +44,21 @@ export default function Courses() {
   const handleEnroll = async (courseId) => {
     try {
       await enrollInCourse(courseId);
-      setMessage('Inscripción exitosa');
+      setMessage('¡Inscripción exitosa! 🎉 Ahora puedes acceder al curso.');
       api.get('/courses')
         .then(res => setCourses(res.data));
+      setTimeout(() => {
+        if (messageRef.current) {
+          messageRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100); // Espera breve para que el mensaje se renderice
     } catch (err) {
       setMessage('Error al inscribirse o ya estás inscrito');
+      setTimeout(() => {
+        if (messageRef.current) {
+          messageRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
     }
   };
 
@@ -89,7 +100,16 @@ export default function Courses() {
           <p className="text-gray-600 text-center max-w-xl">Descubre cursos disponibles y aprende a tu ritmo. ¡Inscríbete y comienza tu aprendizaje!</p>
         </div>
       )}
-      {message && <div className="max-w-2xl mx-auto mb-4 text-center text-lg font-semibold animate-pulse text-green-700 bg-white/80 rounded-xl py-2 shadow">{message}</div>}
+      {message && (
+        <div
+          ref={messageRef}
+          className="fixed top-1/2 left-1/2 z-50 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-br from-green-400 via-blue-200 to-yellow-200 border-4 border-green-600 shadow-2xl rounded-3xl px-8 py-6 text-center text-2xl font-extrabold text-green-900 animate-pulse flex flex-col items-center gap-2"
+          style={{ maxWidth: 480 }}
+        >
+          <span className="text-4xl">🎉</span>
+          {message}
+        </div>
+      )}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-2xl md:max-w-4xl mx-auto">
         {courses.map(c => {
           const thumb = getYoutubeThumbnail(c.videoUrl);
