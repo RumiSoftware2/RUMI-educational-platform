@@ -5,7 +5,6 @@ import api from '../services/api';
 import { PieChart, Pie, Cell, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend } from 'recharts';
 import { motion, AnimatePresence } from 'framer-motion';
 import logo3 from '../assets/logo3zeus.png';
-import { Link } from 'react-router-dom';
 // Hook para poblar info real de estudiante y docente si no está en courseInfo
 import { useRef } from 'react';
 
