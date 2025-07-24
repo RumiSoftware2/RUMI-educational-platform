@@ -151,6 +151,12 @@ export default function Blackjack() {
   const [playerStands, setPlayerStands] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
   
+  // NUEVO: Estados para dinero y timer
+  const [money, setMoney] = useState(1000); // Saldo inicial
+  const betAmount = 100; // Apuesta fija por ronda
+  const [timer, setTimer] = useState(600); // 10 minutos en segundos
+  const [timerActive, setTimerActive] = useState(false);
+  
   // Estados demográficos
   const [showDemographics, setShowDemographics] = useState(true);
   const [age, setAge] = useState('');
@@ -200,6 +206,25 @@ export default function Blackjack() {
     };
   }, []);
 
+  // Timer de 10 minutos
+  useEffect(() => {
+    let interval = null;
+    if (gameStarted && timerActive && timer > 0) {
+      interval = setInterval(() => {
+        setTimer((prev) => prev - 1);
+      }, 1000);
+    } else if (timer === 0) {
+      // Tiempo agotado
+      setShowAnalysis(true);
+      setTimerActive(false);
+      setResult('¡Tiempo agotado!');
+      // Borrar datos demográficos para forzar nuevo registro
+      localStorage.removeItem('blackjack_age');
+      localStorage.removeItem('blackjack_education');
+    }
+    return () => clearInterval(interval);
+  }, [gameStarted, timerActive, timer]);
+
   // Cargar datos demográficos del localStorage
   useEffect(() => {
     const savedAge = localStorage.getItem('blackjack_age');
@@ -224,6 +249,9 @@ export default function Blackjack() {
       localStorage.setItem('blackjack_age', age);
       localStorage.setItem('blackjack_education', educationLevel);
       setShowDemographics(false);
+      setMoney(1000); // Reiniciar dinero
+      setTimer(600); // Reiniciar timer
+      setTimerActive(true);
       startGame();
     }
   };
@@ -236,6 +264,7 @@ export default function Blackjack() {
     setGameStarted(true);
     setStartTime(Date.now());
     setShowAnalysis(false);
+    setTimerActive(true);
   };
 
   const isBusted = handValue(playerHand) > 21;
@@ -255,6 +284,8 @@ export default function Blackjack() {
     if (handValue(newHand) > 21) {
       const finalResult = 'Perdiste, te pasaste';
       setResult(finalResult);
+      // Restar dinero por perder
+      setMoney((prev) => Math.max(0, prev - betAmount));
       endGame(finalResult, handValue(newHand), handValue(dealerHand));
     }
   };
@@ -285,6 +316,12 @@ export default function Blackjack() {
     else if (pVal === dVal) res = 'Empate';
     else res = 'Perdiste';
     setResult(res);
+    // Ajustar dinero según resultado
+    setMoney((prev) => {
+      if (res === 'Ganaste') return prev + betAmount;
+      if (res === 'Perdiste' || res === 'Perdiste, te pasaste') return Math.max(0, prev - betAmount);
+      return prev;
+    });
     endGame(res, pVal, dVal);
   };
 
@@ -351,6 +388,12 @@ export default function Blackjack() {
       console.error('Error enviando datos:', error);
     }
   };
+
+  // Al mostrar análisis, si dinero = 0 o timer = 0, borrar datos demográficos
+  if (showAnalysis && (money === 0 || timer === 0)) {
+    localStorage.removeItem('blackjack_age');
+    localStorage.removeItem('blackjack_education');
+  }
 
   // Mostrar solo la primera carta del dealer si el jugador no se ha plantado
   const visibleDealerHand = playerStands ? dealerHand : [dealerHand[0]];
@@ -501,23 +544,37 @@ export default function Blackjack() {
                 <div className="text-sm">Tiempo total jugado</div>
               </div>
             </div>
+            <div className="bg-white/10 rounded-lg p-3">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-yellow-400">${money}</div>
+                <div className="text-sm">Dinero restante</div>
+              </div>
+            </div>
           </div>
           
           <div className="flex gap-4 mt-6">
             <button
               onClick={() => {
                 setShowAnalysis(false);
-                startGame();
+                setShowDemographics(true); // Forzar nuevo registro
+                setMoney(1000);
+                setTimer(600);
+                setTimerActive(false);
+                setGameStarted(false);
               }}
               className="flex-1 py-3 rounded-xl font-bold text-white bg-green-600 hover:bg-green-700 transition-colors"
             >
-              Jugar Otra Vez
+              Nueva Sesión
             </button>
             <button
               onClick={() => {
                 sendDataToBackend();
                 setShowAnalysis(false);
-                startGame();
+                setShowDemographics(true);
+                setMoney(1000);
+                setTimer(600);
+                setTimerActive(false);
+                setGameStarted(false);
               }}
               className="flex-1 py-3 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-700 transition-colors"
             >
@@ -536,6 +593,17 @@ export default function Blackjack() {
         <h1 className="text-3xl font-extrabold text-white mb-2 tracking-wide">Blackjack Educativo</h1>
         <div className="text-yellow-300 font-bold text-lg mb-2">BLACKJACK PAGA 3 A 2</div>
         <div className="text-white text-sm mb-4">Dealer debe plantarse en 17 suave</div>
+        {/* NUEVO: Timer y dinero */}
+        <div className="flex gap-6 mb-4">
+          <div className="bg-black/40 rounded-lg px-4 py-2 text-center">
+            <div className="text-white text-xs">Tiempo restante</div>
+            <div className="text-yellow-300 font-bold text-lg">{Math.floor(timer / 60)}:{(timer % 60).toString().padStart(2, '0')}</div>
+          </div>
+          <div className="bg-black/40 rounded-lg px-4 py-2 text-center">
+            <div className="text-white text-xs">Dinero</div>
+            <div className="text-green-300 font-bold text-lg">${money}</div>
+          </div>
+        </div>
         
         {/* Probabilidades en tiempo real */}
         {gameStarted && playerHand.length > 0 && (
@@ -580,27 +648,33 @@ export default function Blackjack() {
         <div className="flex gap-4 mb-4">
           <button 
             onClick={hit} 
-            disabled={!canPlay} 
+            disabled={!canPlay || money < betAmount} 
             className={`px-6 py-2 rounded-xl font-bold text-white transition-colors ${
-              canPlay ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-400 cursor-not-allowed'
+              canPlay && money >= betAmount ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-400 cursor-not-allowed'
             }`}
           >
-            Pedir Carta
+            Pedir Carta (-${betAmount})
           </button>
           <button 
             onClick={stand} 
-            disabled={!canPlay} 
+            disabled={!canPlay || money < betAmount} 
             className={`px-6 py-2 rounded-xl font-bold text-white transition-colors ${
-              canPlay ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-gray-400 cursor-not-allowed'
+              canPlay && money >= betAmount ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-gray-400 cursor-not-allowed'
             }`}
           >
             Plantarse
           </button>
           <button 
-            onClick={startGame} 
+            onClick={() => {
+              setShowDemographics(true);
+              setMoney(1000);
+              setTimer(600);
+              setTimerActive(false);
+              setGameStarted(false);
+            }} 
             className="px-6 py-2 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-700 transition-colors"
           >
-            Reiniciar
+            Nueva Sesión
           </button>
         </div>
         
