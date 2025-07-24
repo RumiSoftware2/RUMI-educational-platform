@@ -1,13 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 
 export default function DemographicForm({ onSubmit }) {
   const [age, setAge] = useState('');
   const [educationLevel, setEducationLevel] = useState('');
+  const [submitted, setSubmitted] = useState(false);
+  const ageRef = useRef(null);
+  const eduRef = useRef(null);
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    console.log('handleSubmit called', { age, educationLevel });
+    if (ageRef.current) ageRef.current.blur();
+    if (eduRef.current) eduRef.current.blur();
     if (age && educationLevel) {
+      setSubmitted(true);
+      // Diagnóstico: log antes de llamar onSubmit
+      console.log('Calling onSubmit...');
       onSubmit(age, educationLevel);
+      // Diagnóstico: forzar avance tras 500ms si no cambia el estado
+      setTimeout(() => {
+        if (document.activeElement) document.activeElement.blur();
+      }, 100);
+      setTimeout(() => {
+        // Si aún no avanzó, intenta de nuevo
+        if (typeof onSubmit === 'function') {
+          onSubmit(age, educationLevel);
+        }
+      }, 800);
     }
   };
 
@@ -19,6 +38,7 @@ export default function DemographicForm({ onSubmit }) {
           <div>
             <label className="block text-white font-bold mb-2">Edad:</label>
             <input
+              ref={ageRef}
               type="number"
               value={age}
               onChange={(e) => setAge(e.target.value)}
@@ -34,6 +54,7 @@ export default function DemographicForm({ onSubmit }) {
           <div>
             <label className="block text-white font-bold mb-2">Último grado de estudio:</label>
             <select
+              ref={eduRef}
               value={educationLevel}
               onChange={(e) => setEducationLevel(e.target.value)}
               className="w-full px-4 py-2 rounded-lg border-2 border-yellow-400 focus:border-yellow-300 focus:outline-none"
@@ -59,6 +80,11 @@ export default function DemographicForm({ onSubmit }) {
             Comenzar Juego
           </button>
         </form>
+        {submitted && (
+          <div className="mt-4 text-center text-yellow-300 font-bold animate-pulse">
+            Procesando... Si no avanza, intenta de nuevo o recarga la página.
+          </div>
+        )}
       </div>
     </div>
   );
