@@ -116,7 +116,7 @@ function calculateProbabilities(playerHand, dealerVisibleCard) {
   
   // Probabilidad de pasarse (bust)
   const bustCards = remainingCards.filter(card => {
-    const newValue = playerValue + card.points;
+    let newValue = playerValue + card.points;
     let aces = (playerHand.filter(c => c.value === 'A').length) + (card.value === 'A' ? 1 : 0);
     while (newValue > 21 && aces > 0) {
       newValue -= 10;
@@ -130,9 +130,8 @@ function calculateProbabilities(playerHand, dealerVisibleCard) {
   // Probabilidad de ganar vs dealer
   let winProbability = 0;
   if (dealerVisibleCard) {
-    const dealerValue = dealerVisibleCard.points;
     const favorableCards = remainingCards.filter(card => {
-      const newValue = playerValue + card.points;
+      let newValue = playerValue + card.points;
       let aces = (playerHand.filter(c => c.value === 'A').length) + (card.value === 'A' ? 1 : 0);
       while (newValue > 21 && aces > 0) {
         newValue -= 10;
@@ -399,7 +398,7 @@ export default function Blackjack() {
   }
 
   // Mostrar solo la primera carta del dealer si el jugador no se ha plantado
-  const visibleDealerHand = playerStands ? dealerHand : [dealerHand[0]];
+  const visibleDealerHand = dealerHand;
   const dealerFaceDown = playerStands ? dealerHand.map(() => false) : [false, ...dealerHand.slice(1).map(() => true)];
 
   // Reemplazar el formulario demográfico, barra de stats y análisis por los componentes nuevos
@@ -500,7 +499,7 @@ export default function Blackjack() {
         {/* Dealer */}
         <div className="flex flex-col items-center mb-6">
           <div className="flex gap-2 mb-2">
-            {dealerHand.map((card, idx) => (
+            {visibleDealerHand.map((card, idx) => (
               <Card key={idx} value={card.value} suit={card.suit} faceDown={dealerFaceDown[idx]} />
             ))}
           </div>
