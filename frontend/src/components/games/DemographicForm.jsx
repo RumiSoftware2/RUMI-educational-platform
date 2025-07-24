@@ -14,15 +14,12 @@ export default function DemographicForm({ onSubmit }) {
     if (eduRef.current) eduRef.current.blur();
     if (age && educationLevel) {
       setSubmitted(true);
-      // Diagnóstico: log antes de llamar onSubmit
       console.log('Calling onSubmit...');
       onSubmit(age, educationLevel);
-      // Diagnóstico: forzar avance tras 500ms si no cambia el estado
       setTimeout(() => {
         if (document.activeElement) document.activeElement.blur();
       }, 100);
       setTimeout(() => {
-        // Si aún no avanzó, intenta de nuevo
         if (typeof onSubmit === 'function') {
           onSubmit(age, educationLevel);
         }
@@ -36,9 +33,11 @@ export default function DemographicForm({ onSubmit }) {
         <h1 className="text-3xl font-extrabold text-white mb-6 text-center">Blackjack Educativo</h1>
         <form className="space-y-4" onSubmit={handleSubmit} autoComplete="off">
           <div>
-            <label className="block text-white font-bold mb-2">Edad:</label>
+            <label htmlFor="age-input" className="block text-white font-bold mb-2">Edad:</label>
             <input
               ref={ageRef}
+              id="age-input"
+              name="age"
               type="number"
               value={age}
               onChange={(e) => setAge(e.target.value)}
@@ -52,9 +51,11 @@ export default function DemographicForm({ onSubmit }) {
             />
           </div>
           <div>
-            <label className="block text-white font-bold mb-2">Último grado de estudio:</label>
+            <label htmlFor="education-input" className="block text-white font-bold mb-2">Último grado de estudio:</label>
             <select
               ref={eduRef}
+              id="education-input"
+              name="educationLevel"
               value={educationLevel}
               onChange={(e) => setEducationLevel(e.target.value)}
               className="w-full px-4 py-2 rounded-lg border-2 border-yellow-400 focus:border-yellow-300 focus:outline-none"

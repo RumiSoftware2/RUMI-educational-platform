@@ -229,7 +229,7 @@ export default function Blackjack() {
     return () => clearInterval(interval);
   }, [gameStarted, timerActive, timer]);
 
-  // Cargar datos demográficos del localStorage
+  // Cargar datos demográficos del localStorage SOLO una vez al montar
   useEffect(() => {
     const savedAge = localStorage.getItem('blackjack_age');
     const savedEducation = localStorage.getItem('blackjack_education');
@@ -238,6 +238,7 @@ export default function Blackjack() {
       setEducationLevel(savedEducation);
       setShowDemographics(false);
     }
+  // eslint-disable-next-line
   }, []);
 
   // Calcular probabilidades cuando cambian las manos
