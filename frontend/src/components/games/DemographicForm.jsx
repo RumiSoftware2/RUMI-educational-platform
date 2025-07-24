@@ -12,10 +12,10 @@ export default function DemographicForm({ onSubmit }) {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-green-900 via-green-700 to-green-500 py-8">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-green-900 via-green-700 to-green-500 py-8 px-4">
       <div className="rounded-3xl shadow-2xl border-4 border-[#ffd700] bg-green-800/80 p-8 max-w-md w-full">
         <h1 className="text-3xl font-extrabold text-white mb-6 text-center">Blackjack Educativo</h1>
-        <form className="space-y-4" onSubmit={handleSubmit}>
+        <form className="space-y-4" onSubmit={handleSubmit} autoComplete="off">
           <div>
             <label className="block text-white font-bold mb-2">Edad:</label>
             <input
@@ -27,6 +27,8 @@ export default function DemographicForm({ onSubmit }) {
               min="1"
               max="120"
               required
+              inputMode="numeric"
+              pattern="[0-9]*"
             />
           </div>
           <div>
