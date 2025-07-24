@@ -4,6 +4,7 @@ import Card from './Card';
 import DemographicForm from '../../components/games/DemographicForm';
 import GameStatsBar from '../../components/games/GameStatsBar';
 import SessionAnalysis from '../../components/games/SessionAnalysis';
+import CountdownTimer from '../../components/games/CountdownTimer';
 
 // Baraja completa para cálculos de probabilidad
 const deck = [
@@ -156,7 +157,8 @@ export default function Blackjack() {
   // NUEVO: Estados para dinero y timer
   const [money, setMoney] = useState(1000); // Saldo inicial
   const betAmount = 100; // Apuesta fija por ronda
-  const [timer, setTimer] = useState(600); // 10 minutos en segundos
+  // Cambia el valor inicial del timer a 900 segundos
+  const [timer, setTimer] = useState(900); // 15 minutos en segundos
   const [timerActive, setTimerActive] = useState(false);
   
   // Estados demográficos
@@ -252,7 +254,7 @@ export default function Blackjack() {
       localStorage.setItem('blackjack_education', educationLevel);
       setShowDemographics(false);
       setMoney(1000); // Reiniciar dinero
-      setTimer(600); // Reiniciar timer
+      setTimer(900); // Reiniciar timer a 15 minutos
       setTimerActive(true);
       startGame();
     }
@@ -403,7 +405,7 @@ export default function Blackjack() {
 
   // Reemplazar el formulario demográfico, barra de stats y análisis por los componentes nuevos
   if (showDemographics) {
-    return <DemographicForm onSave={saveDemographics} />;
+    return <DemographicForm onSubmit={saveDemographics} />;
   }
 
   if (showQuiz && currentQuiz) {
@@ -454,7 +456,7 @@ export default function Blackjack() {
           setShowAnalysis(false);
           setShowDemographics(true); // Forzar nuevo registro
           setMoney(1000);
-          setTimer(600);
+          setTimer(900);
           setTimerActive(false);
           setGameStarted(false);
         }}
@@ -463,7 +465,7 @@ export default function Blackjack() {
           setShowAnalysis(false);
           setShowDemographics(true);
           setMoney(1000);
-          setTimer(600);
+          setTimer(900);
           setTimerActive(false);
           setGameStarted(false);
         }}
@@ -542,7 +544,7 @@ export default function Blackjack() {
             onClick={() => {
               setShowDemographics(true);
               setMoney(1000);
-              setTimer(600);
+              setTimer(900);
               setTimerActive(false);
               setGameStarted(false);
             }} 
