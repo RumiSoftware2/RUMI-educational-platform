@@ -1,6 +1,9 @@
 // src/pages/games/Blackjack.jsx
 import { useState, useEffect } from 'react';
 import Card from './Card';
+import DemographicForm from '../../components/games/DemographicForm';
+import GameStatsBar from '../../components/games/GameStatsBar';
+import SessionAnalysis from '../../components/games/SessionAnalysis';
 
 // Baraja completa para cálculos de probabilidad
 const deck = [
@@ -399,58 +402,11 @@ export default function Blackjack() {
   const visibleDealerHand = playerStands ? dealerHand : [dealerHand[0]];
   const dealerFaceDown = playerStands ? dealerHand.map(() => false) : [false, ...dealerHand.slice(1).map(() => true)];
 
-  // Formulario demográfico
+  // Reemplazar el formulario demográfico, barra de stats y análisis por los componentes nuevos
   if (showDemographics) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-green-900 via-green-700 to-green-500 py-8">
-        <div className="rounded-3xl shadow-2xl border-4 border-[#ffd700] bg-green-800/80 p-8 max-w-md w-full">
-          <h1 className="text-3xl font-extrabold text-white mb-6 text-center">Blackjack Educativo</h1>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-white font-bold mb-2">Edad:</label>
-              <input
-                type="number"
-                value={age}
-                onChange={(e) => setAge(e.target.value)}
-                className="w-full px-4 py-2 rounded-lg border-2 border-yellow-400 focus:border-yellow-300 focus:outline-none"
-                placeholder="Ingresa tu edad"
-                min="1"
-                max="120"
-              />
-            </div>
-            <div>
-              <label className="block text-white font-bold mb-2">Último grado de estudio:</label>
-              <select
-                value={educationLevel}
-                onChange={(e) => setEducationLevel(e.target.value)}
-                className="w-full px-4 py-2 rounded-lg border-2 border-yellow-400 focus:border-yellow-300 focus:outline-none"
-              >
-                <option value="">Selecciona...</option>
-                <option value="primaria">Primaria</option>
-                <option value="secundaria">Secundaria</option>
-                <option value="preparatoria">Preparatoria</option>
-                <option value="universidad">Universidad</option>
-                <option value="posgrado">Posgrado</option>
-              </select>
-            </div>
-            <button
-              onClick={saveDemographics}
-              disabled={!age || !educationLevel}
-              className={`w-full py-3 rounded-xl font-bold text-white transition-colors ${
-                age && educationLevel 
-                  ? 'bg-green-600 hover:bg-green-700' 
-                  : 'bg-gray-400 cursor-not-allowed'
-              }`}
-            >
-              Comenzar Juego
-            </button>
-          </div>
-        </div>
-      </div>
-    );
+    return <DemographicForm onSave={saveDemographics} />;
   }
 
-  // Quiz matemático
   if (showQuiz && currentQuiz) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-green-900 via-green-700 to-green-500 py-8">
@@ -489,100 +445,30 @@ export default function Blackjack() {
     );
   }
 
-  // Análisis básico
   if (showAnalysis) {
-    const winRate = gameStats.rounds > 0 ? ((gameStats.wins / gameStats.rounds) * 100).toFixed(1) : 0;
-    const quizAccuracy = gameStats.totalQuizzes > 0 ? ((gameStats.quizScore / gameStats.totalQuizzes) * 100).toFixed(1) : 0;
-    
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-green-900 via-green-700 to-green-500 py-8">
-        <div className="rounded-3xl shadow-2xl border-4 border-[#ffd700] bg-green-800/80 p-8 max-w-lg w-full">
-          <h2 className="text-2xl font-bold text-white mb-4 text-center">Análisis de tu Juego</h2>
-          
-          <div className="space-y-4 text-white">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-white/10 rounded-lg p-3 text-center">
-                <div className="text-2xl font-bold text-yellow-300">{gameStats.rounds}</div>
-                <div className="text-sm">Rondas jugadas</div>
-              </div>
-              <div className="bg-white/10 rounded-lg p-3 text-center">
-                <div className="text-2xl font-bold text-green-300">{winRate}%</div>
-                <div className="text-sm">Tasa de victoria</div>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-3 gap-2">
-              <div className="bg-green-600/80 rounded-lg p-2 text-center">
-                <div className="text-lg font-bold">{gameStats.wins}</div>
-                <div className="text-xs">Victorias</div>
-              </div>
-              <div className="bg-red-600/80 rounded-lg p-2 text-center">
-                <div className="text-lg font-bold">{gameStats.losses}</div>
-                <div className="text-xs">Derrotas</div>
-              </div>
-              <div className="bg-blue-600/80 rounded-lg p-2 text-center">
-                <div className="text-lg font-bold">{gameStats.ties}</div>
-                <div className="text-xs">Empates</div>
-              </div>
-            </div>
-            
-            {gameStats.totalQuizzes > 0 && (
-              <div className="bg-white/10 rounded-lg p-3">
-                <div className="text-center mb-2">
-                  <div className="text-xl font-bold text-yellow-300">{quizAccuracy}%</div>
-                  <div className="text-sm">Precisión en quizzes</div>
-                </div>
-                <div className="text-xs text-center">
-                  {gameStats.quizScore} de {gameStats.totalQuizzes} correctas
-                </div>
-              </div>
-            )}
-            
-            <div className="bg-white/10 rounded-lg p-3">
-              <div className="text-center">
-                <div className="text-lg font-bold text-purple-300">{Math.floor(gameStats.timeSpent / 60)}:{(gameStats.timeSpent % 60).toString().padStart(2, '0')}</div>
-                <div className="text-sm">Tiempo total jugado</div>
-              </div>
-            </div>
-            <div className="bg-white/10 rounded-lg p-3">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-yellow-400">${money}</div>
-                <div className="text-sm">Dinero restante</div>
-              </div>
-            </div>
-          </div>
-          
-          <div className="flex gap-4 mt-6">
-            <button
-              onClick={() => {
-                setShowAnalysis(false);
-                setShowDemographics(true); // Forzar nuevo registro
-                setMoney(1000);
-                setTimer(600);
-                setTimerActive(false);
-                setGameStarted(false);
-              }}
-              className="flex-1 py-3 rounded-xl font-bold text-white bg-green-600 hover:bg-green-700 transition-colors"
-            >
-              Nueva Sesión
-            </button>
-            <button
-              onClick={() => {
-                sendDataToBackend();
-                setShowAnalysis(false);
-                setShowDemographics(true);
-                setMoney(1000);
-                setTimer(600);
-                setTimerActive(false);
-                setGameStarted(false);
-              }}
-              className="flex-1 py-3 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-700 transition-colors"
-            >
-              Análisis Avanzado
-            </button>
-          </div>
-        </div>
-      </div>
+      <SessionAnalysis
+        gameStats={gameStats}
+        money={money}
+        timer={timer}
+        onNewSession={() => {
+          setShowAnalysis(false);
+          setShowDemographics(true); // Forzar nuevo registro
+          setMoney(1000);
+          setTimer(600);
+          setTimerActive(false);
+          setGameStarted(false);
+        }}
+        onAdvancedAnalysis={() => {
+          sendDataToBackend();
+          setShowAnalysis(false);
+          setShowDemographics(true);
+          setMoney(1000);
+          setTimer(600);
+          setTimerActive(false);
+          setGameStarted(false);
+        }}
+      />
     );
   }
 
@@ -593,17 +479,6 @@ export default function Blackjack() {
         <h1 className="text-3xl font-extrabold text-white mb-2 tracking-wide">Blackjack Educativo</h1>
         <div className="text-yellow-300 font-bold text-lg mb-2">BLACKJACK PAGA 3 A 2</div>
         <div className="text-white text-sm mb-4">Dealer debe plantarse en 17 suave</div>
-        {/* NUEVO: Timer y dinero */}
-        <div className="flex gap-6 mb-4">
-          <div className="bg-black/40 rounded-lg px-4 py-2 text-center">
-            <div className="text-white text-xs">Tiempo restante</div>
-            <div className="text-yellow-300 font-bold text-lg">{Math.floor(timer / 60)}:{(timer % 60).toString().padStart(2, '0')}</div>
-          </div>
-          <div className="bg-black/40 rounded-lg px-4 py-2 text-center">
-            <div className="text-white text-xs">Dinero</div>
-            <div className="text-green-300 font-bold text-lg">${money}</div>
-          </div>
-        </div>
         
         {/* Probabilidades en tiempo real */}
         {gameStarted && playerHand.length > 0 && (
