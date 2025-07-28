@@ -5,15 +5,23 @@ export default function DemographicForm({ onSubmit }) {
   const { t } = useLanguage();
   const [age, setAge] = useState('');
   const [educationLevel, setEducationLevel] = useState('');
+  const [subLevel, setSubLevel] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Form submitted:', { age, educationLevel });
+    console.log('Form submitted:', { age, educationLevel, subLevel });
 
     if (age && educationLevel) {
       console.log('Calling onSubmit with data...');
-      onSubmit(age, educationLevel);
+      // Combine education level with sub level if applicable
+      const finalEducationLevel = subLevel ? `${educationLevel}_${subLevel}` : educationLevel;
+      onSubmit(age, finalEducationLevel);
     }
+  };
+
+  const handleEducationChange = (e) => {
+    setEducationLevel(e.target.value);
+    setSubLevel(''); // Reset sub level when education level changes
   };
 
   return (
@@ -70,24 +78,69 @@ export default function DemographicForm({ onSubmit }) {
                   id="education-input"
                   name="educationLevel"
                   value={educationLevel}
-                  onChange={(e) => setEducationLevel(e.target.value)}
+                  onChange={handleEducationChange}
                   className="w-full px-4 py-3 rounded-xl border-2 border-yellow-400 focus:border-yellow-300 focus:outline-none bg-white/90 text-gray-800 font-semibold transition-all duration-200"
                   required
                 >
                   <option value="">{t('selectEducation')}</option>
                   <option value="primaria">{t('primary')}</option>
                   <option value="secundaria">{t('secondary')}</option>
-                  <option value="preparatoria">{t('highSchool')}</option>
+                  <option value="bachillerato">Bachillerato</option>
                   <option value="universidad">{t('university')}</option>
                   <option value="posgrado">{t('postgraduate')}</option>
                 </select>
               </div>
+
+              {/* Sub-level options for Primary */}
+              {educationLevel === 'primaria' && (
+                <div>
+                  <label htmlFor="sub-level-input" className="block text-white font-bold mb-3 text-lg">Grado:</label>
+                  <select
+                    id="sub-level-input"
+                    name="subLevel"
+                    value={subLevel}
+                    onChange={(e) => setSubLevel(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl border-2 border-yellow-400 focus:border-yellow-300 focus:outline-none bg-white/90 text-gray-800 font-semibold transition-all duration-200"
+                    required
+                  >
+                    <option value="">Selecciona el grado...</option>
+                    <option value="primero">Primero</option>
+                    <option value="segundo">Segundo</option>
+                    <option value="tercero">Tercero</option>
+                    <option value="cuarto">Cuarto</option>
+                    <option value="quinto">Quinto</option>
+                  </select>
+                </div>
+              )}
+
+              {/* Sub-level options for Bachillerato */}
+              {educationLevel === 'bachillerato' && (
+                <div>
+                  <label htmlFor="sub-level-input" className="block text-white font-bold mb-3 text-lg">Grado:</label>
+                  <select
+                    id="sub-level-input"
+                    name="subLevel"
+                    value={subLevel}
+                    onChange={(e) => setSubLevel(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl border-2 border-yellow-400 focus:border-yellow-300 focus:outline-none bg-white/90 text-gray-800 font-semibold transition-all duration-200"
+                    required
+                  >
+                    <option value="">Selecciona el grado...</option>
+                    <option value="sexto">Sexto</option>
+                    <option value="septimo">Séptimo</option>
+                    <option value="octavo">Octavo</option>
+                    <option value="noveno">Noveno</option>
+                    <option value="decimo">Décimo</option>
+                    <option value="once">Once</option>
+                  </select>
+                </div>
+              )}
               
               <button
                 type="submit"
-                disabled={!age || !educationLevel}
+                disabled={!age || !educationLevel || (educationLevel === 'primaria' && !subLevel) || (educationLevel === 'bachillerato' && !subLevel)}
                 className={`w-full py-4 rounded-xl font-bold text-white transition-all duration-200 transform hover:scale-105 shadow-lg ${
-                  age && educationLevel
+                  age && educationLevel && ((educationLevel === 'primaria' && subLevel) || (educationLevel === 'bachillerato' && subLevel) || (educationLevel !== 'primaria' && educationLevel !== 'bachillerato'))
                     ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700'
                     : 'bg-gray-500 cursor-not-allowed'
                 }`}
