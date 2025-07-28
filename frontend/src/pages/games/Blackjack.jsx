@@ -695,8 +695,8 @@ export default function Blackjack() {
             
             {/* Result Display */}
             {result && (
-              <div className="mt-6 text-center">
-                <div className="text-2xl font-extrabold text-white bg-black/60 rounded-xl px-6 py-3 animate-pulse border-2 border-yellow-400">
+              <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                <div className="text-4xl md:text-6xl font-extrabold text-white bg-black/80 rounded-3xl px-8 py-6 animate-pulse border-4 border-yellow-400 shadow-2xl">
                   {result}
                 </div>
               </div>
