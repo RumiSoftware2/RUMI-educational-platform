@@ -30,7 +30,6 @@ import StudentCourseDetail from './pages/StudentCourseDetail';
 import VerifyResetCode from './pages/VerifyResetCode';
 import Sudoku from './pages/games/Sudoku';
 import { LanguageProvider } from './context/LanguageContext';
-import LanguageSwitcher from './components/LanguageSwitcher';
 
 
 function App() {
@@ -38,7 +37,6 @@ function App() {
     <LanguageProvider>
       <BrowserRouter>
         <ScrollToTop />
-        <LanguageSwitcher />
         <AppLayout>
           <Routes>
             <Route path="/register" element={<Register />} />
