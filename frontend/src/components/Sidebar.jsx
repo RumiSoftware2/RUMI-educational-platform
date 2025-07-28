@@ -18,13 +18,16 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* Toggle Button */}
+      {/* Toggle Button - Left Center */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed left-4 top-4 z-50 bg-yellow-500 hover:bg-yellow-600 text-gray-800 font-bold py-2 px-3 rounded-full shadow-lg transition-all duration-200 transform hover:scale-105"
-        title="Settings"
+        className="fixed left-4 top-1/2 transform -translate-y-1/2 z-50 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-3 px-4 rounded-full shadow-lg transition-all duration-200 transform hover:scale-105 border-2 border-blue-300"
+        title="Settings / Configuración"
       >
-        ⚙️
+        <div className="flex items-center gap-2">
+          <span className="text-lg">🌙</span>
+          <span className="text-sm font-semibold">OPC</span>
+        </div>
       </button>
 
       {/* Sidebar */}
