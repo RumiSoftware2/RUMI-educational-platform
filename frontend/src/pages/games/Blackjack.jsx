@@ -152,6 +152,20 @@ export default function Blackjack() {
   // Timer
   const [startTime, setStartTime] = useState(null);
 
+  // Estados para estadísticas
+  const [showStatistics, setShowStatistics] = useState(false);
+  const [gameStats, setGameStats] = useState({
+    totalRounds: 0,
+    wins: 0,
+    losses: 0,
+    ties: 0,
+    busts: 0,
+    totalMoneyEarned: 0,
+    totalMoneyLost: 0,
+    averageProbability: 0,
+    finalMoney: 1000
+  });
+
   // Mantener pantalla encendida
   useEffect(() => {
     let wakeLock = null;
@@ -183,9 +197,7 @@ export default function Blackjack() {
       // Tiempo agotado
       setTimerActive(false);
       setResult('¡Tiempo agotado!');
-      // Borrar datos demográficos para forzar nuevo registro
-      localStorage.removeItem('blackjack_age');
-      localStorage.removeItem('blackjack_education');
+      endGameWithStatistics('¡Tiempo agotado!');
     }
     return () => clearInterval(interval);
   }, [gameStarted, timerActive, timer]);
@@ -264,6 +276,19 @@ export default function Blackjack() {
     setGameStarted(true);
     setStartTime(Date.now());
     setTimerActive(true);
+    setShowStatistics(false);
+    // Reset statistics
+    setGameStats({
+      totalRounds: 0,
+      wins: 0,
+      losses: 0,
+      ties: 0,
+      busts: 0,
+      totalMoneyEarned: 0,
+      totalMoneyLost: 0,
+      averageProbability: 0,
+      finalMoney: 1000
+    });
   };
 
   const isBusted = handValue(playerHand) > 21;
@@ -279,7 +304,7 @@ export default function Blackjack() {
       setResult(finalResult);
       // Restar dinero por perder
       setMoney((prev) => Math.max(0, prev - betAmount));
-      endGame(finalResult, handValue(newHand), handValue(dealerHand));
+      endGameWithStatistics(finalResult, handValue(newHand), handValue(dealerHand));
     }
   };
 
@@ -309,15 +334,67 @@ export default function Blackjack() {
       if (res === t('lose') || res === t('bust')) return Math.max(0, prev - betAmount);
       return prev;
     });
-    endGame(res, pVal, dVal);
+    endGameWithStatistics(res, pVal, dVal);
   };
 
-  const endGame = (result, playerValue, dealerValue) => {
-    // Simplemente reiniciar el juego después de un delay
+  const endGameWithStatistics = (result, playerValue, dealerValue) => {
+    // Update statistics
+    setGameStats(prev => {
+      const newStats = { ...prev };
+      newStats.totalRounds++;
+      newStats.finalMoney = money;
+      
+      if (result === t('win')) {
+        newStats.wins++;
+        newStats.totalMoneyEarned += betAmount;
+      } else if (result === t('lose')) {
+        newStats.losses++;
+        newStats.totalMoneyLost += betAmount;
+      } else if (result === t('tie')) {
+        newStats.ties++;
+      } else if (result === t('bust')) {
+        newStats.busts++;
+        newStats.totalMoneyLost += betAmount;
+      }
+      
+      // Calculate average probability
+      newStats.averageProbability = ((newStats.averageProbability * (newStats.totalRounds - 1)) + 
+        (parseFloat(probabilities.winProbability) + parseFloat(probabilities.bustProbability)) / 2) / newStats.totalRounds;
+      
+      return newStats;
+    });
+
+    // Show statistics after a delay
     setTimeout(() => {
-      setResult('');
-      startGame();
+      setShowStatistics(true);
     }, 2000);
+  };
+
+  const startNewSession = () => {
+    setShowDemographics(true);
+    setMoney(1000);
+    setTimer(900);
+    setTimerActive(false);
+    setGameStarted(false);
+    setShowStatistics(false);
+    setResult('');
+    setPlayerHand([]);
+    setDealerHand([]);
+    setPlayerStands(false);
+  };
+
+  const finishGame = () => {
+    // Clear localStorage to force new demographic entry
+    localStorage.removeItem('blackjack_age');
+    localStorage.removeItem('blackjack_education');
+    localStorage.removeItem('blackjack_money');
+    localStorage.removeItem('blackjack_timer');
+    localStorage.removeItem('blackjack_gameStarted');
+    localStorage.removeItem('blackjack_playerHand');
+    localStorage.removeItem('blackjack_dealerHand');
+    localStorage.removeItem('blackjack_result');
+    localStorage.removeItem('blackjack_playerStands');
+    startNewSession();
   };
 
   // Mostrar solo la primera carta del dealer si el jugador no se ha plantado
@@ -330,6 +407,126 @@ export default function Blackjack() {
       <>
         <Sidebar />
         <DemographicForm onSubmit={saveDemographics} />
+      </>
+    );
+  }
+
+  // Mostrar estadísticas si el juego terminó
+  if (showStatistics) {
+    return (
+      <>
+        <Sidebar />
+        <div className="blackjack-container min-h-screen bg-gradient-to-br from-green-900 via-green-700 to-green-500 py-4 px-4">
+          <style>
+            {`
+              .blackjack-container {
+                --dark-mode: 0;
+                transition: all 0.3s ease;
+              }
+              
+              .blackjack-container.dark-mode-active {
+                --dark-mode: 1;
+              }
+              
+              .blackjack-container.dark-mode-active {
+                filter: invert(1) hue-rotate(180deg);
+              }
+              
+              .blackjack-container.dark-mode-active img,
+              .blackjack-container.dark-mode-active svg {
+                filter: invert(1) hue-rotate(180deg);
+              }
+            `}
+          </style>
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-8">
+              <h1 className="text-3xl md:text-4xl font-extrabold text-white mb-4 tracking-wide">{t('gameStatistics')}</h1>
+              <div className="text-yellow-300 text-lg font-semibold">📊 {t('sessionResults')}</div>
+            </div>
+
+            <div className="bg-green-800/80 rounded-3xl shadow-2xl border-4 border-yellow-400 p-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                <div className="bg-black/40 rounded-xl p-4 text-center">
+                  <div className="text-2xl font-bold text-white">{gameStats.totalRounds}</div>
+                  <div className="text-yellow-300">{t('totalRounds')}</div>
+                </div>
+                <div className="bg-black/40 rounded-xl p-4 text-center">
+                  <div className="text-2xl font-bold text-green-400">{gameStats.wins}</div>
+                  <div className="text-yellow-300">{t('wins')}</div>
+                </div>
+                <div className="bg-black/40 rounded-xl p-4 text-center">
+                  <div className="text-2xl font-bold text-red-400">{gameStats.losses}</div>
+                  <div className="text-yellow-300">{t('losses')}</div>
+                </div>
+                <div className="bg-black/40 rounded-xl p-4 text-center">
+                  <div className="text-2xl font-bold text-blue-400">{gameStats.ties}</div>
+                  <div className="text-yellow-300">{t('ties')}</div>
+                </div>
+                <div className="bg-black/40 rounded-xl p-4 text-center">
+                  <div className="text-2xl font-bold text-orange-400">{gameStats.busts}</div>
+                  <div className="text-yellow-300">{t('busts')}</div>
+                </div>
+                <div className="bg-black/40 rounded-xl p-4 text-center">
+                  <div className="text-2xl font-bold text-white">${gameStats.finalMoney}</div>
+                  <div className="text-yellow-300">{t('finalMoney')}</div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div className="bg-black/40 rounded-xl p-4">
+                  <h3 className="text-white font-bold text-lg mb-3">{t('moneyAnalysis')}</h3>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-yellow-300">{t('totalEarned')}:</span>
+                      <span className="text-green-400">+${gameStats.totalMoneyEarned}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-yellow-300">{t('totalLost')}:</span>
+                      <span className="text-red-400">-${gameStats.totalMoneyLost}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-yellow-300">{t('netResult')}:</span>
+                      <span className={`font-bold ${gameStats.totalMoneyEarned - gameStats.totalMoneyLost >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        ${gameStats.totalMoneyEarned - gameStats.totalMoneyLost}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-black/40 rounded-xl p-4">
+                  <h3 className="text-white font-bold text-lg mb-3">{t('probabilityAnalysis')}</h3>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-yellow-300">{t('averageWinProbability')}:</span>
+                      <span className="text-green-400">{gameStats.averageProbability.toFixed(1)}%</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-yellow-300">{t('winRate')}:</span>
+                      <span className="text-blue-400">
+                        {gameStats.totalRounds > 0 ? ((gameStats.wins / gameStats.totalRounds) * 100).toFixed(1) : 0}%
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap justify-center gap-4">
+                <button 
+                  onClick={startNewSession} 
+                  className="px-8 py-3 rounded-xl font-bold text-white bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 transition-all duration-200 transform hover:scale-105 shadow-lg"
+                >
+                  {t('newSession')}
+                </button>
+                <button 
+                  onClick={finishGame} 
+                  className="px-8 py-3 rounded-xl font-bold text-white bg-red-600 hover:bg-red-700 transition-all duration-200 transform hover:scale-105 shadow-lg"
+                >
+                  {t('finishGame')}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </>
     );
   }
@@ -403,10 +600,10 @@ export default function Blackjack() {
           </div>
 
           {/* Main Game Area */}
-          <div className="bg-blue-800/80 rounded-3xl shadow-2xl border-4 border-blue-400 p-6 md:p-8">
+          <div className="bg-green-800/80 rounded-3xl shadow-2xl border-4 border-yellow-400 p-6 md:p-8">
             {/* Dealer Section */}
             <div className="flex flex-col items-center mb-8">
-              <h2 className="text-xl font-bold text-blue-300 mb-4">{t('dealer')}</h2>
+              <h2 className="text-xl font-bold text-yellow-300 mb-4">{t('dealer')}</h2>
               <div className="flex gap-2 mb-3">
                 {visibleDealerHand.map((card, idx) => (
                   <Card key={idx} value={card.value} suit={card.suit} faceDown={dealerFaceDown[idx]} />
@@ -419,7 +616,7 @@ export default function Blackjack() {
             
             {/* Player Section */}
             <div className="flex flex-col items-center mb-8">
-              <h2 className="text-xl font-bold text-blue-300 mb-4">{t('you')}</h2>
+              <h2 className="text-xl font-bold text-yellow-300 mb-4">{t('you')}</h2>
               <div className="flex gap-2 mb-3">
                 {playerHand.map((card, idx) => (
                   <Card key={idx} value={card.value} suit={card.suit} />
@@ -437,7 +634,7 @@ export default function Blackjack() {
                   disabled={!canPlay || money < betAmount} 
                   className={`px-8 py-3 rounded-xl font-bold text-white transition-all duration-200 transform hover:scale-105 ${
                     canPlay && money >= betAmount 
-                      ? 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-lg' 
+                      ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 shadow-lg' 
                       : 'bg-gray-500 cursor-not-allowed'
                   }`}
                 >
@@ -448,7 +645,7 @@ export default function Blackjack() {
                   disabled={!canPlay || money < betAmount} 
                   className={`px-8 py-3 rounded-xl font-bold text-white transition-all duration-200 transform hover:scale-105 ${
                     canPlay && money >= betAmount 
-                      ? 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-lg' 
+                      ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 shadow-lg' 
                       : 'bg-gray-500 cursor-not-allowed'
                   }`}
                 >
@@ -459,39 +656,13 @@ export default function Blackjack() {
               {/* Session Management Buttons */}
               <div className="flex flex-wrap justify-center gap-4">
                 <button 
-                  onClick={() => {
-                    setShowDemographics(true);
-                    setMoney(1000);
-                    setTimer(900);
-                    setTimerActive(false);
-                    setGameStarted(false);
-                  }} 
-                  className="px-6 py-2 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-700 transition-all duration-200 transform hover:scale-105 shadow-lg"
+                  onClick={startNewSession} 
+                  className="px-6 py-2 rounded-xl font-bold text-white bg-green-600 hover:bg-green-700 transition-all duration-200 transform hover:scale-105 shadow-lg"
                 >
                   {t('newSession')}
                 </button>
                 <button 
-                  onClick={() => {
-                    // Clear localStorage to force new demographic entry
-                    localStorage.removeItem('blackjack_age');
-                    localStorage.removeItem('blackjack_education');
-                    localStorage.removeItem('blackjack_money');
-                    localStorage.removeItem('blackjack_timer');
-                    localStorage.removeItem('blackjack_gameStarted');
-                    localStorage.removeItem('blackjack_playerHand');
-                    localStorage.removeItem('blackjack_dealerHand');
-                    localStorage.removeItem('blackjack_result');
-                    localStorage.removeItem('blackjack_playerStands');
-                    setShowDemographics(true);
-                    setMoney(1000);
-                    setTimer(900);
-                    setTimerActive(false);
-                    setGameStarted(false);
-                    setResult('');
-                    setPlayerHand([]);
-                    setDealerHand([]);
-                    setPlayerStands(false);
-                  }} 
+                  onClick={finishGame} 
                   className="px-6 py-2 rounded-xl font-bold text-white bg-red-600 hover:bg-red-700 transition-all duration-200 transform hover:scale-105 shadow-lg"
                 >
                   {t('finishGame')}
@@ -502,7 +673,7 @@ export default function Blackjack() {
             {/* Result Display */}
             {result && (
               <div className="mt-6 text-center">
-                <div className="text-2xl font-extrabold text-white bg-black/60 rounded-xl px-6 py-3 animate-pulse border-2 border-blue-400">
+                <div className="text-2xl font-extrabold text-white bg-black/60 rounded-xl px-6 py-3 animate-pulse border-2 border-yellow-400">
                   {result}
                 </div>
               </div>

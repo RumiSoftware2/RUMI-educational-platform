@@ -16,6 +16,8 @@ export default function Sidebar() {
     
     // Apply dark mode to the Blackjack container using CSS custom properties
     const blackjackContainer = document.querySelector('.blackjack-container');
+    const demographicContainer = document.querySelector('.demographic-container');
+    
     if (blackjackContainer) {
       if (newDarkMode) {
         blackjackContainer.style.setProperty('--dark-mode', '1');
@@ -23,6 +25,16 @@ export default function Sidebar() {
       } else {
         blackjackContainer.style.setProperty('--dark-mode', '0');
         blackjackContainer.classList.remove('dark-mode-active');
+      }
+    }
+    
+    if (demographicContainer) {
+      if (newDarkMode) {
+        demographicContainer.style.setProperty('--dark-mode', '1');
+        demographicContainer.classList.add('dark-mode-active');
+      } else {
+        demographicContainer.style.setProperty('--dark-mode', '0');
+        demographicContainer.classList.remove('dark-mode-active');
       }
     }
   };

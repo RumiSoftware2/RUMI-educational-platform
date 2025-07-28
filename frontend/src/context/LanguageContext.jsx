@@ -41,6 +41,23 @@ const translations = {
     money: 'Money',
     bet: 'Bet',
     
+    // Game Statistics
+    gameStatistics: 'Game Statistics',
+    sessionResults: 'Session Results',
+    totalRounds: 'Total Rounds',
+    wins: 'Wins',
+    losses: 'Losses',
+    ties: 'Ties',
+    busts: 'Busts',
+    finalMoney: 'Final Money',
+    moneyAnalysis: 'Money Analysis',
+    totalEarned: 'Total Earned',
+    totalLost: 'Total Lost',
+    netResult: 'Net Result',
+    probabilityAnalysis: 'Probability Analysis',
+    averageWinProbability: 'Average Win Probability',
+    winRate: 'Win Rate',
+    
     // Demographic Form
     age: 'Age',
     educationLevel: 'Education Level',
@@ -163,6 +180,23 @@ const translations = {
     timeUp: '¡Tiempo agotado!',
     money: 'Dinero',
     bet: 'Apuesta',
+    
+    // Game Statistics
+    gameStatistics: 'Estadísticas del Juego',
+    sessionResults: 'Resultados de la Sesión',
+    totalRounds: 'Total de Rondas',
+    wins: 'Victorias',
+    losses: 'Derrotas',
+    ties: 'Empates',
+    busts: 'Pases',
+    finalMoney: 'Dinero Final',
+    moneyAnalysis: 'Análisis de Dinero',
+    totalEarned: 'Total Ganado',
+    totalLost: 'Total Perdido',
+    netResult: 'Resultado Neto',
+    probabilityAnalysis: 'Análisis de Probabilidad',
+    averageWinProbability: 'Probabilidad Promedio de Ganar',
+    winRate: 'Tasa de Victoria',
     
     // Demographic Form
     age: 'Edad',
