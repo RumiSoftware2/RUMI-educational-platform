@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 import Card from './Card';
 import DemographicForm from '../../components/games/DemographicForm';
 import GameStatsBar from '../../components/games/GameStatsBar';
-import SessionAnalysis from '../../components/games/SessionAnalysis';
 import CountdownTimer from '../../components/games/CountdownTimer';
 
 // Baraja completa para cálculos de probabilidad
@@ -60,28 +59,6 @@ const deck = [
   { value: 'J', suit: 'clubs', points: 10 },
   { value: 'Q', suit: 'clubs', points: 10 },
   { value: 'K', suit: 'clubs', points: 10 },
-];
-
-// Quizzes matemáticos sobre probabilidad
-const mathQuizzes = [
-  {
-    question: "¿Cuál es la probabilidad de obtener un As en la siguiente carta?",
-    options: ["1/13", "4/52", "1/4", "1/52"],
-    correct: 1,
-    explanation: "Hay 4 Ases en una baraja de 52 cartas, por lo que la probabilidad es 4/52 = 1/13"
-  },
-  {
-    question: "Si tienes 16 puntos, ¿cuál es la probabilidad de pasarte con la siguiente carta?",
-    options: ["Menos del 30%", "Entre 30-50%", "Entre 50-70%", "Más del 70%"],
-    correct: 2,
-    explanation: "Necesitas 6 o más puntos para pasarte. Hay 20 cartas con 6+ puntos de 52 cartas = 38.5%"
-  },
-  {
-    question: "¿Cuál es la probabilidad de obtener un 10, J, Q o K?",
-    options: ["1/4", "1/13", "4/13", "1/3"],
-    correct: 2,
-    explanation: "Hay 16 cartas con valor 10 (4 de cada tipo: 10, J, Q, K) de 52 cartas = 16/52 = 4/13"
-  }
 ];
 
 function drawCard() {
@@ -154,10 +131,9 @@ export default function Blackjack() {
   const [playerStands, setPlayerStands] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
   
-  // NUEVO: Estados para dinero y timer
+  // Estados para dinero y timer
   const [money, setMoney] = useState(1000); // Saldo inicial
   const betAmount = 100; // Apuesta fija por ronda
-  // Cambia el valor inicial del timer a 900 segundos
   const [timer, setTimer] = useState(900); // 15 minutos en segundos
   const [timerActive, setTimerActive] = useState(false);
   
@@ -165,24 +141,6 @@ export default function Blackjack() {
   const [showDemographics, setShowDemographics] = useState(true);
   const [age, setAge] = useState('');
   const [educationLevel, setEducationLevel] = useState('');
-  
-  // Estados de análisis
-  const [showAnalysis, setShowAnalysis] = useState(false);
-  const [gameStats, setGameStats] = useState({
-    rounds: 0,
-    wins: 0,
-    losses: 0,
-    ties: 0,
-    quizScore: 0,
-    totalQuizzes: 0,
-    decisions: [],
-    timeSpent: 0
-  });
-  
-  // Estados de quiz
-  const [currentQuiz, setCurrentQuiz] = useState(null);
-  const [showQuiz, setShowQuiz] = useState(false);
-  const [quizAnswered, setQuizAnswered] = useState(false);
   
   // Estados de probabilidad
   const [probabilities, setProbabilities] = useState({ bustProbability: 0, winProbability: 0 });
@@ -210,7 +168,7 @@ export default function Blackjack() {
     };
   }, []);
 
-  // Timer de 10 minutos
+  // Timer de 15 minutos
   useEffect(() => {
     let interval = null;
     if (gameStarted && timerActive && timer > 0) {
@@ -219,7 +177,6 @@ export default function Blackjack() {
       }, 1000);
     } else if (timer === 0) {
       // Tiempo agotado
-      setShowAnalysis(true);
       setTimerActive(false);
       setResult('¡Tiempo agotado!');
       // Borrar datos demográficos para forzar nuevo registro
@@ -249,16 +206,17 @@ export default function Blackjack() {
     }
   }, [playerHand, dealerHand]);
 
-  const saveDemographics = () => {
-    if (age && educationLevel) {
-      localStorage.setItem('blackjack_age', age);
-      localStorage.setItem('blackjack_education', educationLevel);
-      setShowDemographics(false);
-      setMoney(1000); // Reiniciar dinero
-      setTimer(900); // Reiniciar timer a 15 minutos
-      setTimerActive(true);
-      startGame();
-    }
+  const saveDemographics = (age, educationLevel) => {
+    console.log('saveDemographics called with:', { age, educationLevel });
+    localStorage.setItem('blackjack_age', age);
+    localStorage.setItem('blackjack_education', educationLevel);
+    setAge(age);
+    setEducationLevel(educationLevel);
+    setShowDemographics(false);
+    setMoney(1000); // Reiniciar dinero
+    setTimer(900); // Reiniciar timer a 15 minutos
+    setTimerActive(true);
+    startGame();
   };
 
   const startGame = () => {
@@ -268,7 +226,6 @@ export default function Blackjack() {
     setDealerHand([drawCard(), drawCard()]);
     setGameStarted(true);
     setStartTime(Date.now());
-    setShowAnalysis(false);
     setTimerActive(true);
   };
 
@@ -279,12 +236,6 @@ export default function Blackjack() {
     if (!canPlay) return;
     const newHand = [...playerHand, drawCard()];
     setPlayerHand(newHand);
-    
-    // Registrar decisión
-    setGameStats(prev => ({
-      ...prev,
-      decisions: [...prev.decisions, { action: 'hit', playerValue: handValue(newHand) }]
-    }));
     
     if (handValue(newHand) > 21) {
       const finalResult = 'Perdiste, te pasaste';
@@ -298,12 +249,6 @@ export default function Blackjack() {
   const stand = () => {
     setPlayerStands(true);
     let dealer = [...dealerHand];
-    
-    // Registrar decisión
-    setGameStats(prev => ({
-      ...prev,
-      decisions: [...prev.decisions, { action: 'stand', playerValue: handValue(playerHand) }]
-    }));
     
     while (handValue(dealer) < 17) {
       dealer.push(drawCard());
@@ -331,147 +276,20 @@ export default function Blackjack() {
   };
 
   const endGame = (result, playerValue, dealerValue) => {
-    const timeSpent = startTime ? Math.floor((Date.now() - startTime) / 1000) : 0;
-    
-    setGameStats(prev => ({
-      ...prev,
-      rounds: prev.rounds + 1,
-      wins: prev.wins + (result === 'Ganaste' ? 1 : 0),
-      losses: prev.losses + (result === 'Perdiste' || result === 'Perdiste, te pasaste' ? 1 : 0),
-      ties: prev.ties + (result === 'Empate' ? 1 : 0),
-      timeSpent: prev.timeSpent + timeSpent
-    }));
-    
-    // Mostrar quiz ocasionalmente
-    if (Math.random() < 0.3) { // 30% de probabilidad
-      const randomQuiz = mathQuizzes[Math.floor(Math.random() * mathQuizzes.length)];
-      setCurrentQuiz(randomQuiz);
-      setShowQuiz(true);
-      setQuizAnswered(false);
-    } else {
-      setShowAnalysis(true);
-    }
-  };
-
-  const answerQuiz = (selectedOption) => {
-    if (quizAnswered) return;
-    
-    const isCorrect = selectedOption === currentQuiz.correct;
-    setGameStats(prev => ({
-      ...prev,
-      quizScore: prev.quizScore + (isCorrect ? 1 : 0),
-      totalQuizzes: prev.totalQuizzes + 1
-    }));
-    
-    setQuizAnswered(true);
-    
+    // Simplemente reiniciar el juego después de un delay
     setTimeout(() => {
-      setShowQuiz(false);
-      setShowAnalysis(true);
-    }, 3000);
+      setResult('');
+      startGame();
+    }, 2000);
   };
-
-  const sendDataToBackend = async () => {
-    try {
-      const gameData = {
-        demographics: { age, educationLevel },
-        gameStats,
-        timestamp: new Date().toISOString()
-      };
-      
-      // Aquí enviarías los datos al backend Python
-      console.log('Datos del juego:', gameData);
-      
-      // Por ahora solo simulamos el enví
-      // await fetch('https://tu-backend-python.com/api/game/analyze-basic', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(gameData)
-      // });
-      
-    } catch (error) {
-      console.error('Error enviando datos:', error);
-    }
-  };
-
-  // Al mostrar análisis, si dinero = 0 o timer = 0, borrar datos demográficos
-  if (showAnalysis && (money === 0 || timer === 0)) {
-    localStorage.removeItem('blackjack_age');
-    localStorage.removeItem('blackjack_education');
-  }
 
   // Mostrar solo la primera carta del dealer si el jugador no se ha plantado
   const visibleDealerHand = dealerHand;
   const dealerFaceDown = playerStands ? dealerHand.map(() => false) : [false, ...dealerHand.slice(1).map(() => true)];
 
-  // Reemplazar el formulario demográfico, barra de stats y análisis por los componentes nuevos
+  // Mostrar formulario demográfico si es necesario
   if (showDemographics) {
     return <DemographicForm onSubmit={saveDemographics} />;
-  }
-
-  if (showQuiz && currentQuiz) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-green-900 via-green-700 to-green-500 py-8">
-        <div className="rounded-3xl shadow-2xl border-4 border-[#ffd700] bg-green-800/80 p-8 max-w-lg w-full">
-          <h2 className="text-2xl font-bold text-white mb-4 text-center">Quiz Matemático</h2>
-          <div className="bg-white/10 rounded-lg p-4 mb-4">
-            <p className="text-white text-lg mb-4">{currentQuiz.question}</p>
-            <div className="space-y-2">
-              {currentQuiz.options.map((option, index) => (
-                <button
-                  key={index}
-                  onClick={() => answerQuiz(index)}
-                  disabled={quizAnswered}
-                  className={`w-full p-3 rounded-lg text-left transition-colors ${
-                    quizAnswered
-                      ? index === currentQuiz.correct
-                        ? 'bg-green-600 text-white'
-                        : index === currentQuiz.correct
-                        ? 'bg-green-600 text-white'
-                        : 'bg-red-600 text-white'
-                      : 'bg-blue-600 hover:bg-blue-700 text-white'
-                  }`}
-                >
-                  {option}
-                </button>
-              ))}
-            </div>
-            {quizAnswered && (
-              <div className="mt-4 p-3 bg-yellow-600/80 rounded-lg">
-                <p className="text-white text-sm">{currentQuiz.explanation}</p>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (showAnalysis) {
-    return (
-      <SessionAnalysis
-        gameStats={gameStats}
-        money={money}
-        timer={timer}
-        onNewSession={() => {
-          setShowAnalysis(false);
-          setShowDemographics(true); // Forzar nuevo registro
-          setMoney(1000);
-          setTimer(900);
-          setTimerActive(false);
-          setGameStarted(false);
-        }}
-        onAdvancedAnalysis={() => {
-          sendDataToBackend();
-          setShowAnalysis(false);
-          setShowDemographics(true);
-          setMoney(1000);
-          setTimer(900);
-          setTimerActive(false);
-          setGameStarted(false);
-        }}
-      />
-    );
   }
 
   // Juego principal
@@ -481,6 +299,11 @@ export default function Blackjack() {
         <h1 className="text-3xl font-extrabold text-white mb-2 tracking-wide">Blackjack Educativo</h1>
         <div className="text-yellow-300 font-bold text-lg mb-2">BLACKJACK PAGA 3 A 2</div>
         <div className="text-white text-sm mb-4">Dealer debe plantarse en 17 suave</div>
+        
+        {/* Timer y dinero */}
+        <GameStatsBar money={money}>
+          <CountdownTimer seconds={timer} />
+        </GameStatsBar>
         
         {/* Probabilidades en tiempo real */}
         {gameStarted && playerHand.length > 0 && (

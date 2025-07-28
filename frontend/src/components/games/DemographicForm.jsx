@@ -1,29 +1,16 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 
 export default function DemographicForm({ onSubmit }) {
   const [age, setAge] = useState('');
   const [educationLevel, setEducationLevel] = useState('');
-  const [submitted, setSubmitted] = useState(false);
-  const ageRef = useRef(null);
-  const eduRef = useRef(null);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('handleSubmit called', { age, educationLevel });
-    if (ageRef.current) ageRef.current.blur();
-    if (eduRef.current) eduRef.current.blur();
+    console.log('Form submitted:', { age, educationLevel });
+    
     if (age && educationLevel) {
-      setSubmitted(true);
-      console.log('Calling onSubmit...');
+      console.log('Calling onSubmit with data...');
       onSubmit(age, educationLevel);
-      setTimeout(() => {
-        if (document.activeElement) document.activeElement.blur();
-      }, 100);
-      setTimeout(() => {
-        if (typeof onSubmit === 'function') {
-          onSubmit(age, educationLevel);
-        }
-      }, 800);
     }
   };
 
@@ -31,11 +18,10 @@ export default function DemographicForm({ onSubmit }) {
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-green-900 via-green-700 to-green-500 py-8 px-4">
       <div className="rounded-3xl shadow-2xl border-4 border-[#ffd700] bg-green-800/80 p-8 max-w-md w-full">
         <h1 className="text-3xl font-extrabold text-white mb-6 text-center">Blackjack Educativo</h1>
-        <form className="space-y-4" onSubmit={handleSubmit} autoComplete="off">
+        <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
             <label htmlFor="age-input" className="block text-white font-bold mb-2">Edad:</label>
             <input
-              ref={ageRef}
               id="age-input"
               name="age"
               type="number"
@@ -46,14 +32,11 @@ export default function DemographicForm({ onSubmit }) {
               min="1"
               max="120"
               required
-              inputMode="numeric"
-              pattern="[0-9]*"
             />
           </div>
           <div>
             <label htmlFor="education-input" className="block text-white font-bold mb-2">Último grado de estudio:</label>
             <select
-              ref={eduRef}
               id="education-input"
               name="educationLevel"
               value={educationLevel}
@@ -81,11 +64,6 @@ export default function DemographicForm({ onSubmit }) {
             Comenzar Juego
           </button>
         </form>
-        {submitted && (
-          <div className="mt-4 text-center text-yellow-300 font-bold animate-pulse">
-            Procesando... Si no avanza, intenta de nuevo o recarga la página.
-          </div>
-        )}
       </div>
     </div>
   );
