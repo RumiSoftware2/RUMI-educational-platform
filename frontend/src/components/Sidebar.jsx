@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 
 export default function Sidebar() {
@@ -9,40 +9,39 @@ export default function Sidebar() {
     return localStorage.getItem('darkMode') === 'true';
   });
 
-  // Apply dark mode on component mount
-  useEffect(() => {
-    if (isDarkMode) {
-      document.body.classList.add('dark-mode');
-    } else {
-      document.body.classList.remove('dark-mode');
-    }
-  }, [isDarkMode]);
-
   const toggleDarkMode = () => {
     const newDarkMode = !isDarkMode;
     setIsDarkMode(newDarkMode);
     localStorage.setItem('darkMode', newDarkMode.toString());
     
-    if (newDarkMode) {
-      document.body.classList.add('dark-mode');
-    } else {
-      document.body.classList.remove('dark-mode');
+    // Apply dark mode to the Blackjack container using CSS custom properties
+    const blackjackContainer = document.querySelector('.blackjack-container');
+    if (blackjackContainer) {
+      if (newDarkMode) {
+        blackjackContainer.style.setProperty('--dark-mode', '1');
+        blackjackContainer.classList.add('dark-mode-active');
+      } else {
+        blackjackContainer.style.setProperty('--dark-mode', '0');
+        blackjackContainer.classList.remove('dark-mode-active');
+      }
     }
   };
 
   return (
     <>
-      {/* Toggle Button - Left Center */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="fixed left-4 top-1/2 transform -translate-y-1/2 z-50 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-3 px-4 rounded-full shadow-lg transition-all duration-200 transform hover:scale-105 border-2 border-blue-300"
-        title="Settings / Configuración"
-      >
-        <div className="flex items-center gap-2">
-          <span className="text-lg">🌙</span>
-          <span className="text-sm font-semibold">MENU</span>
-        </div>
-      </button>
+      {/* Toggle Button - Only show when sidebar is closed */}
+      {!isOpen && (
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="fixed left-4 top-1/2 transform -translate-y-1/2 z-50 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-3 px-4 rounded-full shadow-lg transition-all duration-200 transform hover:scale-105 border-2 border-blue-300"
+          title="Settings / Configuración"
+        >
+          <div className="flex items-center gap-2">
+            <span className="text-lg">🌙</span>
+            <span className="text-sm font-semibold">DARK</span>
+          </div>
+        </button>
+      )}
 
       {/* Sidebar - Hidden by default */}
       <div className={`fixed left-0 top-0 h-full bg-green-800/95 backdrop-blur-lg shadow-2xl border-r-2 border-yellow-400 transition-all duration-300 z-40 ${

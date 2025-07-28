@@ -338,7 +338,28 @@ export default function Blackjack() {
   return (
     <>
       <Sidebar />
-      <div className="min-h-screen bg-gradient-to-br from-green-900 via-green-700 to-green-500 py-4 px-4">
+      <style>
+        {`
+          .blackjack-container {
+            --dark-mode: 0;
+            transition: all 0.3s ease;
+          }
+          
+          .blackjack-container.dark-mode-active {
+            --dark-mode: 1;
+          }
+          
+          .blackjack-container.dark-mode-active {
+            filter: invert(1) hue-rotate(180deg);
+          }
+          
+          .blackjack-container.dark-mode-active img,
+          .blackjack-container.dark-mode-active svg {
+            filter: invert(1) hue-rotate(180deg);
+          }
+        `}
+      </style>
+      <div className="blackjack-container min-h-screen bg-gradient-to-br from-green-900 via-green-700 to-green-500 py-4 px-4">
         <div className="max-w-6xl mx-auto">
           {/* Header Section */}
           <div className="text-center mb-6">
