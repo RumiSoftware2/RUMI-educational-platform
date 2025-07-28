@@ -35,27 +35,8 @@ const MathSVG = () => (
     <text x="15" y="38" fontSize="28" fill="#2ca6e0" fontWeight="bold">Σ</text>
   </svg>
 );
-const ChemistrySVG = () => (
-  <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
-    <rect x="5" y="5" width="50" height="50" rx="8" fill="#fff" stroke="#e06c2c" strokeWidth="3"/>
-    <circle cx="30" cy="30" r="15" fill="#e06c2c" fillOpacity="0.2" />
-    <text x="18" y="38" fontSize="24" fill="#e06c2c" fontWeight="bold">H₂O</text>
-  </svg>
-);
-const PhysicsSVG = () => (
-  <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
-    <rect x="5" y="5" width="50" height="50" rx="8" fill="#fff" stroke="#2c7be0" strokeWidth="3"/>
-    <text x="15" y="38" fontSize="24" fill="#2c7be0" fontWeight="bold">F=ma</text>
-  </svg>
-);
-const MusicSVG = () => (
-  <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
-    <rect x="5" y="5" width="50" height="50" rx="8" fill="#fff" stroke="#a02ce0" strokeWidth="3"/>
-    <text x="18" y="38" fontSize="24" fill="#a02ce0" fontWeight="bold">♫</text>
-  </svg>
-);
 
-// Estructura de categorías y juegos
+// Estructura de categorías y juegos - Solo Matemáticas
 const categories = [
   {
     id: 'matematicas',
@@ -74,24 +55,6 @@ const categories = [
       },
     ],
   },
-  {
-    id: 'quimica',
-    name: 'Juegos de Química',
-    icon: <ChemistrySVG />,
-    games: [],
-  },
-  {
-    id: 'fisica',
-    name: 'Juegos de Física',
-    icon: <PhysicsSVG />,
-    games: [],
-  },
-  {
-    id: 'musica',
-    name: 'Juegos de Música',
-    icon: <MusicSVG />,
-    games: [],
-  },
 ];
 
 export default function GameMenu() {
@@ -109,7 +72,7 @@ export default function GameMenu() {
         >
           Menú de Juegos
         </motion.h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-3xl px-4">
+        <div className="grid grid-cols-1 gap-8 w-full max-w-2xl px-4">
           {categories.map((cat, idx) => (
             <motion.div
               key={cat.id}
