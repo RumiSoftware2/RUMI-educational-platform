@@ -405,6 +405,9 @@ export default function Blackjack() {
   };
 
   const finishGame = () => {
+    // End the game and show statistics
+    endGameWithStatistics('Manual finish');
+    
     // Clear localStorage to force new demographic entry
     localStorage.removeItem('blackjack_age');
     localStorage.removeItem('blackjack_education');
@@ -415,7 +418,6 @@ export default function Blackjack() {
     localStorage.removeItem('blackjack_dealerHand');
     localStorage.removeItem('blackjack_result');
     localStorage.removeItem('blackjack_playerStands');
-    startNewSession();
   };
 
   // Mostrar solo la primera carta del dealer si el jugador no se ha plantado
