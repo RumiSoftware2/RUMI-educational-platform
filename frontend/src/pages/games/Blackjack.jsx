@@ -382,10 +382,10 @@ export default function Blackjack() {
           </div>
 
           {/* Main Game Area */}
-          <div className="bg-green-800/80 rounded-3xl shadow-2xl border-4 border-yellow-400 p-6 md:p-8">
+          <div className="bg-blue-800/80 rounded-3xl shadow-2xl border-4 border-blue-400 p-6 md:p-8">
             {/* Dealer Section */}
             <div className="flex flex-col items-center mb-8">
-              <h2 className="text-xl font-bold text-yellow-300 mb-4">{t('dealer')}</h2>
+              <h2 className="text-xl font-bold text-blue-300 mb-4">{t('dealer')}</h2>
               <div className="flex gap-2 mb-3">
                 {visibleDealerHand.map((card, idx) => (
                   <Card key={idx} value={card.value} suit={card.suit} faceDown={dealerFaceDown[idx]} />
@@ -398,7 +398,7 @@ export default function Blackjack() {
             
             {/* Player Section */}
             <div className="flex flex-col items-center mb-8">
-              <h2 className="text-xl font-bold text-yellow-300 mb-4">{t('you')}</h2>
+              <h2 className="text-xl font-bold text-blue-300 mb-4">{t('you')}</h2>
               <div className="flex gap-2 mb-3">
                 {playerHand.map((card, idx) => (
                   <Card key={idx} value={card.value} suit={card.suit} />
@@ -416,7 +416,7 @@ export default function Blackjack() {
                   disabled={!canPlay || money < betAmount} 
                   className={`px-8 py-3 rounded-xl font-bold text-white transition-all duration-200 transform hover:scale-105 ${
                     canPlay && money >= betAmount 
-                      ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 shadow-lg' 
+                      ? 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-lg' 
                       : 'bg-gray-500 cursor-not-allowed'
                   }`}
                 >
@@ -427,7 +427,7 @@ export default function Blackjack() {
                   disabled={!canPlay || money < betAmount} 
                   className={`px-8 py-3 rounded-xl font-bold text-white transition-all duration-200 transform hover:scale-105 ${
                     canPlay && money >= betAmount 
-                      ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 shadow-lg' 
+                      ? 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-lg' 
                       : 'bg-gray-500 cursor-not-allowed'
                   }`}
                 >
@@ -481,7 +481,7 @@ export default function Blackjack() {
             {/* Result Display */}
             {result && (
               <div className="mt-6 text-center">
-                <div className="text-2xl font-extrabold text-white bg-black/60 rounded-xl px-6 py-3 animate-pulse border-2 border-yellow-400">
+                <div className="text-2xl font-extrabold text-white bg-black/60 rounded-xl px-6 py-3 animate-pulse border-2 border-blue-400">
                   {result}
                 </div>
               </div>
