@@ -190,13 +190,46 @@ export default function Blackjack() {
   useEffect(() => {
     const savedAge = localStorage.getItem('blackjack_age');
     const savedEducation = localStorage.getItem('blackjack_education');
+    const savedMoney = localStorage.getItem('blackjack_money');
+    const savedTimer = localStorage.getItem('blackjack_timer');
+    const savedGameStarted = localStorage.getItem('blackjack_gameStarted');
+    const savedPlayerHand = localStorage.getItem('blackjack_playerHand');
+    const savedDealerHand = localStorage.getItem('blackjack_dealerHand');
+    const savedResult = localStorage.getItem('blackjack_result');
+    const savedPlayerStands = localStorage.getItem('blackjack_playerStands');
+    
     if (savedAge && savedEducation) {
       setAge(savedAge);
       setEducationLevel(savedEducation);
       setShowDemographics(false);
+      
+      // Restore game state if it exists
+      if (savedMoney) setMoney(parseInt(savedMoney));
+      if (savedTimer) setTimer(parseInt(savedTimer));
+      if (savedGameStarted === 'true') {
+        setGameStarted(true);
+        setTimerActive(true);
+      }
+      if (savedPlayerHand) setPlayerHand(JSON.parse(savedPlayerHand));
+      if (savedDealerHand) setDealerHand(JSON.parse(savedDealerHand));
+      if (savedResult) setResult(savedResult);
+      if (savedPlayerStands === 'true') setPlayerStands(true);
     }
   // eslint-disable-next-line
   }, []);
+
+  // Save game state to localStorage whenever it changes
+  useEffect(() => {
+    if (gameStarted) {
+      localStorage.setItem('blackjack_money', money.toString());
+      localStorage.setItem('blackjack_timer', timer.toString());
+      localStorage.setItem('blackjack_gameStarted', gameStarted.toString());
+      localStorage.setItem('blackjack_playerHand', JSON.stringify(playerHand));
+      localStorage.setItem('blackjack_dealerHand', JSON.stringify(dealerHand));
+      localStorage.setItem('blackjack_result', result);
+      localStorage.setItem('blackjack_playerStands', playerStands.toString());
+    }
+  }, [gameStarted, money, timer, playerHand, dealerHand, result, playerStands]);
 
   // Calcular probabilidades cuando cambian las manos
   useEffect(() => {
@@ -375,6 +408,32 @@ export default function Blackjack() {
             className="px-6 py-2 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-700 transition-colors"
           >
             Nueva Sesión
+          </button>
+          <button 
+            onClick={() => {
+              // Clear localStorage to force new demographic entry
+              localStorage.removeItem('blackjack_age');
+              localStorage.removeItem('blackjack_education');
+              localStorage.removeItem('blackjack_money');
+              localStorage.removeItem('blackjack_timer');
+              localStorage.removeItem('blackjack_gameStarted');
+              localStorage.removeItem('blackjack_playerHand');
+              localStorage.removeItem('blackjack_dealerHand');
+              localStorage.removeItem('blackjack_result');
+              localStorage.removeItem('blackjack_playerStands');
+              setShowDemographics(true);
+              setMoney(1000);
+              setTimer(900);
+              setTimerActive(false);
+              setGameStarted(false);
+              setResult('');
+              setPlayerHand([]);
+              setDealerHand([]);
+              setPlayerStands(false);
+            }} 
+            className="px-6 py-2 rounded-xl font-bold text-white bg-red-600 hover:bg-red-700 transition-colors"
+          >
+            Finalizar Juego
           </button>
         </div>
         
