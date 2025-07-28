@@ -29,142 +29,147 @@ import StudentStatistics from './pages/StudentStatistics';
 import StudentCourseDetail from './pages/StudentCourseDetail';
 import VerifyResetCode from './pages/VerifyResetCode';
 import Sudoku from './pages/games/Sudoku';
+import { LanguageProvider } from './context/LanguageContext';
+import LanguageSwitcher from './components/LanguageSwitcher';
 
 
 function App() {
   return (
-    <BrowserRouter>
-      <ScrollToTop />
-      <AppLayout>
-        <Routes>
-          <Route path="/register" element={<Register />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/verify-email" element={<EmailVerification />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/verify-reset-code" element={<VerifyResetCode />} />
-          <Route path="/" element={<Home />} />
-          <Route path="/person-rumi" element={<PersonRumi />} />
-          <Route path="/enterprise-rumi" element={<EnterpriseRumi />} />
-          <Route path="/enterprise/login" element={<EnterpriseLogin />} />
-           
-          <Route
-            path="/profile"
-            element={
+    <LanguageProvider>
+      <BrowserRouter>
+        <ScrollToTop />
+        <LanguageSwitcher />
+        <AppLayout>
+          <Routes>
+            <Route path="/register" element={<Register />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/verify-email" element={<EmailVerification />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/verify-reset-code" element={<VerifyResetCode />} />
+            <Route path="/" element={<Home />} />
+            <Route path="/person-rumi" element={<PersonRumi />} />
+            <Route path="/enterprise-rumi" element={<EnterpriseRumi />} />
+            <Route path="/enterprise/login" element={<EnterpriseLogin />} />
+             
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile/change-name"
+              element={
+                <ProtectedRoute>
+                  <ProfileChangeName />
+                </ProtectedRoute>
+              }
+            />
+            <Route 
+              path="/my-courses"
+              element={
               <ProtectedRoute>
-                <Profile />
+                <MyCourses />
               </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/profile/change-name"
-            element={
-              <ProtectedRoute>
-                <ProfileChangeName />
-              </ProtectedRoute>
-            }
-          />
-          <Route 
-            path="/my-courses"
-            element={
-            <ProtectedRoute>
-              <MyCourses />
-            </ProtectedRoute>
-            }/> 
-            
-          <Route
-            path="/courses"
-            element={<Courses />}
-          />
-         <Route
-            path="/games"
-            element={<GameMenu />}
-          />
-          <Route
-            path="/games/blackjack"
-            element={<Blackjack />}
-          />
-          <Route path="/games/sudoku" element={<Sudoku />} />
+              }/> 
+              
+            <Route
+              path="/courses"
+              element={<Courses />}
+            />
+           <Route
+              path="/games"
+              element={<GameMenu />}
+            />
+            <Route
+              path="/games/blackjack"
+              element={<Blackjack />}
+            />
+            <Route path="/games/sudoku" element={<Sudoku />} />
 
 
 
-          <Route
-            path="/courses/new"
-            element={
-              <ProtectedRoute requiredRoles={['admin', 'docente']}>
-                <CourseForm />
-              </ProtectedRoute>
-            }
-          />
+            <Route
+              path="/courses/new"
+              element={
+                <ProtectedRoute requiredRoles={['admin', 'docente']}>
+                  <CourseForm />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* Rutas por rol, por ejemplo admin */}
-          <Route
-            path="/admin"
-            element={
-              <ProtectedRoute requiredRoles={['admin']}>
-                <AdminPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/student/courses"
-            element={
-              <ProtectedRoute requiredRoles={['estudiante']}>
-                <StudentCourses />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/teacher/courses"
-            element={
-              <ProtectedRoute requiredRoles={['docente']}>
-                <TeacherCourses />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/courses"
-            element={
-              <ProtectedRoute requiredRoles={['admin']}>
-                <AdminCourses />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/courses/:id/statistics"
-            element={
-              <ProtectedRoute requiredRoles={['docente', 'admin']}>
-                <CourseStatistics />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/courses/:id/students/:studentId/statistics"
-            element={
-              <ProtectedRoute requiredRoles={['docente', 'estudiante']}>
-                <StudentStatistics />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/courses/:id"
-            element={
-              <ProtectedRoute requiredRoles={['docente', 'admin']}>
-                <CourseDetail />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/student/course/:id"
-            element={
-              <ProtectedRoute requiredRoles={['estudiante']}>
-                <StudentCourseDetail />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
-      </AppLayout>
-    </BrowserRouter>
+            {/* Rutas por rol, por ejemplo admin */}
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute requiredRoles={['admin']}>
+                  <AdminPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/student/courses"
+              element={
+                <ProtectedRoute requiredRoles={['estudiante']}>
+                  <StudentCourses />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/teacher/courses"
+              element={
+                <ProtectedRoute requiredRoles={['docente']}>
+                  <TeacherCourses />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/courses"
+              element={
+                <ProtectedRoute requiredRoles={['admin']}>
+                  <AdminCourses />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/courses/:id/statistics"
+              element={
+                <ProtectedRoute requiredRoles={['docente', 'admin']}>
+                  <CourseStatistics />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/courses/:id/students/:studentId/statistics"
+              element={
+                <ProtectedRoute requiredRoles={['docente', 'estudiante']}>
+                  <StudentStatistics />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/courses/:id"
+              element={
+                <ProtectedRoute requiredRoles={['docente', 'admin']}>
+                  <CourseDetail />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/student/course/:id"
+              element={
+                <ProtectedRoute requiredRoles={['estudiante']}>
+                  <StudentCourseDetail />
+                </ProtectedRoute>
+              }
+            />
+          </Routes>
+        </AppLayout>
+      </BrowserRouter>
+    </LanguageProvider>
   );
 }
 

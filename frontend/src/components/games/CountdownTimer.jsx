@@ -1,15 +1,21 @@
 import React from 'react';
+import { useLanguage } from '../../context/LanguageContext';
 
 export default function CountdownTimer({ seconds }) {
-  const min = Math.floor(seconds / 60);
-  const sec = seconds % 60;
-  const isWarning = seconds <= 120;
+  const { t } = useLanguage();
+  
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  const timeString = `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+  
+  const isLowTime = seconds <= 60; // Warning when 1 minute or less remains
+  
   return (
-    <div className={`flex flex-col items-center ${isWarning ? 'animate-pulse' : ''}`}>
-      <div className={`text-3xl md:text-4xl font-mono font-extrabold ${isWarning ? 'text-red-400' : 'text-yellow-300'} drop-shadow-lg`}>
-        {min.toString().padStart(2, '0')}:{sec.toString().padStart(2, '0')}
+    <div className={`bg-black/40 rounded-lg px-4 py-2 text-center ${isLowTime ? 'animate-pulse' : ''}`}>
+      <div className="text-white text-xs">{t('timeRemaining')}</div>
+      <div className={`font-bold text-lg ${isLowTime ? 'text-red-300' : 'text-yellow-300'}`}>
+        {timeString}
       </div>
-      <div className="text-xs text-white mt-1">Tiempo restante</div>
     </div>
   );
 } 

@@ -4,6 +4,7 @@ import Card from './Card';
 import DemographicForm from '../../components/games/DemographicForm';
 import GameStatsBar from '../../components/games/GameStatsBar';
 import CountdownTimer from '../../components/games/CountdownTimer';
+import { useLanguage } from '../../context/LanguageContext';
 
 // Baraja completa para cálculos de probabilidad
 const deck = [
@@ -124,6 +125,8 @@ function calculateProbabilities(playerHand, dealerVisibleCard) {
 }
 
 export default function Blackjack() {
+  const { t } = useLanguage();
+  
   // Estados del juego
   const [playerHand, setPlayerHand] = useState([]);
   const [dealerHand, setDealerHand] = useState([]);
@@ -271,7 +274,7 @@ export default function Blackjack() {
     setPlayerHand(newHand);
     
     if (handValue(newHand) > 21) {
-      const finalResult = 'Perdiste, te pasaste';
+      const finalResult = t('bust');
       setResult(finalResult);
       // Restar dinero por perder
       setMoney((prev) => Math.max(0, prev - betAmount));
@@ -294,15 +297,15 @@ export default function Blackjack() {
     const pVal = handValue(playerHand);
     const dVal = handValue(dealer);
     let res = '';
-    if (pVal > 21) res = 'Perdiste, te pasaste';
-    else if (dVal > 21 || pVal > dVal) res = 'Ganaste';
-    else if (pVal === dVal) res = 'Empate';
-    else res = 'Perdiste';
+    if (pVal > 21) res = t('bust');
+    else if (dVal > 21 || pVal > dVal) res = t('win');
+    else if (pVal === dVal) res = t('tie');
+    else res = t('lose');
     setResult(res);
     // Ajustar dinero según resultado
     setMoney((prev) => {
-      if (res === 'Ganaste') return prev + betAmount;
-      if (res === 'Perdiste' || res === 'Perdiste, te pasaste') return Math.max(0, prev - betAmount);
+      if (res === t('win')) return prev + betAmount;
+      if (res === t('lose') || res === t('bust')) return Math.max(0, prev - betAmount);
       return prev;
     });
     endGame(res, pVal, dVal);
@@ -329,9 +332,9 @@ export default function Blackjack() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-green-900 via-green-700 to-green-500 py-8 px-4">
       <div className="rounded-3xl shadow-2xl border-4 border-[#ffd700] bg-green-800/80 p-8 max-w-lg w-full flex flex-col items-center">
-        <h1 className="text-3xl font-extrabold text-white mb-2 tracking-wide">Blackjack Educativo</h1>
-        <div className="text-yellow-300 font-bold text-lg mb-2">BLACKJACK PAGA 3 A 2</div>
-        <div className="text-white text-sm mb-4">Dealer debe plantarse en 17 suave</div>
+        <h1 className="text-3xl font-extrabold text-white mb-2 tracking-wide">{t('educationalBlackjack')}</h1>
+        <div className="text-yellow-300 font-bold text-lg mb-2">{t('blackjackPays')}</div>
+        <div className="text-white text-sm mb-4">{t('dealerMustStand')}</div>
         
         {/* Timer y dinero */}
         <GameStatsBar money={money}>
@@ -341,15 +344,15 @@ export default function Blackjack() {
         {/* Probabilidades en tiempo real */}
         {gameStarted && playerHand.length > 0 && (
           <div className="bg-black/40 rounded-lg p-3 mb-4 text-center">
-            <div className="text-white text-sm mb-2">Probabilidades en tiempo real:</div>
+            <div className="text-white text-sm mb-2">{t('realTimeProbabilities')}</div>
             <div className="grid grid-cols-2 gap-4 text-xs">
               <div>
                 <div className="text-red-300 font-bold">{probabilities.bustProbability}%</div>
-                <div className="text-white">Prob. de pasarse</div>
+                <div className="text-white">{t('bustProbability')}</div>
               </div>
               <div>
                 <div className="text-green-300 font-bold">{probabilities.winProbability}%</div>
-                <div className="text-white">Prob. de ganar</div>
+                <div className="text-white">{t('winProbability')}</div>
               </div>
             </div>
           </div>
@@ -363,7 +366,7 @@ export default function Blackjack() {
             ))}
           </div>
           <div className="text-white font-bold">
-            Dealer: {playerStands ? handValue(dealerHand) : dealerHand[0] ? cardPointsString([dealerHand[0]]) : 0}
+            {t('dealer')}: {playerStands ? handValue(dealerHand) : dealerHand[0] ? cardPointsString([dealerHand[0]]) : 0}
           </div>
         </div>
         
@@ -374,7 +377,7 @@ export default function Blackjack() {
               <Card key={idx} value={card.value} suit={card.suit} />
             ))}
           </div>
-          <div className="text-white font-bold">Tú: {handValue(playerHand)}</div>
+          <div className="text-white font-bold">{t('you')}: {handValue(playerHand)}</div>
         </div>
         
         {/* Controles */}
@@ -386,7 +389,7 @@ export default function Blackjack() {
               canPlay && money >= betAmount ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-400 cursor-not-allowed'
             }`}
           >
-            Pedir Carta (-${betAmount})
+            {t('hit')} (-${betAmount})
           </button>
           <button 
             onClick={stand} 
@@ -395,7 +398,7 @@ export default function Blackjack() {
               canPlay && money >= betAmount ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-gray-400 cursor-not-allowed'
             }`}
           >
-            Plantarse
+            {t('stand')}
           </button>
           <button 
             onClick={() => {
@@ -407,7 +410,7 @@ export default function Blackjack() {
             }} 
             className="px-6 py-2 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-700 transition-colors"
           >
-            Nueva Sesión
+            {t('newSession')}
           </button>
           <button 
             onClick={() => {
@@ -433,7 +436,7 @@ export default function Blackjack() {
             }} 
             className="px-6 py-2 rounded-xl font-bold text-white bg-red-600 hover:bg-red-700 transition-colors"
           >
-            Finalizar Juego
+            {t('finishGame')}
           </button>
         </div>
         
