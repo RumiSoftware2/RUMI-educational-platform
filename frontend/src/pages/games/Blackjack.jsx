@@ -304,7 +304,7 @@ export default function Blackjack() {
       setResult(finalResult);
       // Restar dinero por perder
       setMoney((prev) => Math.max(0, prev - betAmount));
-      endGameWithStatistics(finalResult, handValue(newHand), handValue(dealerHand));
+      endRound(finalResult, handValue(newHand), handValue(dealerHand));
     }
   };
 
@@ -334,10 +334,10 @@ export default function Blackjack() {
       if (res === t('lose') || res === t('bust')) return Math.max(0, prev - betAmount);
       return prev;
     });
-    endGameWithStatistics(res, pVal, dVal);
+    endRound(res, pVal, dVal);
   };
 
-  const endGameWithStatistics = (result, playerValue, dealerValue) => {
+  const endRound = (result, playerValue, dealerValue) => {
     // Update statistics
     setGameStats(prev => {
       const newStats = { ...prev };
@@ -364,7 +364,28 @@ export default function Blackjack() {
       return newStats;
     });
 
-    // Show statistics after a delay
+    // Continue playing - start new round after a delay
+    setTimeout(() => {
+      setResult('');
+      startNewRound();
+    }, 2000);
+  };
+
+  const startNewRound = () => {
+    setResult('');
+    setPlayerStands(false);
+    setPlayerHand([drawCard(), drawCard()]);
+    setDealerHand([drawCard(), drawCard()]);
+  };
+
+  const endGameWithStatistics = (reason) => {
+    // Update final money
+    setGameStats(prev => ({
+      ...prev,
+      finalMoney: money
+    }));
+
+    // Show statistics
     setTimeout(() => {
       setShowStatistics(true);
     }, 2000);
@@ -634,7 +655,7 @@ export default function Blackjack() {
                   disabled={!canPlay || money < betAmount} 
                   className={`px-8 py-3 rounded-xl font-bold text-white transition-all duration-200 transform hover:scale-105 ${
                     canPlay && money >= betAmount 
-                      ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 shadow-lg' 
+                      ? 'bg-gradient-to-r from-red-500 to-orange-600 hover:from-red-600 hover:to-orange-700 shadow-lg' 
                       : 'bg-gray-500 cursor-not-allowed'
                   }`}
                 >
