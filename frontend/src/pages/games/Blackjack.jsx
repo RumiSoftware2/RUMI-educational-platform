@@ -5,7 +5,7 @@ import DemographicForm from '../../components/games/DemographicForm';
 import GameStatsBar from '../../components/games/GameStatsBar';
 import CountdownTimer from '../../components/games/CountdownTimer';
 import { useLanguage } from '../../context/LanguageContext';
-import LanguageSwitcher from '../../components/LanguageSwitcher';
+import Sidebar from '../../components/Sidebar';
 
 // Baraja completa para cálculos de probabilidad
 const deck = [
@@ -328,7 +328,7 @@ export default function Blackjack() {
   if (showDemographics) {
     return (
       <>
-        <LanguageSwitcher />
+        <Sidebar />
         <DemographicForm onSubmit={saveDemographics} />
       </>
     );
@@ -337,7 +337,7 @@ export default function Blackjack() {
   // Juego principal
   return (
     <>
-      <LanguageSwitcher />
+      <Sidebar />
       <div className="min-h-screen bg-gradient-to-br from-green-900 via-green-700 to-green-500 py-4 px-4">
         <div className="max-w-6xl mx-auto">
           {/* Header Section */}
