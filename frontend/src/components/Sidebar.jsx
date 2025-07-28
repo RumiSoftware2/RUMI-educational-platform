@@ -1,15 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 
 export default function Sidebar() {
   const { language, toggleLanguage } = useLanguage();
-  const [isOpen, setIsOpen] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isOpen, setIsOpen] = useState(false); // Start closed
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    // Check if dark mode was previously saved
+    return localStorage.getItem('darkMode') === 'true';
+  });
+
+  // Apply dark mode on component mount
+  useEffect(() => {
+    if (isDarkMode) {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
+  }, [isDarkMode]);
 
   const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
-    // Add dark mode class to body
-    if (!isDarkMode) {
+    const newDarkMode = !isDarkMode;
+    setIsDarkMode(newDarkMode);
+    localStorage.setItem('darkMode', newDarkMode.toString());
+    
+    if (newDarkMode) {
       document.body.classList.add('dark-mode');
     } else {
       document.body.classList.remove('dark-mode');
@@ -26,13 +40,13 @@ export default function Sidebar() {
       >
         <div className="flex items-center gap-2">
           <span className="text-lg">🌙</span>
-          <span className="text-sm font-semibold">OPC</span>
+          <span className="text-sm font-semibold">MENU</span>
         </div>
       </button>
 
-      {/* Sidebar */}
+      {/* Sidebar - Hidden by default */}
       <div className={`fixed left-0 top-0 h-full bg-green-800/95 backdrop-blur-lg shadow-2xl border-r-2 border-yellow-400 transition-all duration-300 z-40 ${
-        isOpen ? 'w-64 translate-x-0' : 'w-0 -translate-x-full'
+        isOpen ? 'w-64 translate-x-0' : 'w-0 -translate-x-full opacity-0'
       }`}>
         <div className="p-6">
           {/* Header */}
@@ -120,7 +134,7 @@ export default function Sidebar() {
         </div>
       </div>
 
-      {/* Overlay */}
+      {/* Overlay - Only show when sidebar is open */}
       {isOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-30"
