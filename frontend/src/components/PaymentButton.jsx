@@ -38,7 +38,8 @@ export default function PaymentButton({ courseId, lessonOrder, onPaymentSuccess,
       const response = await api.post('/payments', mockPayment);
       
       if (response.data.message) {
-        setPaymentStatus({ hasPaid: true });
+        // Verificar el estado de pago nuevamente después del pago exitoso
+        await checkPaymentStatus();
         onPaymentSuccess && onPaymentSuccess();
       }
     } catch (error) {

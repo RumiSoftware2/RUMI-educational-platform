@@ -18,6 +18,7 @@ export default function StudentCourseDetail() {
   const [videoWatched, setVideoWatched] = useState(false);
   const [progressMsg, setProgressMsg] = useState('');
   const [showIntro, setShowIntro] = useState(true);
+  const [hasPaid, setHasPaid] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -40,6 +41,22 @@ export default function StudentCourseDetail() {
     setVideoWatched(false);
     setProgressMsg('');
   }, [currentLessonIdx]);
+
+  // Verificar estado de pago
+  useEffect(() => {
+    const checkPaymentStatus = async () => {
+      if (course?.isPaidCourse) {
+        try {
+          const response = await api.get(`/payments/course/${courseId}/status`);
+          setHasPaid(response.data.hasPaid);
+        } catch (error) {
+          console.error('Error checking payment status:', error);
+        }
+      }
+    };
+    
+    checkPaymentStatus();
+  }, [courseId, course?.isPaidCourse]);
 
   if (loading) return <div className="p-4">Cargando curso...</div>;
   if (error) return <div className="p-4 text-red-600">{error}</div>;
@@ -165,7 +182,8 @@ export default function StudentCourseDetail() {
   // Verificar si la lección actual requiere pago
   const requiresPayment = course.isPaidCourse && 
                          course.paidFromLesson && 
-                         lesson.order >= course.paidFromLesson;
+                         lesson.order >= course.paidFromLesson &&
+                         !hasPaid;
 
   // Handler para guardar progreso por visualización
   const handleVideoEnded = async () => {
@@ -212,9 +230,12 @@ export default function StudentCourseDetail() {
               transition={{ delay: 0.1 }}
             >
               {lesson.title}
-              {requiresPayment && (
-                <span className="ml-2 text-purple-600 text-lg">🔒 Premium</span>
-              )}
+                             {requiresPayment && (
+                 <span className="ml-2 text-purple-600 text-lg">🔒 Premium</span>
+               )}
+               {course.isPaidCourse && course.paidFromLesson && lesson.order >= course.paidFromLesson && hasPaid && (
+                 <span className="ml-2 text-green-600 text-lg">✅ Pagado</span>
+               )}
             </motion.h2>
             <motion.div
               className="aspect-video flex items-center justify-center bg-gradient-to-br from-blue-100 via-green-100 to-yellow-100 rounded-2xl shadow-xl border-4 border-transparent bg-clip-padding relative overflow-hidden"
@@ -282,15 +303,16 @@ export default function StudentCourseDetail() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 }}
             >
-              <PaymentButton 
-                courseId={courseId}
-                lessonOrder={lesson.order}
-                coursePrice={course.price || 29.99}
-                onPaymentSuccess={() => {
-                  setProgressMsg('¡Pago exitoso! Ahora puedes continuar con el curso.');
-                  setVideoWatched(true);
-                }}
-              />
+                             <PaymentButton 
+                 courseId={courseId}
+                 lessonOrder={lesson.order}
+                 coursePrice={course.price || 29.99}
+                 onPaymentSuccess={() => {
+                   setProgressMsg('¡Pago exitoso! Ahora puedes continuar con el curso.');
+                   setVideoWatched(true);
+                   setHasPaid(true);
+                 }}
+               />
             </motion.div>
           ) : (
             <motion.div
