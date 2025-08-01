@@ -5,6 +5,7 @@ import { AuthContext } from '../context/AuthContext';
 import LessonQuiz from '../components/LessonQuiz';
 import { motion, AnimatePresence } from 'framer-motion';
 import logo2 from '../assets/logo2zeus.png';
+import PaymentButton from '../components/PaymentButton';
 
 export default function StudentCourseDetail() {
   const { id: courseId } = useParams();
@@ -104,6 +105,29 @@ export default function StudentCourseDetail() {
               )}
             </motion.div>
             <p className="mb-8 text-lg text-center text-gray-700 animate-fade-in-slow">{course.description}</p>
+            
+            {/* Información de pago del curso */}
+            {course.isPaidCourse && (
+              <motion.div
+                className="mb-6 p-4 bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-200 rounded-xl"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  <span className="text-2xl">💰</span>
+                  <h3 className="text-lg font-bold text-purple-800">Curso con Contenido Premium</h3>
+                </div>
+                <div className="text-purple-700 space-y-1">
+                  <p><strong>Precio:</strong> ${course.price || 29.99}</p>
+                  <p><strong>Lecciones gratuitas:</strong> {course.paidFromLesson ? course.paidFromLesson - 1 : 0} de {course.lessons.length}</p>
+                  <p><strong>Lecciones premium:</strong> {course.paidFromLesson ? course.lessons.length - course.paidFromLesson + 1 : course.lessons.length} de {course.lessons.length}</p>
+                  <p className="text-sm text-purple-600 mt-2">
+                    💡 Los estudiantes pueden ver las lecciones anteriores gratis antes de decidir pagar
+                  </p>
+                </div>
+              </motion.div>
+            )}
             {lessons.length > 0 ? (
               <div className="flex justify-center mt-6">
                 <motion.button
@@ -137,6 +161,11 @@ export default function StudentCourseDetail() {
   if (lessons.length === 0) return null; // No mostrar navegación de lecciones si no hay lecciones
 
   const lesson = lessons[currentLessonIdx];
+  
+  // Verificar si la lección actual requiere pago
+  const requiresPayment = course.isPaidCourse && 
+                         course.paidFromLesson && 
+                         lesson.order >= course.paidFromLesson;
 
   // Handler para guardar progreso por visualización
   const handleVideoEnded = async () => {
@@ -183,6 +212,9 @@ export default function StudentCourseDetail() {
               transition={{ delay: 0.1 }}
             >
               {lesson.title}
+              {requiresPayment && (
+                <span className="ml-2 text-purple-600 text-lg">🔒 Premium</span>
+              )}
             </motion.h2>
             <motion.div
               className="aspect-video flex items-center justify-center bg-gradient-to-br from-blue-100 via-green-100 to-yellow-100 rounded-2xl shadow-xl border-4 border-transparent bg-clip-padding relative overflow-hidden"
@@ -203,6 +235,23 @@ export default function StudentCourseDetail() {
               />
             </motion.div>
             <p className="mb-2 text-gray-700 text-center md:text-left animate-fade-in-slow">{lesson.description}</p>
+            
+            {requiresPayment && (
+              <motion.div
+                className="mb-4 p-3 bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <div className="flex items-center gap-2 text-purple-700">
+                  <span className="text-lg">🔒</span>
+                  <div>
+                    <p className="font-semibold">Contenido Premium Requerido</p>
+                    <p className="text-sm">Has llegado a una lección que requiere pago para continuar. Desbloquea todo el contenido del curso con un solo pago.</p>
+                  </div>
+                </div>
+              </motion.div>
+            )}
             <div className="flex gap-2 justify-center md:justify-start mt-2">
               <motion.button
                 whileHover={{ scale: currentLessonIdx === 0 ? 1 : 1.07 }}
@@ -225,26 +274,89 @@ export default function StudentCourseDetail() {
             </div>
             {progressMsg && <motion.div className="mt-2 mb-2 text-green-700 font-semibold text-center md:text-left animate-fade-in" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>{progressMsg}</motion.div>}
           </div>
-          {/* Quiz alineado a la derecha */}
-          <motion.div
-            className="flex-1 flex flex-col justify-center md:justify-start md:items-center bg-gradient-to-br from-yellow-50 via-blue-50 to-green-50 rounded-2xl shadow-lg border border-[#ffd700]/30 p-4 animate-fade-in-slow"
-            initial={{ opacity: 0, x: 40 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            <LessonQuiz
-              quizId={lesson.quiz}
-              courseId={courseId}
-              lessonOrder={lesson.order}
-              onComplete={(score) => {
-                setProgressMsg(`¡Progreso guardado! Puntuación: ${score}`);
-                setVideoWatched(true);
-                api.post(`/progress/lesson/${courseId}/${lesson.order}`, { score, completed: true });
-              }}
-            />
-            {!lesson.quiz && videoWatched && <span className="block mt-2 text-green-700 font-semibold">¡Has completado la lección!</span>}
-          </motion.div>
+          {/* Contenido premium o quiz */}
+          {requiresPayment ? (
+            <motion.div
+              className="flex-1 flex flex-col justify-center md:justify-start md:items-center"
+              initial={{ opacity: 0, x: 40 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <PaymentButton 
+                courseId={courseId}
+                lessonOrder={lesson.order}
+                coursePrice={course.price || 29.99}
+                onPaymentSuccess={() => {
+                  setProgressMsg('¡Pago exitoso! Ahora puedes continuar con el curso.');
+                  setVideoWatched(true);
+                }}
+              />
+            </motion.div>
+          ) : (
+            <motion.div
+              className="flex-1 flex flex-col justify-center md:justify-start md:items-center bg-gradient-to-br from-yellow-50 via-blue-50 to-green-50 rounded-2xl shadow-lg border border-[#ffd700]/30 p-4 animate-fade-in-slow"
+              initial={{ opacity: 0, x: 40 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <LessonQuiz
+                quizId={lesson.quiz}
+                courseId={courseId}
+                lessonOrder={lesson.order}
+                onComplete={(score) => {
+                  setProgressMsg(`¡Progreso guardado! Puntuación: ${score}`);
+                  setVideoWatched(true);
+                  api.post(`/progress/lesson/${courseId}/${lesson.order}`, { score, completed: true });
+                }}
+              />
+              {!lesson.quiz && videoWatched && <span className="block mt-2 text-green-700 font-semibold">¡Has completado la lección!</span>}
+            </motion.div>
+          )}
         </div>
+        {/* Indicadores de lecciones */}
+        {course.isPaidCourse && (
+          <motion.div
+            className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <h4 className="font-semibold text-blue-800 mb-3">Progreso del curso</h4>
+            <div className="flex flex-wrap gap-2">
+              {lessons.map((lesson, index) => {
+                const isPremium = course.paidFromLesson && lesson.order >= course.paidFromLesson;
+                const isCurrent = index === currentLessonIdx;
+                return (
+                  <div
+                    key={index}
+                    className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium ${
+                      isCurrent
+                        ? 'bg-blue-600 text-white'
+                        : isPremium
+                        ? 'bg-purple-100 text-purple-800 border border-purple-300'
+                        : 'bg-green-100 text-green-800 border border-green-300'
+                    }`}
+                  >
+                    <span>{lesson.order}</span>
+                    {isPremium && <span className="text-xs">🔒</span>}
+                    {!isPremium && <span className="text-xs">✅</span>}
+                  </div>
+                );
+              })}
+            </div>
+            <div className="flex gap-4 mt-3 text-xs">
+              <div className="flex items-center gap-1">
+                <span className="w-3 h-3 bg-green-100 border border-green-300 rounded"></span>
+                <span>Gratis</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="w-3 h-3 bg-purple-100 border border-purple-300 rounded"></span>
+                <span>Premium</span>
+              </div>
+            </div>
+          </motion.div>
+        )}
+        
         <div className="flex justify-end mt-6">
           <motion.button
             whileHover={{ scale: 1.07 }}

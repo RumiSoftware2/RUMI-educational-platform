@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import api from '../services/api';
 
-export default function PaymentButton({ courseId, lessonOrder, onPaymentSuccess }) {
+export default function PaymentButton({ courseId, lessonOrder, onPaymentSuccess, coursePrice = 29.99 }) {
   const [paymentStatus, setPaymentStatus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [processingPayment, setProcessingPayment] = useState(false);
@@ -30,7 +30,7 @@ export default function PaymentButton({ courseId, lessonOrder, onPaymentSuccess 
       // Por ahora simulamos un pago exitoso
       const mockPayment = {
         courseId,
-        amount: 29.99, // Precio hardcodeado por ahora
+        amount: coursePrice, // Usar el precio del curso
         paymentMethod: 'stripe',
         transactionId: `txn_${Date.now()}`
       };
@@ -93,7 +93,7 @@ export default function PaymentButton({ courseId, lessonOrder, onPaymentSuccess 
       <div className="bg-white rounded-lg p-4 mb-4 border border-blue-200">
         <div className="flex justify-between items-center mb-2">
           <span className="text-gray-600">Precio del curso:</span>
-          <span className="text-2xl font-bold text-green-600">$29.99</span>
+          <span className="text-2xl font-bold text-green-600">${coursePrice}</span>
         </div>
         <div className="text-sm text-gray-500">
           Acceso completo a todas las lecciones
