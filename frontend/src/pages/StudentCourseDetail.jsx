@@ -7,6 +7,31 @@ import { motion, AnimatePresence } from 'framer-motion';
 import logo2 from '../assets/logo2zeus.png';
 import PaymentButton from '../components/PaymentButton';
 
+// Función para extraer el ID del video de YouTube
+function getYouTubeVideoId(url) {
+  if (!url) return '';
+  
+  // Caso 1: Formato largo
+  let match = url.match(/(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([\w-]+)/);
+  if (match) {
+    return match[1];
+  }
+  
+  // Caso 2: Formato corto (compartir)
+  match = url.match(/(?:https?:\/\/)?youtu\.be\/([\w-]+)/);
+  if (match) {
+    return match[1];
+  }
+  
+  // Caso 3: Formato embed
+  match = url.match(/(?:https?:\/\/)?(?:www\.)?youtube\.com\/embed\/([\w-]+)/);
+  if (match) {
+    return match[1];
+  }
+  
+  return '';
+}
+
 export default function StudentCourseDetail() {
   const { id: courseId } = useParams();
   const { user } = useContext(AuthContext);
@@ -19,6 +44,7 @@ export default function StudentCourseDetail() {
   const [progressMsg, setProgressMsg] = useState('');
   const [showIntro, setShowIntro] = useState(true);
   const [hasPaid, setHasPaid] = useState(false);
+  const [showPaymentMessage, setShowPaymentMessage] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -237,24 +263,57 @@ export default function StudentCourseDetail() {
                  <span className="ml-2 text-green-600 text-lg">✅ Pagado</span>
                )}
             </motion.h2>
-            <motion.div
-              className="aspect-video flex items-center justify-center bg-gradient-to-br from-blue-100 via-green-100 to-yellow-100 rounded-2xl shadow-xl border-4 border-transparent bg-clip-padding relative overflow-hidden"
-              style={{ boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.15)' }}
-              initial={{ scale: 0.98, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.15 }}
-            >
-              <iframe
-                src={lesson.videoUrl}
-                title={lesson.title}
-                style={{ border: 0 }}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                className="w-full h-full rounded-xl shadow-lg"
-                onLoad={() => {}}
-                onEnded={handleVideoEnded}
-              />
-            </motion.div>
+                         <motion.div
+               className="aspect-video flex items-center justify-center bg-gradient-to-br from-blue-100 via-green-100 to-yellow-100 rounded-2xl shadow-xl border-4 border-transparent bg-clip-padding relative overflow-hidden"
+               style={{ boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.15)' }}
+               initial={{ scale: 0.98, opacity: 0 }}
+               animate={{ scale: 1, opacity: 1 }}
+               transition={{ delay: 0.15 }}
+             >
+               {requiresPayment ? (
+                 // Video bloqueado para contenido premium
+                 <div className="relative w-full h-full">
+                   {/* Miniatura del video (usando thumbnail de YouTube) */}
+                   <div 
+                     className="w-full h-full bg-cover bg-center rounded-xl cursor-pointer"
+                     style={{
+                       backgroundImage: `url(https://img.youtube.com/vi/${getYouTubeVideoId(lesson.videoUrl)}/maxresdefault.jpg)`,
+                       backgroundSize: 'cover',
+                       backgroundPosition: 'center'
+                     }}
+                                           onClick={() => {
+                        // Mostrar mensaje de que necesita pagar
+                        setShowPaymentMessage(true);
+                        setTimeout(() => setShowPaymentMessage(false), 3000);
+                      }}
+                   >
+                     {/* Overlay con icono de bloqueo */}
+                     <div className="absolute inset-0 bg-gradient-to-br from-black/70 to-purple-900/70 flex items-center justify-center rounded-xl">
+                       <div className="text-center text-white p-4">
+                         <div className="text-6xl mb-4 animate-pulse">🔒</div>
+                         <p className="text-xl font-bold mb-2">Contenido Premium</p>
+                         <p className="text-sm opacity-90 mb-3">Realiza el pago para desbloquear</p>
+                         <div className="bg-white/20 backdrop-blur-sm rounded-lg p-2">
+                           <p className="text-xs">💡 Haz clic para ver más información</p>
+                         </div>
+                       </div>
+                     </div>
+                   </div>
+                 </div>
+               ) : (
+                 // Video normal para contenido gratuito
+                 <iframe
+                   src={lesson.videoUrl}
+                   title={lesson.title}
+                   style={{ border: 0 }}
+                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                   allowFullScreen
+                   className="w-full h-full rounded-xl shadow-lg"
+                   onLoad={() => {}}
+                   onEnded={handleVideoEnded}
+                 />
+               )}
+             </motion.div>
             <p className="mb-2 text-gray-700 text-center md:text-left animate-fade-in-slow">{lesson.description}</p>
             
             {requiresPayment && (
@@ -293,8 +352,26 @@ export default function StudentCourseDetail() {
                 Siguiente lección →
               </motion.button>
             </div>
-            {progressMsg && <motion.div className="mt-2 mb-2 text-green-700 font-semibold text-center md:text-left animate-fade-in" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>{progressMsg}</motion.div>}
-          </div>
+                         {progressMsg && <motion.div className="mt-2 mb-2 text-green-700 font-semibold text-center md:text-left animate-fade-in" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>{progressMsg}</motion.div>}
+             
+             {/* Mensaje de pago requerido */}
+             {showPaymentMessage && (
+               <motion.div
+                 className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg"
+                 initial={{ opacity: 0, y: 10 }}
+                 animate={{ opacity: 1, y: 0 }}
+                 exit={{ opacity: 0, y: -10 }}
+               >
+                 <div className="flex items-center gap-2 text-red-700">
+                   <span className="text-lg">🔒</span>
+                   <div>
+                     <p className="font-semibold">Contenido Premium Requerido</p>
+                     <p className="text-sm">Este video requiere pago para ser reproducido. Realiza el pago para desbloquear todo el contenido.</p>
+                   </div>
+                 </div>
+               </motion.div>
+             )}
+           </div>
           {/* Contenido premium o quiz */}
           {requiresPayment ? (
             <motion.div

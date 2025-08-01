@@ -587,6 +587,27 @@ export default function CourseDetail() {
                   <p><strong>Lecciones gratuitas:</strong> {course.paidFromLesson ? course.paidFromLesson - 1 : 0} de {course.lessons.length}</p>
                   <p><strong>Lecciones premium:</strong> {course.paidFromLesson ? course.lessons.length - course.paidFromLesson + 1 : course.lessons.length} de {course.lessons.length}</p>
                 </div>
+                
+                {/* Aviso importante para docentes */}
+                {isOwner && (
+                  <motion.div
+                    className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg"
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                  >
+                    <div className="flex items-start gap-2">
+                      <span className="text-yellow-600 text-lg">⚠️</span>
+                      <div className="text-yellow-800">
+                        <p className="font-semibold mb-1">Importante para docentes:</p>
+                        <p className="text-sm">
+                          Para mantener la seguridad del contenido premium, asegúrate de configurar los videos de YouTube como "No listados" o "Privados" 
+                          para las lecciones premium. Esto evita que los estudiantes accedan directamente a los videos sin pagar.
+                        </p>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
               </motion.div>
             )}
 
