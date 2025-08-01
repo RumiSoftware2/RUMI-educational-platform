@@ -35,6 +35,15 @@ const courseSchema = new mongoose.Schema({
     ref: 'User',
     default: []
   }],
+  // Campos para sistema de pagos
+  isPaidCourse: {
+    type: Boolean,
+    default: false
+  },
+  paidFromLesson: {
+    type: Number,
+    default: null
+  },
   createdAt: {
     type: Date,
     default: Date.now

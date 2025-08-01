@@ -224,6 +224,77 @@ const leaveCourse = async (req, res) => {
   }
 };
 
+// Configurar curso como pago
+const setCourseAsPaid = async (req, res) => {
+  try {
+    const { courseId } = req.params;
+    const { paidFromLesson, price } = req.body;
+    
+    const course = await Course.findById(courseId);
+    if (!course) {
+      return res.status(404).json({ message: 'Curso no encontrado' });
+    }
+    
+    // Solo el docente creador o admin puede configurar el pago
+    if (req.user.role !== 'admin' && String(course.teacher) !== String(req.user.id)) {
+      return res.status(403).json({ message: 'No autorizado para configurar este curso' });
+    }
+    
+    // Validar que la lección especificada existe
+    if (paidFromLesson && (paidFromLesson < 1 || paidFromLesson > course.lessons.length)) {
+      return res.status(400).json({ 
+        message: `La lección debe estar entre 1 y ${course.lessons.length}` 
+      });
+    }
+    
+    course.isPaidCourse = true;
+    course.paidFromLesson = paidFromLesson || null;
+    if (price !== undefined) {
+      course.price = price;
+    }
+    
+    await course.save();
+    
+    res.status(200).json({
+      message: 'Curso configurado como pago correctamente',
+      course
+    });
+  } catch (error) {
+    console.error('Error al configurar curso como pago:', error);
+    res.status(500).json({ message: 'Error al configurar el curso como pago', error: error.message });
+  }
+};
+
+// Remover configuración de pago de un curso
+const removeCoursePayment = async (req, res) => {
+  try {
+    const { courseId } = req.params;
+    
+    const course = await Course.findById(courseId);
+    if (!course) {
+      return res.status(404).json({ message: 'Curso no encontrado' });
+    }
+    
+    // Solo el docente creador o admin puede remover la configuración de pago
+    if (req.user.role !== 'admin' && String(course.teacher) !== String(req.user.id)) {
+      return res.status(403).json({ message: 'No autorizado para modificar este curso' });
+    }
+    
+    course.isPaidCourse = false;
+    course.paidFromLesson = null;
+    
+    await course.save();
+    
+    res.status(200).json({
+      message: 'Configuración de pago removida correctamente',
+      course
+    });
+  } catch (error) {
+    console.error('Error al remover configuración de pago:', error);
+    res.status(500).json({ message: 'Error al remover la configuración de pago', error: error.message });
+  }
+};
+
 module.exports = {
   createCourse,
   getCourses,
@@ -236,5 +307,7 @@ module.exports = {
   enrollInCourse,
   getCourseStatistics,
   getEnrolledStudents,
-  leaveCourse
+  leaveCourse,
+  setCourseAsPaid,
+  removeCoursePayment
 };
