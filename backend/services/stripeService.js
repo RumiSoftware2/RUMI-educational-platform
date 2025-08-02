@@ -1,5 +1,15 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
+/**
+ * SERVICIO DE STRIPE PARA RUMI
+ * 
+ * Variables de entorno necesarias:
+ * - STRIPE_SECRET_KEY: Clave secreta de la cuenta principal de RUMI
+ * - FRONTEND_URL: URL del frontend para onboarding
+ * 
+ * NOTA: Los docentes NO necesitan variables de entorno.
+ * Sus cuentas Connect se crean dinámicamente desde la cuenta de RUMI.
+ */
 class StripeService {
   // Verificar si Stripe está configurado
   isStripeConfigured() {
@@ -79,17 +89,30 @@ class StripeService {
         const amount = paymentIntent.amount / 100; // Convertir de centavos
         const feeDistribution = this.calculateFeeDistribution(amount);
         
-        // Transferir dinero al docente (si tiene cuenta Stripe conectada)
-        let transferId = null;
-        if (paymentIntent.metadata.teacherStripeAccountId) {
-          const transfer = await stripe.transfers.create({
-            amount: Math.round(feeDistribution.teacherAmount * 100),
-            currency: 'usd',
-            destination: paymentIntent.metadata.teacherStripeAccountId,
-            description: `Pago por curso ${courseId}`,
-          });
-          transferId = transfer.id;
-        }
+                 // Transferir dinero al docente automáticamente (Stripe Connect)
+         let transferId = null;
+         if (paymentIntent.metadata.teacherStripeAccountId) {
+           try {
+             const transfer = await stripe.transfers.create({
+               amount: Math.round(feeDistribution.teacherAmount * 100),
+               currency: 'usd',
+               destination: paymentIntent.metadata.teacherStripeAccountId,
+               description: `Pago por curso ${courseId}`,
+               metadata: {
+                 courseId: courseId,
+                 teacherId: teacherId,
+                 platformFee: feeDistribution.platformFee,
+                 stripeFee: feeDistribution.stripeFee
+               }
+             });
+             transferId = transfer.id;
+             console.log(`✅ Transferencia automática de prueba creada: ${transferId}`);
+             console.log(`💰 Cantidad transferida: $${feeDistribution.teacherAmount}`);
+           } catch (transferError) {
+             console.error('Error en transferencia automática:', transferError);
+             // Continuar sin transferencia automática
+           }
+         }
         
         return {
           success: true,
@@ -131,13 +154,27 @@ class StripeService {
         email: teacherEmail,
         capabilities: {
           transfers: { requested: true },
+          card_payments: { requested: true },
+          sepa_debit_payments: { requested: true },
         },
         business_type: 'individual',
         business_profile: {
           url: process.env.FRONTEND_URL || process.env.PLATFORM_URL,
+          mcc: '8299', // Educational Services
         },
+        individual: {
+          email: teacherEmail,
+          first_name: teacherName.split(' ')[0] || '',
+          last_name: teacherName.split(' ').slice(1).join(' ') || '',
+        },
+        // Configuración específica para modo de prueba
+        tos_acceptance: {
+          date: Math.floor(Date.now() / 1000),
+          ip: '127.0.0.1'
+        }
       });
       
+      console.log(`✅ Cuenta Connect de prueba creada: ${account.id}`);
       return account;
     } catch (error) {
       console.error('Error creating teacher account:', error);
@@ -162,8 +199,10 @@ class StripeService {
         refresh_url: returnUrl,
         return_url: returnUrl,
         type: 'account_onboarding',
+        collect: 'eventually_due',
       });
       
+      console.log(`✅ Link de onboarding de prueba creado: ${accountLink.url}`);
       return accountLink;
     } catch (error) {
       console.error('Error creating onboarding link:', error);
