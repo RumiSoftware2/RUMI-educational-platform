@@ -3,6 +3,7 @@ import { getMyCourses } from '../services/api';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
 import ChangePasswordModal from '../components/ChangePasswordModal';
+import TeacherStripeSetup from '../components/TeacherStripeSetup';
 import logo1 from '../assets/logo1zeus.png';
 import CourseSearchBar from '../components/CourseSearchBar';
 
@@ -69,6 +70,12 @@ export default function TeacherCourses() {
       </div>
       {/* Barra de búsqueda reutilizable */}
       <CourseSearchBar courses={courses} courseRefs={courseRefs} placeholder="Buscar en mis cursos..." />
+      
+      {/* Configuración de Stripe para docentes */}
+      <div className="mb-8 animate-fade-in-up">
+        <TeacherStripeSetup />
+      </div>
+      
       <div className="flex flex-col sm:flex-row sm:justify-between items-center mb-8 gap-4 animate-fade-in-up">
         <div className="flex gap-2">
           <Link
