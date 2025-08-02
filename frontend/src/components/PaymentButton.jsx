@@ -5,7 +5,7 @@ import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-
 import api from '../services/api';
 
 // Cargar Stripe
-const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY || '');
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
 
 // Componente interno para el formulario de pago
 function CheckoutForm({ courseId, coursePrice, onPaymentSuccess, onCancel }) {
