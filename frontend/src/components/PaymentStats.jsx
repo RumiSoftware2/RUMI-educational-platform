@@ -55,20 +55,26 @@ export default function PaymentStats({ courseId }) {
         <h3 className="text-lg font-bold text-purple-800">Estadísticas de Pagos</h3>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
         <div className="bg-white rounded-lg p-4 border border-purple-200">
-          <div className="text-2xl font-bold text-green-600">${stats.totalRevenue.toFixed(2)}</div>
+          <div className="text-2xl font-bold text-green-600">${stats.totalRevenue?.toFixed(2) || '0.00'}</div>
           <div className="text-sm text-gray-600">Ingresos Totales</div>
         </div>
         <div className="bg-white rounded-lg p-4 border border-purple-200">
-          <div className="text-2xl font-bold text-blue-600">{stats.totalPayments}</div>
+          <div className="text-2xl font-bold text-blue-600">{stats.totalPayments || 0}</div>
           <div className="text-sm text-gray-600">Pagos Realizados</div>
         </div>
         <div className="bg-white rounded-lg p-4 border border-purple-200">
           <div className="text-2xl font-bold text-purple-600">
-            {stats.totalPayments > 0 ? (stats.totalRevenue / stats.totalPayments).toFixed(2) : 0}
+            ${stats.totalTeacherEarnings?.toFixed(2) || '0.00'}
           </div>
-          <div className="text-sm text-gray-600">Promedio por Pago</div>
+          <div className="text-sm text-gray-600">Tus Ganancias (87.1%)</div>
+        </div>
+        <div className="bg-white rounded-lg p-4 border border-purple-200">
+          <div className="text-2xl font-bold text-orange-600">
+            ${stats.totalPlatformFees?.toFixed(2) || '0.00'}
+          </div>
+          <div className="text-sm text-gray-600">Comisión Plataforma (10%)</div>
         </div>
       </div>
 

@@ -37,6 +37,31 @@ const paymentSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
+  // Campos para distribución de ganancias
+  stripeFee: {
+    type: Number,
+    default: 0
+  },
+  platformFee: {
+    type: Number,
+    default: 0
+  },
+  teacherAmount: {
+    type: Number,
+    default: 0
+  },
+  platformPercentage: {
+    type: Number,
+    default: 10 // 10% por defecto
+  },
+  // Información de Stripe
+  stripePaymentIntentId: {
+    type: String
+  },
+  stripeTransferId: {
+    type: String
+  },
+  // Metadata para tracking
   metadata: {
     type: Object,
     default: {}

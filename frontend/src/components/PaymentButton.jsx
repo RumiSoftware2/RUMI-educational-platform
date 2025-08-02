@@ -2,6 +2,11 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import api from '../services/api';
 
+// Cargar Stripe
+const stripePromise = import('@stripe/stripe-js').then(({ loadStripe }) => 
+  loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY)
+);
+
 export default function PaymentButton({ courseId, lessonOrder, onPaymentSuccess, coursePrice = 29.99 }) {
   const [paymentStatus, setPaymentStatus] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -26,21 +31,47 @@ export default function PaymentButton({ courseId, lessonOrder, onPaymentSuccess,
     setProcessingPayment(true);
     
     try {
-      // Aquí se integraría con Stripe o PayPal
-      // Por ahora simulamos un pago exitoso
-      const mockPayment = {
-        courseId,
-        amount: coursePrice, // Usar el precio del curso
-        paymentMethod: 'stripe',
-        transactionId: `txn_${Date.now()}`
-      };
+      // Crear Payment Intent con Stripe
+      const stripe = await stripePromise;
+      if (!stripe) {
+        throw new Error('Stripe no se pudo cargar');
+      }
 
-      const response = await api.post('/payments', mockPayment);
-      
-      if (response.data.message) {
-        // Verificar el estado de pago nuevamente después del pago exitoso
-        await checkPaymentStatus();
-        onPaymentSuccess && onPaymentSuccess();
+      // Crear Payment Intent en el backend
+      const paymentIntentResponse = await api.post('/payments/create-intent', {
+        courseId,
+        amount: coursePrice
+      });
+
+      const { clientSecret } = paymentIntentResponse.data;
+
+      // Confirmar pago con Stripe
+      const { error, paymentIntent } = await stripe.confirmPayment({
+        clientSecret,
+        confirmParams: {
+          return_url: `${window.location.origin}/payment-success`,
+        },
+      });
+
+      if (error) {
+        console.error('Error en el pago:', error);
+        alert(`Error en el pago: ${error.message}`);
+        return;
+      }
+
+      if (paymentIntent.status === 'succeeded') {
+        // Confirmar pago en el backend
+        const response = await api.post('/payments', {
+          courseId,
+          amount: coursePrice,
+          paymentMethod: 'stripe',
+          paymentIntentId: paymentIntent.id
+        });
+        
+        if (response.data.message) {
+          await checkPaymentStatus();
+          onPaymentSuccess && onPaymentSuccess();
+        }
       }
     } catch (error) {
       console.error('Error processing payment:', error);
