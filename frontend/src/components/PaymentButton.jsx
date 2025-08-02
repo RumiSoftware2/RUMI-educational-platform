@@ -1,22 +1,116 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import api from '../services/api';
 
 // Cargar Stripe
-const stripePromise = import('@stripe/stripe-js').then(({ loadStripe }) => {
-  const key = process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY;
-  if (key && key.startsWith('pk_')) {
-    return loadStripe(key);
-  } else {
-    console.log('⚠️ Stripe no configurado - usando modo de prueba');
-    return null;
-  }
-});
+const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY || '');
+
+// Componente interno para el formulario de pago
+function CheckoutForm({ courseId, coursePrice, onPaymentSuccess, onCancel }) {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [processingPayment, setProcessingPayment] = useState(false);
+  const [error, setError] = useState(null);
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    
+    if (!stripe || !elements) {
+      return;
+    }
+
+    setProcessingPayment(true);
+    setError(null);
+
+    try {
+      const { error: submitError } = await elements.submit();
+      if (submitError) {
+        setError(submitError.message);
+        setProcessingPayment(false);
+        return;
+      }
+
+      // Confirmar pago
+      const { error: confirmError, paymentIntent } = await stripe.confirmPayment({
+        elements,
+        confirmParams: {
+          return_url: `${window.location.origin}/payment-success`,
+        },
+      });
+
+      if (confirmError) {
+        setError(confirmError.message);
+        setProcessingPayment(false);
+        return;
+      }
+
+      if (paymentIntent.status === 'succeeded') {
+        // Confirmar pago en el backend
+        const response = await api.post('/payments', {
+          courseId,
+          amount: coursePrice,
+          paymentMethod: 'stripe',
+          paymentIntentId: paymentIntent.id
+        });
+        
+        if (response.data.message) {
+          onPaymentSuccess && onPaymentSuccess();
+        }
+      }
+    } catch (error) {
+      console.error('Error processing payment:', error);
+      setError('Error al procesar el pago. Por favor, intenta de nuevo.');
+    } finally {
+      setProcessingPayment(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <PaymentElement />
+      
+      {error && (
+        <div className="text-red-600 text-sm bg-red-50 p-3 rounded-lg">
+          {error}
+        </div>
+      )}
+      
+      <div className="flex gap-3">
+        <button
+          type="button"
+          onClick={onCancel}
+          disabled={processingPayment}
+          className="flex-1 bg-gray-500 text-white py-3 px-6 rounded-xl font-bold shadow-lg hover:bg-gray-600 disabled:opacity-50"
+        >
+          Cancelar
+        </button>
+        
+        <button
+          type="submit"
+          disabled={!stripe || processingPayment}
+          className="flex-1 bg-gradient-to-r from-green-600 to-emerald-500 text-white py-3 px-6 rounded-xl font-bold shadow-lg hover:from-green-700 hover:to-emerald-600 disabled:opacity-50"
+        >
+          {processingPayment ? (
+            <div className="flex items-center justify-center">
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+              Procesando...
+            </div>
+          ) : (
+            `Pagar $${coursePrice}`
+          )}
+        </button>
+      </div>
+    </form>
+  );
+}
 
 export default function PaymentButton({ courseId, lessonOrder, onPaymentSuccess, coursePrice = 29.99 }) {
   const [paymentStatus, setPaymentStatus] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [processingPayment, setProcessingPayment] = useState(false);
+  const [showPaymentForm, setShowPaymentForm] = useState(false);
+  const [clientSecret, setClientSecret] = useState(null);
 
   useEffect(() => {
     checkPaymentStatus();
@@ -33,9 +127,7 @@ export default function PaymentButton({ courseId, lessonOrder, onPaymentSuccess,
     }
   };
 
-  const handlePayment = async () => {
-    setProcessingPayment(true);
-    
+  const handleStartPayment = async () => {
     try {
       // Crear Payment Intent en el backend
       const paymentIntentResponse = await api.post('/payments/create-intent', {
@@ -43,73 +135,24 @@ export default function PaymentButton({ courseId, lessonOrder, onPaymentSuccess,
         amount: coursePrice
       });
 
-      const stripe = await stripePromise;
-      
-      if (!stripe) {
-        // Modo de prueba sin Stripe
-        console.log('⚠️ Procesando pago en modo de prueba');
-        
-        // Simular pago exitoso
-        setTimeout(async () => {
-          try {
-            const response = await api.post('/payments', {
-              courseId,
-              amount: coursePrice,
-              paymentMethod: 'stripe',
-              paymentIntentId: paymentIntentResponse.data.clientSecret
-            });
-            
-            if (response.data.message) {
-              await checkPaymentStatus();
-              onPaymentSuccess && onPaymentSuccess();
-            }
-          } catch (error) {
-            console.error('Error en modo de prueba:', error);
-            alert('Error al procesar el pago en modo de prueba');
-          } finally {
-            setProcessingPayment(false);
-          }
-        }, 2000); // Simular delay de 2 segundos
-        
-        return;
-      }
-
-      const { clientSecret } = paymentIntentResponse.data;
-
-      // Confirmar pago con Stripe
-      const { error, paymentIntent } = await stripe.confirmPayment({
-        clientSecret,
-        confirmParams: {
-          return_url: `${window.location.origin}/payment-success`,
-        },
-      });
-
-      if (error) {
-        console.error('Error en el pago:', error);
-        alert(`Error en el pago: ${error.message}`);
-        return;
-      }
-
-      if (paymentIntent.status === 'succeeded') {
-        // Confirmar pago en el backend
-        const response = await api.post('/payments', {
-          courseId,
-          amount: coursePrice,
-          paymentMethod: 'stripe',
-          paymentIntentId: paymentIntent.id
-        });
-        
-        if (response.data.message) {
-          await checkPaymentStatus();
-          onPaymentSuccess && onPaymentSuccess();
-        }
-      }
+      setClientSecret(paymentIntentResponse.data.clientSecret);
+      setShowPaymentForm(true);
     } catch (error) {
-      console.error('Error processing payment:', error);
-      alert('Error al procesar el pago. Por favor, intenta de nuevo.');
-    } finally {
-      setProcessingPayment(false);
+      console.error('Error creating payment intent:', error);
+      alert('Error al iniciar el pago. Por favor, intenta de nuevo.');
     }
+  };
+
+  const handlePaymentSuccess = async () => {
+    await checkPaymentStatus();
+    setShowPaymentForm(false);
+    setClientSecret(null);
+    onPaymentSuccess && onPaymentSuccess();
+  };
+
+  const handleCancelPayment = () => {
+    setShowPaymentForm(false);
+    setClientSecret(null);
   };
 
   if (loading) {
@@ -134,6 +177,43 @@ export default function PaymentButton({ courseId, lessonOrder, onPaymentSuccess,
         <p className="text-green-700">
           Has pagado por este curso y puedes continuar con todas las lecciones.
         </p>
+      </motion.div>
+    );
+  }
+
+  if (showPaymentForm && clientSecret) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white border-2 border-blue-200 rounded-xl p-6 shadow-lg"
+      >
+        <div className="text-center mb-4">
+          <div className="text-blue-600 text-2xl mb-2">💳</div>
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">
+            Información de Pago
+          </h3>
+          <p className="text-gray-600 text-sm">
+            Completa tu información de pago para continuar
+          </p>
+        </div>
+
+        <Elements stripe={stripePromise} options={{ clientSecret }}>
+          <CheckoutForm
+            courseId={courseId}
+            coursePrice={coursePrice}
+            onPaymentSuccess={handlePaymentSuccess}
+            onCancel={handleCancelPayment}
+          />
+        </Elements>
+
+        <div className="mt-4 text-xs text-gray-500 text-center">
+          <p>💳 Pago seguro con Stripe</p>
+          <p>🔄 Reembolso disponible en 30 días</p>
+          <p className="mt-2 text-blue-600">
+            💡 <strong>Modo de prueba:</strong> Usa 4242 4242 4242 4242
+          </p>
+        </div>
       </motion.div>
     );
   }
@@ -166,18 +246,10 @@ export default function PaymentButton({ courseId, lessonOrder, onPaymentSuccess,
       <motion.button
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
-        onClick={handlePayment}
-        disabled={processingPayment}
-        className="w-full bg-gradient-to-r from-green-600 to-emerald-500 text-white py-3 px-6 rounded-xl font-bold text-lg shadow-lg hover:from-green-700 hover:to-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed"
+        onClick={handleStartPayment}
+        className="w-full bg-gradient-to-r from-green-600 to-emerald-500 text-white py-3 px-6 rounded-xl font-bold text-lg shadow-lg hover:from-green-700 hover:to-emerald-600"
       >
-        {processingPayment ? (
-          <div className="flex items-center justify-center">
-            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-            Procesando pago...
-          </div>
-        ) : (
-          'Pagar y Continuar'
-        )}
+        Pagar y Continuar
       </motion.button>
 
       <div className="mt-4 text-xs text-gray-500">
