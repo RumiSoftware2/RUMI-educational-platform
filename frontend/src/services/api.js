@@ -45,4 +45,11 @@ export const getUserPayments = () => api.get('/payments/user');
 export const checkPaymentStatus = (courseId) => api.get(`/payments/course/${courseId}/status`);
 export const getCoursePaymentStats = (courseId) => api.get(`/payments/course/${courseId}/stats`);
 
+// Funciones de Payment Intent
+export const createPaymentIntent = (paymentData) => api.post('/payments/create-intent', paymentData);
+
+// Funciones de Stripe para docentes
+export const createTeacherStripeAccount = (data) => api.post('/payments/teacher/stripe-account', data);
+export const getTeacherBalance = () => api.get('/payments/teacher/balance');
+
 export default api;
