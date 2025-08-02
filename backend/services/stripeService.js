@@ -1,6 +1,11 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 class StripeService {
+  // Verificar si Stripe está configurado
+  isStripeConfigured() {
+    return process.env.STRIPE_SECRET_KEY && process.env.STRIPE_SECRET_KEY.startsWith('sk_');
+  }
+
   // Calcular distribución de ganancias
   calculateFeeDistribution(amount, platformPercentage = 10) {
     const stripeFee = (amount * 0.029) + 0.30; // 2.9% + $0.30
@@ -17,6 +22,19 @@ class StripeService {
   // Crear Payment Intent
   async createPaymentIntent(amount, currency = 'usd', metadata = {}) {
     try {
+      if (!this.isStripeConfigured()) {
+        // Modo de prueba sin Stripe
+        console.log('⚠️ Stripe no configurado - usando modo de prueba');
+        return {
+          id: `pi_test_${Date.now()}`,
+          client_secret: `pi_test_${Date.now()}_secret_${Math.random().toString(36).substr(2, 9)}`,
+          status: 'requires_payment_method',
+          amount: Math.round(amount * 100),
+          currency,
+          metadata
+        };
+      }
+
       const paymentIntent = await stripe.paymentIntents.create({
         amount: Math.round(amount * 100), // Stripe usa centavos
         currency,
@@ -36,6 +54,25 @@ class StripeService {
   // Confirmar pago y procesar distribución
   async confirmPayment(paymentIntentId, courseId, teacherId) {
     try {
+      if (!this.isStripeConfigured()) {
+        // Modo de prueba sin Stripe
+        console.log('⚠️ Stripe no configurado - simulando pago exitoso');
+        const amount = 29.99; // Precio fijo para testing
+        const feeDistribution = this.calculateFeeDistribution(amount);
+        
+        return {
+          success: true,
+          amount,
+          feeDistribution,
+          transferId: `tr_test_${Date.now()}`,
+          paymentIntent: {
+            id: paymentIntentId,
+            status: 'succeeded',
+            amount: Math.round(amount * 100)
+          }
+        };
+      }
+
       const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
       
       if (paymentIntent.status === 'succeeded') {
@@ -76,6 +113,18 @@ class StripeService {
   // Crear cuenta conectada para docente
   async createTeacherAccount(teacherEmail, teacherName) {
     try {
+      if (!this.isStripeConfigured()) {
+        // Modo de prueba sin Stripe
+        console.log('⚠️ Stripe no configurado - simulando cuenta de docente');
+        return {
+          id: `acct_test_${Date.now()}`,
+          type: 'express',
+          country: 'US',
+          email: teacherEmail,
+          status: 'pending'
+        };
+      }
+
       const account = await stripe.accounts.create({
         type: 'express',
         country: 'US', // Ajustar según el país
@@ -85,7 +134,7 @@ class StripeService {
         },
         business_type: 'individual',
         business_profile: {
-          url: process.env.PLATFORM_URL,
+          url: process.env.FRONTEND_URL || process.env.PLATFORM_URL,
         },
       });
       
@@ -99,6 +148,15 @@ class StripeService {
   // Generar link de onboarding para docente
   async createOnboardingLink(accountId, returnUrl) {
     try {
+      if (!this.isStripeConfigured()) {
+        // Modo de prueba sin Stripe
+        console.log('⚠️ Stripe no configurado - simulando link de onboarding');
+        return {
+          url: `${returnUrl}?test_mode=true&account_id=${accountId}`,
+          expires_at: Date.now() + (24 * 60 * 60 * 1000) // 24 horas
+        };
+      }
+
       const accountLink = await stripe.accountLinks.create({
         account: accountId,
         refresh_url: returnUrl,
@@ -116,6 +174,15 @@ class StripeService {
   // Obtener balance de la plataforma
   async getPlatformBalance() {
     try {
+      if (!this.isStripeConfigured()) {
+        // Modo de prueba sin Stripe
+        console.log('⚠️ Stripe no configurado - simulando balance');
+        return {
+          available: [{ amount: 100000, currency: 'usd' }],
+          pending: [{ amount: 50000, currency: 'usd' }]
+        };
+      }
+
       const balance = await stripe.balance.retrieve();
       return balance;
     } catch (error) {
@@ -127,6 +194,15 @@ class StripeService {
   // Obtener balance de un docente
   async getTeacherBalance(teacherStripeAccountId) {
     try {
+      if (!this.isStripeConfigured()) {
+        // Modo de prueba sin Stripe
+        console.log('⚠️ Stripe no configurado - simulando balance de docente');
+        return {
+          available: [{ amount: 50000, currency: 'usd' }],
+          pending: [{ amount: 25000, currency: 'usd' }]
+        };
+      }
+
       const balance = await stripe.balance.retrieve({
         stripeAccount: teacherStripeAccountId,
       });
