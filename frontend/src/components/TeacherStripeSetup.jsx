@@ -86,33 +86,32 @@ export default function TeacherStripeSetup() {
             Stripe manejará la distribución: 87.1% para ti, 10% para la plataforma, 2.9% para Stripe.
           </p>
           
-                     <div className="space-y-3">
-             <motion.button
-               whileHover={{ scale: 1.05 }}
-               whileTap={{ scale: 0.95 }}
-               onClick={createStripeAccount}
-               disabled={loading}
-               className="w-full bg-gradient-to-r from-green-600 to-emerald-500 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:from-green-700 hover:to-emerald-600 disabled:opacity-50"
-             >
-                               {loading ? 'Configurando...' : 'Configurar Cuenta de Stripe (Sistema Seguro)'}
-             </motion.button>
-             
-                           <p className="text-sm text-blue-600">
-                💡 <strong>Recomendado:</strong> Sistema seguro con distribución automática
-              </p>
-            </div>
+          <div className="space-y-3">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={createStripeAccount}
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-green-600 to-emerald-500 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:from-green-700 hover:to-emerald-600 disabled:opacity-50"
+            >
+              {loading ? 'Configurando...' : 'Configurar Cuenta de Stripe (Sistema Seguro)'}
+            </motion.button>
             
-            <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-              <h4 className="font-semibold text-green-800 mb-2">🔒 Sistema Seguro</h4>
-              <ul className="text-sm text-green-700 space-y-1">
-                <li>• Stripe maneja automáticamente la distribución</li>
-                <li>• 87.1% va directamente a tu cuenta</li>
-                <li>• 10% para la plataforma RUMI</li>
-                <li>• 2.9% + $0.30 para Stripe</li>
-                <li>• Sin intervención manual necesaria</li>
-              </ul>
-            </div>
-           </div>
+            <p className="text-sm text-blue-600">
+              💡 <strong>Recomendado:</strong> Sistema seguro con distribución automática
+            </p>
+          </div>
+          
+          <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+            <h4 className="font-semibold text-green-800 mb-2">🔒 Sistema Seguro</h4>
+            <ul className="text-sm text-green-700 space-y-1">
+              <li>• Stripe maneja automáticamente la distribución</li>
+              <li>• 87.1% va directamente a tu cuenta</li>
+              <li>• 10% para la plataforma RUMI</li>
+              <li>• 2.9% + $0.30 para Stripe</li>
+              <li>• Sin intervención manual necesaria</li>
+            </ul>
+          </div>
         </div>
       </motion.div>
     );
