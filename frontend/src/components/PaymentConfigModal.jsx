@@ -10,17 +10,29 @@ export default function PaymentConfigModal({
 }) {
   const [formData, setFormData] = useState({
     paidFromLesson: 1,
-    price: 0
+    price: ''
   });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: name === 'price' ? parseFloat(value) || 0 : parseInt(value) || 1
-    }));
+    
+    if (name === 'price') {
+      // Solo permitir números y un punto decimal
+      const regex = /^\d*\.?\d{0,2}$/;
+      if (value === '' || regex.test(value)) {
+        setFormData(prev => ({
+          ...prev,
+          [name]: value
+        }));
+      }
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: parseInt(value) || 1
+      }));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -31,7 +43,7 @@ export default function PaymentConfigModal({
     try {
       const response = await api.put(`/courses/${course._id}/set-paid`, {
         paidFromLesson: formData.paidFromLesson,
-        price: formData.price
+        price: parseFloat(formData.price) || 0
       });
 
       setMessage('Curso configurado como pago correctamente');
@@ -157,16 +169,17 @@ export default function PaymentConfigModal({
                   Precio del curso (USD)
                 </label>
                 <input
-                  type="number"
+                  type="text"
                   name="price"
                   value={formData.price}
                   onChange={handleInputChange}
-                  min="0"
-                  step="0.01"
                   className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="0.00"
                   required
                 />
+                <p className="text-sm text-gray-600 mt-1">
+                  Ingresa el precio en dólares (ej: 29.99)
+                </p>
               </div>
 
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
