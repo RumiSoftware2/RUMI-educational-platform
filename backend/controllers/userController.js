@@ -43,9 +43,46 @@ const deleteUser = async (req, res) => {
   }
 };
 
+// Actualizar rol del usuario
+const updateUserRole = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { role } = req.body;
+
+    // Validar rol
+    if (!['estudiante', 'docente'].includes(role)) {
+      return res.status(400).json({ message: 'Rol inválido' });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      id,
+      { role },
+      { new: true, runValidators: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+
+    res.status(200).json({
+      message: 'Rol actualizado exitosamente',
+      user: {
+        _id: user._id,
+        email: user.email,
+        role: user.role,
+        name: user.name
+      }
+    });
+  } catch (error) {
+    console.error('Error al actualizar rol:', error);
+    res.status(500).json({ message: 'Error al actualizar rol', error: error.message });
+  }
+};
+
 module.exports = {
   getAllUsers,
   getUserById,
   updateUser,
-  deleteUser
+  deleteUser,
+  updateUserRole
 };

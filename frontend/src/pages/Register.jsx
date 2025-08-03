@@ -15,6 +15,8 @@ const Register = () => {
 
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showRoleModal, setShowRoleModal] = useState(false);
+  const [googleUserData, setGoogleUserData] = useState(null);
   const navigate = useNavigate();
 
   const emailRegex = /^[\w-.]+@[\w-]+\.[a-zA-Z]{2,}$/;
@@ -52,15 +54,47 @@ const Register = () => {
   };
 
   const handleGoogleSuccess = (data) => {
-    setMessage('✅ Registro con Google exitoso');
-    // Redirigir al dashboard después de un breve delay
-    setTimeout(() => {
-      navigate('/');
-    }, 1500);
+    // En lugar de procesar inmediatamente, mostrar modal de selección de rol
+    setGoogleUserData(data);
+    setShowRoleModal(true);
   };
 
   const handleGoogleError = (error) => {
     setMessage(`❌ Error en autenticación con Google: ${error.message}`);
+  };
+
+  const handleRoleSelection = async (selectedRole) => {
+    try {
+      // Actualizar el rol del usuario en el backend
+      await api.put(`/users/${googleUserData.user._id}/role`, { role: selectedRole });
+      
+      // Actualizar los datos locales
+      const updatedUserData = {
+        ...googleUserData,
+        user: { ...googleUserData.user, role: selectedRole }
+      };
+      
+      // Guardar en localStorage
+      localStorage.setItem('user', JSON.stringify(updatedUserData.user));
+      
+      setMessage('✅ Registro con Google exitoso');
+      setShowRoleModal(false);
+      setGoogleUserData(null);
+      
+      // Redirigir según el rol
+      setTimeout(() => {
+        if (selectedRole === 'estudiante') {
+          navigate('/student/courses');
+        } else if (selectedRole === 'docente') {
+          navigate('/teacher/courses');
+        } else {
+          navigate('/');
+        }
+      }, 1500);
+      
+    } catch (error) {
+      setMessage(`❌ Error al actualizar rol: ${error.message}`);
+    }
   };
 
   return (
@@ -219,6 +253,34 @@ const Register = () => {
           </div>
         </div>
       </div>
+
+      {/* Modal de selección de rol */}
+      {showRoleModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-3xl p-8 max-w-md mx-4 shadow-2xl">
+            <h3 className="text-2xl font-bold text-gray-800 mb-4 text-center">
+              Selecciona tu rol
+            </h3>
+            <p className="text-gray-600 mb-6 text-center">
+              ¿Cómo te gustaría usar RUMI?
+            </p>
+            <div className="space-y-4">
+              <button
+                onClick={() => handleRoleSelection('estudiante')}
+                className="w-full bg-gradient-to-r from-blue-600 to-emerald-600 text-white py-4 rounded-xl font-bold text-lg hover:from-blue-700 hover:to-emerald-700 transform hover:scale-105 transition-all duration-300 shadow-lg"
+              >
+                👨‍🎓 Estudiante
+              </button>
+              <button
+                onClick={() => handleRoleSelection('docente')}
+                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 rounded-xl font-bold text-lg hover:from-purple-700 hover:to-pink-700 transform hover:scale-105 transition-all duration-300 shadow-lg"
+              >
+                👨‍🏫 Docente
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Sección de Contáctenos (igual que Login.jsx) */}
       <div className="bg-gradient-to-r from-purple-900 to-yellow-400 text-white py-12 mt-12">
