@@ -27,11 +27,15 @@ const GoogleAuthButton = ({ onSuccess, onError, buttonText = "Continuar con Goog
         
         const userInfo = await userInfoResponse.json();
         
+        console.log('UserInfo from Google:', userInfo);
+        
         // Enviar información al backend para verificar/crear usuario
         const backendResponse = await api.post('/auth/google/verify', {
           idToken: response.access_token,
           userInfo: userInfo
         });
+        
+        console.log('Backend response:', backendResponse.data);
         
         // Guardar token en localStorage
         localStorage.setItem('token', backendResponse.data.token);

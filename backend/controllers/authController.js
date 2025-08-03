@@ -332,16 +332,27 @@ exports.googleCallback = async (req, res) => {
 // Verificar token de Google (para el frontend)
 exports.verifyGoogleToken = async (req, res) => {
   try {
-    const { idToken } = req.body;
+    console.log('verifyGoogleToken called with:', req.body);
     
-    // Verificar el token con Google
-    const ticket = await client.verifyIdToken({
-      idToken: idToken,
-      audience: process.env.GOOGLE_CLIENT_ID
-    });
+    // Verificar que las variables de entorno estén configuradas
+    if (!process.env.JWT_SECRET) {
+      console.error('JWT_SECRET no está configurado');
+      return res.status(500).json({ message: 'Error de configuración del servidor' });
+    }
     
-    const payload = ticket.getPayload();
-    const { sub: googleId, email, name } = payload;
+    const { idToken, userInfo } = req.body;
+    
+    console.log('userInfo received:', userInfo);
+    
+    // Verificar que tengamos los datos necesarios
+    if (!userInfo || !userInfo.email) {
+      console.error('Datos de usuario incompletos:', userInfo);
+      return res.status(400).json({ message: 'Datos de usuario incompletos' });
+    }
+    
+    const { email, name, sub: googleId } = userInfo;
+    
+    console.log('Processing user:', { email, name, googleId });
     
     // Buscar o crear usuario
     let user = await User.findOne({ googleId });
@@ -351,12 +362,14 @@ exports.verifyGoogleToken = async (req, res) => {
       user = await User.findOne({ email });
       
       if (user) {
+        console.log('Usuario existente encontrado por email, actualizando...');
         // Actualizar usuario existente
         user.googleId = googleId;
         user.authProvider = 'google';
         user.emailVerified = true;
         await user.save();
       } else {
+        console.log('Creando nuevo usuario...');
         // Crear nuevo usuario
         user = new User({
           googleId,
@@ -368,6 +381,8 @@ exports.verifyGoogleToken = async (req, res) => {
         });
         await user.save();
       }
+    } else {
+      console.log('Usuario existente encontrado por googleId');
     }
     
     // Generar token JWT
@@ -376,6 +391,8 @@ exports.verifyGoogleToken = async (req, res) => {
       process.env.JWT_SECRET, 
       { expiresIn: '1h' }
     );
+    
+    console.log('Token generado exitosamente para usuario:', user._id);
     
     res.status(200).json({
       message: 'Autenticación con Google exitosa',
@@ -388,6 +405,7 @@ exports.verifyGoogleToken = async (req, res) => {
       }
     });
   } catch (error) {
+    console.error('Error en verifyGoogleToken:', error);
     res.status(500).json({ message: 'Error en verificación de Google', error: error.message });
   }
 };
