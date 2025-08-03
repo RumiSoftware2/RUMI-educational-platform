@@ -3,6 +3,7 @@ const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors'); // 👈 AÑADE ESTO
 const connectDB = require('./config/db');
+const passport = require('./config/passport');
 const cron = require('node-cron');
 const User = require('./models/User');
 const feedbackRoutes = require('./routes/feedbackRoutes');
@@ -30,7 +31,10 @@ app.use(cors({
 // 6. Middleware para manejar JSON
 app.use(express.json());
 
-// 7. Importamos y usamos rutas
+// 7. Configurar Passport
+app.use(passport.initialize());
+
+// 8. Importamos y usamos rutas
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api', require('./routes/protectedRoutes'));
 app.use('/api/users', require('./routes/userRoutes'));
@@ -48,12 +52,12 @@ app.use('/api/payments', require('./routes/paymentRoutes'));
 //   console.log(`[CLEANUP-CRON] Usuarios no verificados eliminados: ${result.deletedCount}`);
 // });
 
-// 8. Ruta básica de prueba
+// 9. Ruta básica de prueba
 app.get('/', (req, res) => {
   res.send('Servidor funcionando correctamente');
 });
 
-// 9. Iniciar el servidor
+// 10. Iniciar el servidor
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);

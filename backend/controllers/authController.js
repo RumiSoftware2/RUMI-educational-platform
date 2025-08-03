@@ -4,6 +4,9 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const validator = require('validator');
 const { generateVerificationCode, sendVerificationEmail, sendPasswordResetEmail } = require('../services/emailService');
+const passport = require('passport');
+const { OAuth2Client } = require('google-auth-library');
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // Registro con verificación de email
 exports.register = async (req, res) => {
@@ -291,5 +294,100 @@ exports.changePassword = async (req, res) => {
     res.status(200).json({ message: 'Contraseña actualizada exitosamente' });
   } catch (error) {
     res.status(500).json({ message: 'Error al cambiar contraseña', error });
+  }
+};
+
+// Autenticación con Google OAuth
+exports.googleAuth = passport.authenticate('google', {
+  scope: ['profile', 'email']
+});
+
+// Callback de Google OAuth
+exports.googleCallback = async (req, res) => {
+  try {
+    // El usuario ya está autenticado por passport
+    const user = req.user;
+    
+    // Generar token JWT
+    const token = jwt.sign(
+      { id: user._id, role: user.role }, 
+      process.env.JWT_SECRET, 
+      { expiresIn: '1h' }
+    );
+
+    // Redirigir al frontend con el token usando variable de entorno
+    const frontendUrl = process.env.FRONTEND_URL || 'https://rumieducation.vercel.app';
+    res.redirect(`${frontendUrl}/auth/google/success?token=${token}&user=${encodeURIComponent(JSON.stringify({
+      _id: user._id,
+      email: user.email,
+      role: user.role,
+      name: user.name
+    }))}`);
+  } catch (error) {
+    const frontendUrl = process.env.FRONTEND_URL || 'https://rumieducation.vercel.app';
+    res.redirect(`${frontendUrl}/auth/google/error?message=${encodeURIComponent('Error en autenticación con Google')}`);
+  }
+};
+
+// Verificar token de Google (para el frontend)
+exports.verifyGoogleToken = async (req, res) => {
+  try {
+    const { idToken } = req.body;
+    
+    // Verificar el token con Google
+    const ticket = await client.verifyIdToken({
+      idToken: idToken,
+      audience: process.env.GOOGLE_CLIENT_ID
+    });
+    
+    const payload = ticket.getPayload();
+    const { sub: googleId, email, name } = payload;
+    
+    // Buscar o crear usuario
+    let user = await User.findOne({ googleId });
+    
+    if (!user) {
+      // Buscar por email
+      user = await User.findOne({ email });
+      
+      if (user) {
+        // Actualizar usuario existente
+        user.googleId = googleId;
+        user.authProvider = 'google';
+        user.emailVerified = true;
+        await user.save();
+      } else {
+        // Crear nuevo usuario
+        user = new User({
+          googleId,
+          name,
+          email,
+          authProvider: 'google',
+          emailVerified: true,
+          role: 'estudiante'
+        });
+        await user.save();
+      }
+    }
+    
+    // Generar token JWT
+    const token = jwt.sign(
+      { id: user._id, role: user.role }, 
+      process.env.JWT_SECRET, 
+      { expiresIn: '1h' }
+    );
+    
+    res.status(200).json({
+      message: 'Autenticación con Google exitosa',
+      token,
+      user: {
+        _id: user._id,
+        email: user.email,
+        role: user.role,
+        name: user.name
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error en verificación de Google', error: error.message });
   }
 };

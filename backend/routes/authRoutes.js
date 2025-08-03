@@ -8,7 +8,10 @@ const {
   forgotPassword,
   resetPassword,
   changePassword,
-  verifyPasswordResetCode
+  verifyPasswordResetCode,
+  googleAuth,
+  googleCallback,
+  verifyGoogleToken
 } = require('../controllers/authController');
 const authMiddleware = require('../middleware/authMiddleware');
 
@@ -29,5 +32,10 @@ router.post('/verify-reset-code', verifyPasswordResetCode);
 
 // Ruta para cambiar contraseña (requiere autenticación)
 router.post('/change-password', authMiddleware, changePassword);
+
+// Rutas para Google OAuth
+router.get('/google', googleAuth);
+router.get('/google/callback', googleCallback);
+router.post('/google/verify', verifyGoogleToken);
 
 module.exports = router;

@@ -4,6 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import api from '../services/api';
 import logo from '../assets/logo3zeus.png';
+import GoogleAuthButton from '../components/GoogleAuthButton';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -55,6 +56,25 @@ export default function Login() {
     }
   };
 
+  const handleGoogleSuccess = (data) => {
+    login(data.token, data.user);
+    
+    // Redirigir según rol
+    if (data.user.role === 'estudiante') {
+      navigate('/student/courses');
+    } else if (data.user.role === 'docente') {
+      navigate('/teacher/courses');
+    } else if (data.user.role === 'admin') {
+      navigate('/admin/courses');
+    } else {
+      navigate('/profile');
+    }
+  };
+
+  const handleGoogleError = (error) => {
+    setError(`Error en autenticación con Google: ${error.message}`);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-100 via-blue-100 to-indigo-200">
       {/* Header con título */}
@@ -75,6 +95,25 @@ export default function Login() {
               <div className="text-center mb-8">
                 <h2 className="text-3xl font-bold text-gray-800 mb-2">¡Bienvenido de vuelta!</h2>
                 <p className="text-gray-600">Accede a tu cuenta para continuar</p>
+              </div>
+
+              {/* Botón de Google OAuth */}
+              <div className="mb-6">
+                <GoogleAuthButton 
+                  onSuccess={handleGoogleSuccess}
+                  onError={handleGoogleError}
+                  buttonText="Continuar con Google"
+                />
+              </div>
+
+              {/* Separador */}
+              <div className="relative mb-6">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-300"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-white text-gray-500">O inicia sesión con email</span>
+                </div>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-6">
