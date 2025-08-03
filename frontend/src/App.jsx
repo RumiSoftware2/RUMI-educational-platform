@@ -1,5 +1,6 @@
 // src/App.jsx
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import Register from './pages/Register';
 import Login from './pages/Login';
 import EmailVerification from './pages/EmailVerification';
@@ -32,142 +33,157 @@ import Sudoku from './pages/games/Sudoku';
 import PaymentSuccess from './pages/PaymentSuccess';
 import { LanguageProvider } from './context/LanguageContext';
 
+// Obtener el Client ID de Google desde las variables de entorno
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+
+// Debug: verificar si el Client ID se está leyendo
+console.log('Google Client ID:', GOOGLE_CLIENT_ID ? 'Configurado' : 'No configurado');
+
+// Verificar que el Client ID esté configurado
+if (!GOOGLE_CLIENT_ID) {
+  console.error('VITE_GOOGLE_CLIENT_ID no está configurado. Por favor, configura la variable de entorno.');
+}
 
 function App() {
+  // Verificar que el Client ID sea válido
+  const isValidClientId = GOOGLE_CLIENT_ID && GOOGLE_CLIENT_ID.length > 0;
+
   return (
-    <LanguageProvider>
-      <BrowserRouter>
-        <ScrollToTop />
-        <AppLayout>
-          <Routes>
-            <Route path="/register" element={<Register />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/verify-email" element={<EmailVerification />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/verify-reset-code" element={<VerifyResetCode />} />
-            <Route path="/" element={<Home />} />
-            <Route path="/person-rumi" element={<PersonRumi />} />
-            <Route path="/enterprise-rumi" element={<EnterpriseRumi />} />
-            <Route path="/enterprise/login" element={<EnterpriseLogin />} />
-             
-            <Route
-              path="/profile"
-              element={
+    <GoogleOAuthProvider clientId={isValidClientId ? GOOGLE_CLIENT_ID : 'dummy-client-id'}>
+      <LanguageProvider>
+        <BrowserRouter>
+          <ScrollToTop />
+          <AppLayout>
+            <Routes>
+              <Route path="/register" element={<Register />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/verify-email" element={<EmailVerification />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/verify-reset-code" element={<VerifyResetCode />} />
+              <Route path="/" element={<Home />} />
+              <Route path="/person-rumi" element={<PersonRumi />} />
+              <Route path="/enterprise-rumi" element={<EnterpriseRumi />} />
+              <Route path="/enterprise/login" element={<EnterpriseLogin />} />
+               
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <Profile />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/profile/change-name"
+                element={
+                  <ProtectedRoute>
+                    <ProfileChangeName />
+                  </ProtectedRoute>
+                }
+              />
+              <Route 
+                path="/my-courses"
+                element={
                 <ProtectedRoute>
-                  <Profile />
+                  <MyCourses />
                 </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/profile/change-name"
-              element={
-                <ProtectedRoute>
-                  <ProfileChangeName />
-                </ProtectedRoute>
-              }
-            />
-            <Route 
-              path="/my-courses"
-              element={
-              <ProtectedRoute>
-                <MyCourses />
-              </ProtectedRoute>
-              }/> 
-              
-            <Route
-              path="/courses"
-              element={<Courses />}
-            />
-           <Route
-              path="/games"
-              element={<GameMenu />}
-            />
-            <Route
-              path="/games/blackjack"
-              element={<Blackjack />}
-            />
-            <Route path="/games/sudoku" element={<Sudoku />} />
-            <Route path="/payment-success" element={<PaymentSuccess />} />
+                }/> 
+                
+              <Route
+                path="/courses"
+                element={<Courses />}
+              />
+             <Route
+                path="/games"
+                element={<GameMenu />}
+              />
+              <Route
+                path="/games/blackjack"
+                element={<Blackjack />}
+              />
+              <Route path="/games/sudoku" element={<Sudoku />} />
+              <Route path="/payment-success" element={<PaymentSuccess />} />
 
-            <Route
-              path="/courses/new"
-              element={
-                <ProtectedRoute requiredRoles={['admin', 'docente']}>
-                  <CourseForm />
-                </ProtectedRoute>
-              }
-            />
+              <Route
+                path="/courses/new"
+                element={
+                  <ProtectedRoute requiredRoles={['admin', 'docente']}>
+                    <CourseForm />
+                  </ProtectedRoute>
+                }
+              />
 
-            {/* Rutas por rol, por ejemplo admin */}
-            <Route
-              path="/admin"
-              element={
-                <ProtectedRoute requiredRoles={['admin']}>
-                  <AdminPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/student/courses"
-              element={
-                <ProtectedRoute requiredRoles={['estudiante']}>
-                  <StudentCourses />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/teacher/courses"
-              element={
-                <ProtectedRoute requiredRoles={['docente']}>
-                  <TeacherCourses />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/courses"
-              element={
-                <ProtectedRoute requiredRoles={['admin']}>
-                  <AdminCourses />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/courses/:id/statistics"
-              element={
-                <ProtectedRoute requiredRoles={['docente', 'admin']}>
-                  <CourseStatistics />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/courses/:id/students/:studentId/statistics"
-              element={
-                <ProtectedRoute requiredRoles={['docente', 'estudiante']}>
-                  <StudentStatistics />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/courses/:id"
-              element={
-                <ProtectedRoute requiredRoles={['docente', 'admin']}>
-                  <CourseDetail />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/student/course/:id"
-              element={
-                <ProtectedRoute requiredRoles={['estudiante']}>
-                  <StudentCourseDetail />
-                </ProtectedRoute>
-              }
-            />
-          </Routes>
-        </AppLayout>
-      </BrowserRouter>
-    </LanguageProvider>
+              {/* Rutas por rol, por ejemplo admin */}
+              <Route
+                path="/admin"
+                element={
+                  <ProtectedRoute requiredRoles={['admin']}>
+                    <AdminPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/student/courses"
+                element={
+                  <ProtectedRoute requiredRoles={['estudiante']}>
+                    <StudentCourses />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/teacher/courses"
+                element={
+                  <ProtectedRoute requiredRoles={['docente']}>
+                    <TeacherCourses />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/courses"
+                element={
+                  <ProtectedRoute requiredRoles={['admin']}>
+                    <AdminCourses />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/courses/:id/statistics"
+                element={
+                  <ProtectedRoute requiredRoles={['docente', 'admin']}>
+                    <CourseStatistics />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/courses/:id/students/:studentId/statistics"
+                element={
+                  <ProtectedRoute requiredRoles={['docente', 'estudiante']}>
+                    <StudentStatistics />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/courses/:id"
+                element={
+                  <ProtectedRoute requiredRoles={['docente', 'admin']}>
+                    <CourseDetail />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/student/course/:id"
+                element={
+                  <ProtectedRoute requiredRoles={['estudiante']}>
+                    <StudentCourseDetail />
+                  </ProtectedRoute>
+                }
+              />
+            </Routes>
+          </AppLayout>
+        </BrowserRouter>
+      </LanguageProvider>
+    </GoogleOAuthProvider>
   );
 }
 
