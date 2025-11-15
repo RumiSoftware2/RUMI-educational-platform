@@ -72,25 +72,6 @@ const userSchema = new mongoose.Schema({
     type: Object,
     default: {}
   },
-  // Campos para Stripe (solo para docentes)
-  stripeAccountId: {
-    type: String,
-    default: null
-  },
-  stripeAccountStatus: {
-    type: String,
-    enum: ['pending', 'active', 'restricted', 'disabled'],
-    default: null
-  },
-  // Información de pagos para docentes
-  totalEarnings: {
-    type: Number,
-    default: 0
-  },
-  monthlyEarnings: {
-    type: Number,
-    default: 0
-  },
   createdAt: {
     type: Date,
     default: Date.now

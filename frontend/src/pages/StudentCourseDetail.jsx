@@ -5,32 +5,6 @@ import { AuthContext } from '../context/AuthContext';
 import LessonQuiz from '../components/LessonQuiz';
 import { motion, AnimatePresence } from 'framer-motion';
 import logo2 from '../assets/logo2zeus.png';
-import PaymentButton from '../components/PaymentButton';
-
-// Función para extraer el ID del video de YouTube
-function getYouTubeVideoId(url) {
-  if (!url) return '';
-  
-  // Caso 1: Formato largo
-  let match = url.match(/(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([\w-]+)/);
-  if (match) {
-    return match[1];
-  }
-  
-  // Caso 2: Formato corto (compartir)
-  match = url.match(/(?:https?:\/\/)?youtu\.be\/([\w-]+)/);
-  if (match) {
-    return match[1];
-  }
-  
-  // Caso 3: Formato embed
-  match = url.match(/(?:https?:\/\/)?(?:www\.)?youtube\.com\/embed\/([\w-]+)/);
-  if (match) {
-    return match[1];
-  }
-  
-  return '';
-}
 
 export default function StudentCourseDetail() {
   const { id: courseId } = useParams();
@@ -43,8 +17,6 @@ export default function StudentCourseDetail() {
   const [videoWatched, setVideoWatched] = useState(false);
   const [progressMsg, setProgressMsg] = useState('');
   const [showIntro, setShowIntro] = useState(true);
-  const [hasPaid, setHasPaid] = useState(false);
-  const [showPaymentMessage, setShowPaymentMessage] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -67,22 +39,6 @@ export default function StudentCourseDetail() {
     setVideoWatched(false);
     setProgressMsg('');
   }, [currentLessonIdx]);
-
-  // Verificar estado de pago
-  useEffect(() => {
-    const checkPaymentStatus = async () => {
-      if (course?.isPaidCourse) {
-        try {
-          const response = await api.get(`/payments/course/${courseId}/status`);
-          setHasPaid(response.data.hasPaid);
-        } catch (error) {
-          console.error('Error checking payment status:', error);
-        }
-      }
-    };
-    
-    checkPaymentStatus();
-  }, [courseId, course?.isPaidCourse]);
 
   if (loading) return <div className="p-4">Cargando curso...</div>;
   if (error) return <div className="p-4 text-red-600">{error}</div>;
@@ -149,28 +105,6 @@ export default function StudentCourseDetail() {
             </motion.div>
             <p className="mb-8 text-lg text-center text-gray-700 animate-fade-in-slow">{course.description}</p>
             
-            {/* Información de pago del curso */}
-            {course.isPaidCourse && (
-              <motion.div
-                className="mb-6 p-4 bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-200 rounded-xl"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-              >
-                <div className="flex items-center gap-3 mb-2">
-                  <span className="text-2xl">💰</span>
-                  <h3 className="text-lg font-bold text-purple-800">Curso con Contenido Premium</h3>
-                </div>
-                <div className="text-purple-700 space-y-1">
-                  <p><strong>Precio:</strong> ${course.price || 29.99}</p>
-                  <p><strong>Lecciones gratuitas:</strong> {course.paidFromLesson ? course.paidFromLesson - 1 : 0} de {course.lessons.length}</p>
-                  <p><strong>Lecciones premium:</strong> {course.paidFromLesson ? course.lessons.length - course.paidFromLesson + 1 : course.lessons.length} de {course.lessons.length}</p>
-                  <p className="text-sm text-purple-600 mt-2">
-                    💡 Los estudiantes pueden ver las lecciones anteriores gratis antes de decidir pagar
-                  </p>
-                </div>
-              </motion.div>
-            )}
             {lessons.length > 0 ? (
               <div className="flex justify-center mt-6">
                 <motion.button
@@ -204,12 +138,6 @@ export default function StudentCourseDetail() {
   if (lessons.length === 0) return null; // No mostrar navegación de lecciones si no hay lecciones
 
   const lesson = lessons[currentLessonIdx];
-  
-  // Verificar si la lección actual requiere pago
-  const requiresPayment = course.isPaidCourse && 
-                         course.paidFromLesson && 
-                         lesson.order >= course.paidFromLesson &&
-                         !hasPaid;
 
   // Handler para guardar progreso por visualización
   const handleVideoEnded = async () => {
@@ -256,12 +184,6 @@ export default function StudentCourseDetail() {
               transition={{ delay: 0.1 }}
             >
               {lesson.title}
-                             {requiresPayment && (
-                 <span className="ml-2 text-purple-600 text-lg">🔒 Premium</span>
-               )}
-               {course.isPaidCourse && course.paidFromLesson && lesson.order >= course.paidFromLesson && hasPaid && (
-                 <span className="ml-2 text-green-600 text-lg">✅ Pagado</span>
-               )}
             </motion.h2>
                          <motion.div
                className="aspect-video flex items-center justify-center bg-gradient-to-br from-blue-100 via-green-100 to-yellow-100 rounded-2xl shadow-xl border-4 border-transparent bg-clip-padding relative overflow-hidden"
@@ -270,68 +192,19 @@ export default function StudentCourseDetail() {
                animate={{ scale: 1, opacity: 1 }}
                transition={{ delay: 0.15 }}
              >
-               {requiresPayment ? (
-                 // Video bloqueado para contenido premium
-                 <div className="relative w-full h-full">
-                   {/* Miniatura del video (usando thumbnail de YouTube) */}
-                   <div 
-                     className="w-full h-full bg-cover bg-center rounded-xl cursor-pointer"
-                     style={{
-                       backgroundImage: `url(https://img.youtube.com/vi/${getYouTubeVideoId(lesson.videoUrl)}/maxresdefault.jpg)`,
-                       backgroundSize: 'cover',
-                       backgroundPosition: 'center'
-                     }}
-                                           onClick={() => {
-                        // Mostrar mensaje de que necesita pagar
-                        setShowPaymentMessage(true);
-                        setTimeout(() => setShowPaymentMessage(false), 3000);
-                      }}
-                   >
-                     {/* Overlay con icono de bloqueo */}
-                     <div className="absolute inset-0 bg-gradient-to-br from-black/70 to-purple-900/70 flex items-center justify-center rounded-xl">
-                       <div className="text-center text-white p-4">
-                         <div className="text-6xl mb-4 animate-pulse">🔒</div>
-                         <p className="text-xl font-bold mb-2">Contenido Premium</p>
-                         <p className="text-sm opacity-90 mb-3">Realiza el pago para desbloquear</p>
-                         <div className="bg-white/20 backdrop-blur-sm rounded-lg p-2">
-                           <p className="text-xs">💡 Haz clic para ver más información</p>
-                         </div>
-                       </div>
-                     </div>
-                   </div>
-                 </div>
-               ) : (
-                 // Video normal para contenido gratuito
-                 <iframe
-                   src={lesson.videoUrl}
-                   title={lesson.title}
-                   style={{ border: 0 }}
-                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                   allowFullScreen
-                   className="w-full h-full rounded-xl shadow-lg"
-                   onLoad={() => {}}
-                   onEnded={handleVideoEnded}
-                 />
-               )}
+               <iframe
+                 src={lesson.videoUrl}
+                 title={lesson.title}
+                 style={{ border: 0 }}
+                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                 allowFullScreen
+                 className="w-full h-full rounded-xl shadow-lg"
+                 onLoad={() => {}}
+                 onEnded={handleVideoEnded}
+               />
              </motion.div>
             <p className="mb-2 text-gray-700 text-center md:text-left animate-fade-in-slow">{lesson.description}</p>
             
-            {requiresPayment && (
-              <motion.div
-                className="mb-4 p-3 bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-              >
-                <div className="flex items-center gap-2 text-purple-700">
-                  <span className="text-lg">🔒</span>
-                  <div>
-                    <p className="font-semibold">Contenido Premium Requerido</p>
-                    <p className="text-sm">Has llegado a una lección que requiere pago para continuar. Desbloquea todo el contenido del curso con un solo pago.</p>
-                  </div>
-                </div>
-              </motion.div>
-            )}
             <div className="flex gap-2 justify-center md:justify-start mt-2">
               <motion.button
                 whileHover={{ scale: currentLessonIdx === 0 ? 1 : 1.07 }}
@@ -353,108 +226,27 @@ export default function StudentCourseDetail() {
               </motion.button>
             </div>
                          {progressMsg && <motion.div className="mt-2 mb-2 text-green-700 font-semibold text-center md:text-left animate-fade-in" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>{progressMsg}</motion.div>}
-             
-             {/* Mensaje de pago requerido */}
-             {showPaymentMessage && (
-               <motion.div
-                 className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg"
-                 initial={{ opacity: 0, y: 10 }}
-                 animate={{ opacity: 1, y: 0 }}
-                 exit={{ opacity: 0, y: -10 }}
-               >
-                 <div className="flex items-center gap-2 text-red-700">
-                   <span className="text-lg">🔒</span>
-                   <div>
-                     <p className="font-semibold">Contenido Premium Requerido</p>
-                     <p className="text-sm">Este video requiere pago para ser reproducido. Realiza el pago para desbloquear todo el contenido.</p>
-                   </div>
-                 </div>
-               </motion.div>
-             )}
            </div>
-          {/* Contenido premium o quiz */}
-          {requiresPayment ? (
-            <motion.div
-              className="flex-1 flex flex-col justify-center md:justify-start md:items-center"
-              initial={{ opacity: 0, x: 40 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-                             <PaymentButton 
-                 courseId={courseId}
-                 lessonOrder={lesson.order}
-                 coursePrice={course.price || 29.99}
-                 onPaymentSuccess={() => {
-                   setProgressMsg('¡Pago exitoso! Ahora puedes continuar con el curso.');
-                   setVideoWatched(true);
-                   setHasPaid(true);
-                 }}
-               />
-            </motion.div>
-          ) : (
-            <motion.div
-              className="flex-1 flex flex-col justify-center md:justify-start md:items-center bg-gradient-to-br from-yellow-50 via-blue-50 to-green-50 rounded-2xl shadow-lg border border-[#ffd700]/30 p-4 animate-fade-in-slow"
-              initial={{ opacity: 0, x: 40 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              <LessonQuiz
-                quizId={lesson.quiz}
-                courseId={courseId}
-                lessonOrder={lesson.order}
-                onComplete={(score) => {
-                  setProgressMsg(`¡Progreso guardado! Puntuación: ${score}`);
-                  setVideoWatched(true);
-                  api.post(`/progress/lesson/${courseId}/${lesson.order}`, { score, completed: true });
-                }}
-              />
-              {!lesson.quiz && videoWatched && <span className="block mt-2 text-green-700 font-semibold">¡Has completado la lección!</span>}
-            </motion.div>
-          )}
-        </div>
-        {/* Indicadores de lecciones */}
-        {course.isPaidCourse && (
+          {/* Quiz */}
           <motion.div
-            className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
+            className="flex-1 flex flex-col justify-center md:justify-start md:items-center bg-gradient-to-br from-yellow-50 via-blue-50 to-green-50 rounded-2xl shadow-lg border border-[#ffd700]/30 p-4 animate-fade-in-slow"
+            initial={{ opacity: 0, x: 40 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
           >
-            <h4 className="font-semibold text-blue-800 mb-3">Progreso del curso</h4>
-            <div className="flex flex-wrap gap-2">
-              {lessons.map((lesson, index) => {
-                const isPremium = course.paidFromLesson && lesson.order >= course.paidFromLesson;
-                const isCurrent = index === currentLessonIdx;
-                return (
-                  <div
-                    key={index}
-                    className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium ${
-                      isCurrent
-                        ? 'bg-blue-600 text-white'
-                        : isPremium
-                        ? 'bg-purple-100 text-purple-800 border border-purple-300'
-                        : 'bg-green-100 text-green-800 border border-green-300'
-                    }`}
-                  >
-                    <span>{lesson.order}</span>
-                    {isPremium && <span className="text-xs">🔒</span>}
-                    {!isPremium && <span className="text-xs">✅</span>}
-                  </div>
-                );
-              })}
-            </div>
-            <div className="flex gap-4 mt-3 text-xs">
-              <div className="flex items-center gap-1">
-                <span className="w-3 h-3 bg-green-100 border border-green-300 rounded"></span>
-                <span>Gratis</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <span className="w-3 h-3 bg-purple-100 border border-purple-300 rounded"></span>
-                <span>Premium</span>
-              </div>
-            </div>
+            <LessonQuiz
+              quizId={lesson.quiz}
+              courseId={courseId}
+              lessonOrder={lesson.order}
+              onComplete={(score) => {
+                setProgressMsg(`¡Progreso guardado! Puntuación: ${score}`);
+                setVideoWatched(true);
+                api.post(`/progress/lesson/${courseId}/${lesson.order}`, { score, completed: true });
+              }}
+            />
+            {!lesson.quiz && videoWatched && <span className="block mt-2 text-green-700 font-semibold">¡Has completado la lección!</span>}
           </motion.div>
-        )}
+        </div>
         
         <div className="flex justify-end mt-6">
           <motion.button

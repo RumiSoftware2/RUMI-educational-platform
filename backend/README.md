@@ -26,7 +26,6 @@ Backend de la plataforma educativa **RUMI**. Proporciona la API y lógica de neg
    MONGODB_URI=...
    JWT_SECRET=...
    PORT=5000
-   STRIPE_SECRET_KEY=...
    EMAIL_USER=...
    EMAIL_PASSWORD=...
    GOOGLE_CLIENT_ID=...
@@ -57,7 +56,6 @@ backend/
 │   ├── feedbackController.js  # Sistema de feedback entre docentes y estudiantes
 │   ├── gameController.js      # Gestión de sesiones de juegos educativos
 │   ├── gradeController.js     # Calificaciones y evaluaciones
-│   ├── paymentController.js   # Pagos con Stripe
 │   ├── progressController.js  # Seguimiento de progreso
 │   ├── quizController.js      # Gestión de quizzes
 │   └── userController.js      # Gestión de usuarios
@@ -69,7 +67,6 @@ backend/
 │   ├── FeedbackThread.js     # Hilos de feedback
 │   ├── GameSession.js        # Sesiones de juegos
 │   ├── Grade.js              # Calificaciones
-│   ├── Payment.js            # Pagos
 │   ├── Progress.js           # Progreso de estudiantes
 │   ├── Quiz.js               # Quizzes
 │   └── User.js               # Usuarios
@@ -79,14 +76,12 @@ backend/
 │   ├── feedbackRoutes.js     # Rutas de feedback
 │   ├── game.js               # Rutas de juegos
 │   ├── gradeRoutes.js        # Rutas de calificaciones
-│   ├── paymentRoutes.js      # Rutas de pagos
 │   ├── progressRoutes.js     # Rutas de progreso
 │   ├── protectedRoutes.js    # Rutas protegidas
 │   ├── quizRoutes.js         # Rutas de quizzes
 │   └── userRoutes.js         # Rutas de usuarios
 └── services/
-    ├── emailService.js       # Servicio de emails (Nodemailer)
-    └── stripeService.js      # Servicio de pagos (Stripe)
+    └── emailService.js       # Servicio de emails (Nodemailer)
 ```
 
 ## 🌐 Despliegue en Render/Railway
@@ -119,13 +114,6 @@ backend/
 - `PUT /:id/leave` — Abandonar curso
 - `GET /:id/statistics` — Estadísticas del curso
 - `GET /:id/students` — Estudiantes inscritos
-
-### Pagos (`/api/payments`)
-- `POST /create-intent` — Crear Payment Intent de Stripe
-- `POST /` — Confirmar pago
-- `GET /course/:courseId/status` — Estado de pago del curso
-- `POST /teacher/stripe-account` — Crear cuenta Stripe para docente
-- `GET /teacher/balance` — Balance del docente
 
 ### Juegos (`/api/games`)
 - `POST /sessions` — Guardar sesión de juego
@@ -160,13 +148,6 @@ backend/
 - `DELETE /:id` — Eliminar usuario (admin)
 
 ## 🔧 Servicios integrados
-
-### Stripe Service
-- Creación de Payment Intents
-- Distribución automática de pagos a docentes (87.1% docente, 10% plataforma, 2.9% Stripe)
-- Creación de cuentas Connect para docentes
-- Onboarding de docentes
-- Gestión de balances
 
 ### Email Service
 - Verificación de email con códigos de 6 dígitos

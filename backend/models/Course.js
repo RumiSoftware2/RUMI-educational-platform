@@ -21,10 +21,6 @@ const courseSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
-  price: {
-    type: Number,
-    default: 0
-  },
   videoUrl: {
     type: String,
     required: true
@@ -35,15 +31,6 @@ const courseSchema = new mongoose.Schema({
     ref: 'User',
     default: []
   }],
-  // Campos para sistema de pagos
-  isPaidCourse: {
-    type: Boolean,
-    default: false
-  },
-  paidFromLesson: {
-    type: Number,
-    default: null
-  },
   createdAt: {
     type: Date,
     default: Date.now

@@ -12,9 +12,7 @@ const {
   enrollInCourse,
   getCourseStatistics,
   getEnrolledStudents,
-  leaveCourse,
-  setCourseAsPaid,
-  removeCoursePayment
+  leaveCourse
 } = require('../controllers/courseController');
 const authMiddleware = require('../middleware/authMiddleware');
 const checkRole = require('../middleware/roleMiddleware');
@@ -54,12 +52,6 @@ router.get('/:id/students', getEnrolledStudents);
 
 // Abandonar curso (solo estudiantes)
 router.put('/:id/leave', authMiddleware, checkRole(['estudiante']), leaveCourse);
-
-// Configurar curso como pago (solo docentes y admins)
-router.put('/:courseId/set-paid', authMiddleware, checkRole(['docente', 'admin']), setCourseAsPaid);
-
-// Remover configuración de pago (solo docentes y admins)
-router.put('/:courseId/remove-paid', authMiddleware, checkRole(['docente', 'admin']), removeCoursePayment);
 
 module.exports = router;
 

@@ -8,13 +8,9 @@ const checkRole = require('../middleware/roleMiddleware');
 router.post('/sessions', authMiddleware, startSession);
 
 // Obtener estadísticas propias
-outer.get('/sessions/me', authMiddleware, getUserStats);
+router.get('/sessions/me', authMiddleware, getUserStats);
 
 // Admin: ver todas las sesiones
 router.get('/sessions', authMiddleware, checkRole(['admin']), getAllStats);
 
 module.exports = router;
-
-// backend/server.js (fragmento de integración de rutas)
-const gamesRouter = require('./routes/games');
-app.use('/api/games', gamesRouter);

@@ -9,9 +9,6 @@ import LessonQuiz from '../components/LessonQuiz';
 import { createQuiz } from '../services/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import logo1 from '../assets/logo1zeus.png';
-import PaymentConfigModal from '../components/PaymentConfigModal';
-import PaymentButton from '../components/PaymentButton';
-import PaymentStats from '../components/PaymentStats';
 
 // Función para convertir cualquier URL de YouTube a formato embed
 function toYoutubeEmbed(url) {
@@ -58,7 +55,6 @@ export default function CourseDetail() {
   const [editCourseForm, setEditCourseForm] = useState({ title: '', videoUrl: '', description: '' });
   const [editCourseLoading, setEditCourseLoading] = useState(false);
   const [editCourseMsg, setEditCourseMsg] = useState('');
-  const [showPaymentConfig, setShowPaymentConfig] = useState(false);
 
   useEffect(() => {
     const fetchCourse = async () => {
@@ -248,10 +244,6 @@ export default function CourseDetail() {
     }
   };
 
-  const handlePaymentConfigSuccess = (updatedCourse) => {
-    setCourse(updatedCourse);
-  };
-
   const mainVideoUrl = course?.videoUrl;
 
   if (loading) return <p className="p-4">Cargando curso...</p>;
@@ -261,11 +253,6 @@ export default function CourseDetail() {
   // Vista de estudiante para una lección
   if (showStudentView !== null && lessons[showStudentView]) {
     const lesson = lessons[showStudentView];
-    
-    // Verificar si la lección actual requiere pago
-    const requiresPayment = course.isPaidCourse && 
-                           course.paidFromLesson && 
-                           lesson.order >= course.paidFromLesson;
     
     // Handler para guardar progreso por visualización
     const handleVideoEnded = async () => {
@@ -354,31 +341,20 @@ export default function CourseDetail() {
           </motion.div>
           <p className="mb-4 text-lg sm:text-xl text-center text-gray-700 font-medium animate-fade-in-slow">{lesson.description}</p>
           {progressMsg && <motion.div className="mb-4 text-green-700 font-semibold text-center animate-fade-in" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>{progressMsg}</motion.div>}
-          {requiresPayment ? (
-            <PaymentButton 
+          <motion.div className="mt-6 p-4 border-4 border-blue-200 rounded-2xl bg-gradient-to-br from-blue-50 via-green-50 to-purple-100 text-gray-700 text-center animate-fade-in-slow shadow-lg">
+            <LessonQuiz
+              quizId={lesson.quiz}
               courseId={id}
               lessonOrder={lesson.order}
-              onPaymentSuccess={() => {
-                setProgressMsg('¡Pago exitoso! Ahora puedes continuar con el curso.');
+              onComplete={(score) => {
+                setProgressMsg(`¡Progreso guardado! Puntuación: ${score}`);
                 setVideoWatched(true);
+                // Guardar progreso actualizado
+                saveLessonProgress(id, lesson.order, { score, completed: true });
               }}
             />
-          ) : (
-            <motion.div className="mt-6 p-4 border-4 border-blue-200 rounded-2xl bg-gradient-to-br from-blue-50 via-green-50 to-purple-100 text-gray-700 text-center animate-fade-in-slow shadow-lg">
-              <LessonQuiz
-                quizId={lesson.quiz}
-                courseId={id}
-                lessonOrder={lesson.order}
-                onComplete={(score) => {
-                  setProgressMsg(`¡Progreso guardado! Puntuación: ${score}`);
-                  setVideoWatched(true);
-                  // Guardar progreso actualizado
-                  saveLessonProgress(id, lesson.order, { score, completed: true });
-                }}
-              />
-              {!lesson.quiz && videoWatched && <span className="block mt-2 text-green-700 font-bold animate-bounce">¡Has completado la lección!</span>}
-            </motion.div>
-          )}
+            {!lesson.quiz && videoWatched && <span className="block mt-2 text-green-700 font-bold animate-bounce">¡Has completado la lección!</span>}
+          </motion.div>
           {/* Animaciones personalizadas para la vista de estudiante */}
           <style jsx>{`
             @keyframes gradient-x {
@@ -398,18 +374,6 @@ export default function CourseDetail() {
           `}</style>
                   </motion.div>
         </AnimatePresence>
-      );
-    }
-
-    // Modal de configuración de pago
-    if (showPaymentConfig) {
-      return (
-        <PaymentConfigModal
-          isOpen={showPaymentConfig}
-          onClose={() => setShowPaymentConfig(false)}
-          course={course}
-          onSuccess={handlePaymentConfigSuccess}
-        />
       );
     }
 
@@ -463,12 +427,6 @@ export default function CourseDetail() {
         {/* Botón y formulario de edición de info general */}
         {isOwner && !showEditCourse && (
           <div className="flex justify-end gap-2 mb-2">
-            <button
-              className="bg-purple-500 text-white px-4 py-2 rounded-xl font-bold hover:bg-purple-600 shadow"
-              onClick={() => setShowPaymentConfig(true)}
-            >
-              {course.isPaidCourse ? 'Editar Configuración de Pago' : 'Configurar Pago'}
-            </button>
             <button
               className="bg-yellow-500 text-white px-4 py-2 rounded-xl font-bold hover:bg-yellow-600 shadow"
               onClick={() => setShowEditCourse(true)}
@@ -532,12 +490,6 @@ export default function CourseDetail() {
         <div className="flex flex-col md:flex-row gap-8">
           <div className="md:w-1/3 w-full mb-4 md:mb-0">
             <EnrolledStudentsList students={enrolledStudents} />
-            {/* Estadísticas de pagos para docentes */}
-            {isOwner && course.isPaidCourse && (
-              <div className="mt-6">
-                <PaymentStats courseId={id} />
-              </div>
-            )}
           </div>
           <div className="flex-1 w-full">
             <motion.div
@@ -569,47 +521,6 @@ export default function CourseDetail() {
             >
               {course.description}
             </motion.p>
-
-            {/* Información de pago del curso */}
-            {course.isPaidCourse && (
-              <motion.div
-                className="mb-6 p-4 bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-200 rounded-xl"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-              >
-                <div className="flex items-center gap-3 mb-2">
-                  <span className="text-2xl">💰</span>
-                  <h3 className="text-lg font-bold text-purple-800">Curso con Contenido Premium</h3>
-                </div>
-                <div className="text-purple-700 space-y-1">
-                  <p><strong>Precio:</strong> ${course.price || 29.99}</p>
-                  <p><strong>Lecciones gratuitas:</strong> {course.paidFromLesson ? course.paidFromLesson - 1 : 0} de {course.lessons.length}</p>
-                  <p><strong>Lecciones premium:</strong> {course.paidFromLesson ? course.lessons.length - course.paidFromLesson + 1 : course.lessons.length} de {course.lessons.length}</p>
-                </div>
-                
-                {/* Aviso importante para docentes */}
-                {isOwner && (
-                  <motion.div
-                    className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg"
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                  >
-                    <div className="flex items-start gap-2">
-                      <span className="text-yellow-600 text-lg">⚠️</span>
-                      <div className="text-yellow-800">
-                        <p className="font-semibold mb-1">Importante para docentes:</p>
-                        <p className="text-sm">
-                          Para mantener la seguridad del contenido premium, asegúrate de configurar los videos de YouTube como "No listados" o "Privados" 
-                          para las lecciones premium. Esto evita que los estudiantes accedan directamente a los videos sin pagar.
-                        </p>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </motion.div>
-            )}
 
             {/* Sección de lecciones */}
             <motion.div
@@ -779,16 +690,6 @@ export default function CourseDetail() {
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
                             <span className="font-bold text-lg text-green-800">{lesson.title}</span>
-                            {course.isPaidCourse && course.paidFromLesson && lesson.order >= course.paidFromLesson && (
-                              <span className="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full font-semibold">
-                                🔒 Premium
-                              </span>
-                            )}
-                            {course.isPaidCourse && course.paidFromLesson && lesson.order < course.paidFromLesson && (
-                              <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full font-semibold">
-                                ✅ Gratis
-                              </span>
-                            )}
                           </div>
                           <span className="block text-gray-600 mt-1">{lesson.description}</span>
                         </div>

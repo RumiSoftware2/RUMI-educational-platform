@@ -30,7 +30,6 @@ import StudentStatistics from './pages/StudentStatistics';
 import StudentCourseDetail from './pages/StudentCourseDetail';
 import VerifyResetCode from './pages/VerifyResetCode';
 import Sudoku from './pages/games/Sudoku';
-import PaymentSuccess from './pages/PaymentSuccess';
 import { LanguageProvider } from './context/LanguageContext';
 
 // Obtener el Client ID de Google desde las variables de entorno
@@ -103,7 +102,6 @@ function App() {
                 element={<Blackjack />}
               />
               <Route path="/games/sudoku" element={<Sudoku />} />
-              <Route path="/payment-success" element={<PaymentSuccess />} />
 
               <Route
                 path="/courses/new"
