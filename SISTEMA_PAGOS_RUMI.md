@@ -17,17 +17,17 @@
 - `amount`: Monto del pago
 - `currency`: Moneda (default: 'USD')
 - `status`: Estado del pago ['pending', 'completed', 'failed', 'refunded']
-- `paymentMethod`: Método de pago ['stripe', 'paypal', 'manual']
+ - `paymentMethod`: Método de pago ['wompi', 'paypal', 'manual']
 - `transactionId`: ID único de la transacción
 - `paymentDate`: Fecha del pago
 - **Distribución de ganancias:**
-  - `stripeFee`: Comisión de Stripe (2.9% + $0.30)
+   - `wompiFee`: Comisión de Wompi (configurable, p.ej. porcentaje + tarifa fija)
   - `platformFee`: Comisión de la plataforma (10%)
   - `teacherAmount`: Cantidad para el docente (87.1%)
   - `platformPercentage`: Porcentaje de la plataforma (default: 10%)
-- **Información de Stripe:**
-  - `stripePaymentIntentId`: ID del Payment Intent
-  - `stripeTransferId`: ID de la transferencia a la cuenta del docente
+ - **Información de Wompi:**
+    - `wompiTransactionId`: ID de la transacción en Wompi
+    - `wompiTransferId`: ID de la transferencia a la cuenta del docente (si aplica)
 - `metadata`: Metadatos adicionales
 
 #### `backend/models/Course.js`
@@ -38,8 +38,8 @@
 
 #### `backend/models/User.js`
 **Campos relacionados con pagos (solo para docentes):**
-- `stripeAccountId`: ID de la cuenta Stripe Connect del docente
-- `stripeAccountStatus`: Estado de la cuenta ['pending', 'active', 'restricted', 'disabled']
+ - `teacherPayoutId`: ID del registro de métodos/payout del docente
+ - `teacherPayoutStatus`: Estado del método de pago/payout ['not_configured', 'pending', 'active']
 - `totalEarnings`: Ganancias totales acumuladas
 - `monthlyEarnings`: Ganancias del mes actual
 
@@ -47,40 +47,41 @@
 
 ### 2. **Servicios (Services)**
 
-#### `backend/services/stripeService.js`
-**Propósito:** Servicio centralizado para todas las operaciones con Stripe
+#### `backend/services/wompiService.js`
+**Propósito:** Servicio centralizado para todas las operaciones con Wompi (crear transacciones, verificar estado, modo prueba)
 
 **Métodos principales:**
 
-1. **`isStripeConfigured()`**
-   - Verifica si Stripe está configurado correctamente
-   - Retorna true si existe `STRIPE_SECRET_KEY` y comienza con 'sk_'
+1. **`isWompiConfigured()`**
+   - Verifica si Wompi está configurado correctamente
+   - Retorna true si existe `WOMPI_PRIVATE_KEY`
 
 2. **`calculateFeeDistribution(amount, platformPercentage = 10)`**
    - Calcula la distribución de ganancias:
-     - Stripe Fee: 2.9% + $0.30
+   - Wompi Fee: configurable (p.ej. porcentaje + tarifa fija)
      - Platform Fee: 10% (configurable)
      - Teacher Amount: Resto (87.1% aproximadamente)
    - Retorna objeto con las tres cantidades
 
-3. **`createPaymentIntent(amount, currency = 'usd', metadata = {})`**
-   - Crea un Payment Intent en Stripe
-   - Convierte el monto a centavos (Stripe usa centavos)
+3. **`createTransaction(amount, currency = 'COP', metadata = {})`**
+   - Crea una transacción en Wompi (checkout hospedado)
+   - Convierte/normaliza el monto según la moneda
    - Incluye metadata con información del curso, estudiante y docente
-   - Modo de prueba si Stripe no está configurado
+   - Retorna `checkoutUrl` y `wompiTransactionId`
+   - Modo de prueba si `WOMPI_PRIVATE_KEY` no está configurado (simulación)
 
-4. **`confirmPayment(paymentIntentId, courseId, teacherId)`**
-   - Verifica el estado del Payment Intent
+4. **`verifyTransaction(wompiTransactionId, courseId, teacherId)`**
+   - Verifica el estado de la transacción en Wompi (o se activa mediante webhook)
    - Si el pago fue exitoso:
-     - Calcula distribución de ganancias
-     - Crea transferencia automática a la cuenta Stripe del docente (Stripe Connect)
-     - Retorna información del pago y distribución
+      - Calcula distribución de ganancias (wompiFee, platformFee, teacherAmount)
+      - Registra la transacción en la base de datos
+      - Marca al estudiante como inscrito en el curso
+      - Retorna información del pago y distribución
 
-5. **`createTeacherAccount(teacherEmail, teacherName)`**
-   - Crea una cuenta Stripe Connect Express para el docente
-   - Configura capacidades: transfers, card_payments, sepa_debit_payments
-   - Business type: individual
-   - MCC: 8299 (Educational Services)
+5. **`createTeacherPayoutAccount(teacherData)`**
+   - Crea/actualiza el registro interno para que el docente reciba pagos (almacena datos bancarios o método de retiro)
+   - Valida información mínima requerida (nombre, documento, banco, cuenta)
+   - Retorna `teacherPayoutId` y estado (`pending` / `active`)
 
 6. **`createOnboardingLink(accountId, returnUrl)`**
    - Genera link de onboarding para que el docente complete su información
@@ -90,8 +91,8 @@
 7. **`getPlatformBalance()`**
    - Obtiene el balance de la cuenta principal de RUMI
 
-8. **`getTeacherBalance(teacherStripeAccountId)`**
-   - Obtiene el balance de la cuenta Stripe del docente
+8. **`getTeacherBalance(teacherPayoutId)`**
+   - Obtiene el balance o ganancias acumuladas del docente (registro interno)
 
 ---
 
@@ -102,29 +103,29 @@
 
 **Funciones principales:**
 
-1. **`createPaymentIntent(req, res)`**
-   - **Ruta:** `POST /api/payments/create-intent`
+1. **`createTransaction(req, res)`**
+   - **Ruta:** `POST /api/payments/create-transaction`
    - **Autenticación:** Requerida
    - **Validaciones:**
-     - Verifica que el curso existe
-     - Verifica que el curso es de pago (`isPaidCourse: true`)
-     - Verifica que el estudiante no haya pagado ya
+      - Verifica que el curso existe
+      - Verifica que el curso es de pago (`isPaidCourse: true`)
+      - Verifica que el estudiante no haya pagado ya
    - **Proceso:**
-     - Obtiene información del docente y su cuenta Stripe
-     - Crea Payment Intent con metadata
-     - Retorna `clientSecret` para el frontend
+      - Obtiene información del docente y su registro de payout
+      - Crea transacción en Wompi con metadata (curso, estudiante, monto)
+      - Retorna `checkoutUrl` y `wompiTransactionId` para que el frontend redirija al usuario
 
-2. **`createPayment(req, res)`**
-   - **Ruta:** `POST /api/payments`
+2. **`confirmPayment(req, res)`**
+   - **Ruta:** `POST /api/payments/confirm`
    - **Autenticación:** Requerida
    - **Validaciones:**
-     - Verifica curso y que es de pago
-     - Verifica que no haya pagado previamente
+      - Verifica curso y que es de pago
+      - Verifica que no haya pagado previamente
    - **Proceso:**
-     - Confirma el pago con Stripe
-     - Crea registro en la base de datos con distribución de ganancias
-     - Agrega estudiante al curso automáticamente
-     - Actualiza ganancias del docente (`totalEarnings`, `monthlyEarnings`)
+      - Verifica/valida la transacción en Wompi (o procesa la confirmación recibida por webhook)
+      - Crea registro en la base de datos con distribución de ganancias
+      - Agrega estudiante al curso automáticamente
+      - Actualiza ganancias del docente (`totalEarnings`, `monthlyEarnings`)
 
 3. **`getUserPayments(req, res)`**
    - **Ruta:** `GET /api/payments/user`
@@ -148,25 +149,24 @@
      - `totalPlatformFees`: Comisiones de la plataforma
    - Retorna lista de pagos con información de estudiantes
 
-6. **`createTeacherStripeAccount(req, res)`**
-   - **Ruta:** `POST /api/payments/teacher/stripe-account`
-   - **Autenticación:** Requerida
-   - **Autorización:** Solo docentes o admin
-   - **Validaciones:**
-     - Verifica que no tenga cuenta ya configurada
-   - **Proceso:**
-     - Crea cuenta Stripe Connect
-     - Actualiza usuario con `stripeAccountId` y `stripeAccountStatus: 'pending'`
-     - Genera link de onboarding
-     - Retorna `accountId` y `onboardingUrl`
+6. **`createTeacherPayoutAccount(req, res)`**
+    - **Ruta:** `POST /api/payments/teacher/payout-account`
+    - **Autenticación:** Requerida
+    - **Autorización:** Solo docentes o admin
+    - **Validaciones:**
+       - Verifica que no tenga método de retiro ya configurado
+    - **Proceso:**
+       - Crea/actualiza registro de payout del docente
+       - Actualiza usuario con `teacherPayoutId` y `teacherPayoutStatus: 'pending'` o `active`
+       - Retorna `teacherPayoutId` y `onboardingUrl` (si aplica)
 
 7. **`getTeacherBalance(req, res)`**
    - **Ruta:** `GET /api/payments/teacher/balance`
    - **Autenticación:** Requerida
    - **Autorización:** Solo docentes o admin
-   - **Validaciones:**
-     - Verifica que tenga cuenta Stripe configurada
-   - Retorna balance de Stripe y ganancias acumuladas
+    - **Validaciones:**
+       - Verifica que tenga método de payout configurado
+    - Retorna balance del docente y ganancias acumuladas (registro interno)
 
 #### `backend/controllers/courseController.js`
 **Funciones relacionadas con pagos:**
@@ -194,12 +194,12 @@
 
 #### `backend/routes/paymentRoutes.js`
 **Rutas de pagos:**
-- `POST /api/payments/create-intent` → `createPaymentIntent`
-- `POST /api/payments` → `createPayment`
+- `POST /api/payments/create-transaction` → `createTransaction`
+- `POST /api/payments/confirm` → `confirmPayment`
 - `GET /api/payments/user` → `getUserPayments`
 - `GET /api/payments/course/:courseId/status` → `checkPaymentStatus`
 - `GET /api/payments/course/:courseId/stats` → `getCoursePaymentStats`
-- `POST /api/payments/teacher/stripe-account` → `createTeacherStripeAccount`
+- `POST /api/payments/teacher/payout-account` → `createTeacherPayoutAccount`
 - `GET /api/payments/teacher/balance` → `getTeacherBalance`
 
 **Todas las rutas requieren autenticación (`authMiddleware`)**
@@ -219,13 +219,13 @@
 **Funciones relacionadas con pagos:**
 
 ```javascript
-// Crear Payment Intent
-export const createPaymentIntent = (paymentData) => 
-  api.post('/payments/create-intent', paymentData);
+// Crear transacción (Wompi)
+export const createTransaction = (paymentData) => 
+   api.post('/payments/create-transaction', paymentData);
 
-// Crear un pago
-export const createPayment = (paymentData) => 
-  api.post('/payments', paymentData);
+// Confirmar/registrar pago (después de verificación/webhook)
+export const confirmPayment = (paymentData) => 
+   api.post('/payments/confirm', paymentData);
 
 // Obtener pagos del usuario
 export const getUserPayments = () => 
@@ -239,9 +239,9 @@ export const checkPaymentStatus = (courseId) =>
 export const getCoursePaymentStats = (courseId) => 
   api.get(`/payments/course/${courseId}/stats`);
 
-// Crear cuenta Stripe para docente
-export const createTeacherStripeAccount = (data) => 
-  api.post('/payments/teacher/stripe-account', data);
+// Crear registro de payout para docente
+export const createTeacherPayoutAccount = (data) => 
+   api.post('/payments/teacher/payout-account', data);
 
 // Obtener balance del docente
 export const getTeacherBalance = () => 
@@ -262,17 +262,15 @@ export const getTeacherBalance = () =>
 
 2. **Inicio de pago:**
    - Al hacer clic en "Pagar y Continuar":
-     - Llama a `createPaymentIntent` con `courseId` y `amount`
-     - Recibe `clientSecret`
-     - Muestra formulario de pago de Stripe
+     - Llama a `createTransaction` con `courseId` y `amount`
+     - Recibe `checkoutUrl` y `wompiTransactionId`
+     - Redirige al usuario al `checkoutUrl` (Wompi hosted checkout)
 
-3. **Formulario de pago (CheckoutForm):**
-   - Usa `@stripe/react-stripe-js` (PaymentElement)
-   - Al enviar:
-     - Valida formulario
-     - Confirma pago con Stripe
-     - Si es exitoso, llama a `createPayment` en el backend
-     - Ejecuta callback `onPaymentSuccess`
+3. **Confirmación y webhook:**
+   - Wompi procesa el pago en su checkout hospedado
+   - Wompi enviará una notificación (webhook) al backend cuando el pago cambie de estado
+   - Alternativamente, el frontend puede consultar el endpoint de `checkPaymentStatus` para verificar si la transacción quedó registrada
+   - Si el pago es exitoso, el backend registra el pago y ejecuta `onPaymentSuccess`
 
 4. **Estados:**
    - `loading`: Cargando estado de pago
@@ -337,27 +335,27 @@ export const getTeacherBalance = () =>
 
 ---
 
-#### `frontend/src/components/TeacherStripeSetup.jsx`
-**Propósito:** Configuración de cuenta Stripe para docentes
+#### `frontend/src/components/TeacherPayoutSetup.jsx`
+**Propósito:** Configuración de método de payout para docentes (datos bancarios / retiro)
 
 **Funcionalidad:**
 1. **Verificación de estado:**
-   - Al montar, verifica si tiene cuenta Stripe (`getTeacherBalance`)
+   - Al montar, verifica si tiene método de payout configurado (`getTeacherBalance`)
    - Estados posibles:
-     - `not_configured`: No tiene cuenta
-     - `pending`: Cuenta creada pero onboarding incompleto
-     - `active`: Cuenta activa
+      - `not_configured`: No tiene método de retiro
+      - `pending`: Datos enviados pero verificación pendiente
+      - `active`: Método de pago activo
 
-2. **Crear cuenta:**
-   - Botón para crear cuenta Stripe Connect
-   - Llama a `createTeacherStripeAccount`
-   - Si hay `onboardingUrl`, redirige al docente
+2. **Configurar método de retiro:**
+   - Formulario para que el docente registre datos bancarios o instrucción de retiro
+   - Llama a `createTeacherPayoutAccount`
+   - Si hay `onboardingUrl` o pasos adicionales, redirige/guía al docente
 
 3. **Visualización de balance:**
-   - Si la cuenta está activa, muestra:
-     - Ganancias Totales
-     - Ganancias del Mes
-     - Porcentaje del docente (87.1%)
+   - Si el método está activo, muestra:
+      - Ganancias Totales
+      - Ganancias del Mes
+      - Porcentaje del docente (ej. 87.1%)
 
 ---
 
@@ -421,9 +419,9 @@ export const getTeacherBalance = () =>
 #### `frontend/src/pages/TeacherCourses.jsx`
 **Integración:**
 
-1. **Configuración de Stripe:**
-   - Componente `<TeacherStripeSetup />`
-   - Permite a docentes configurar su cuenta Stripe
+1. **Configuración de método de retiro:**
+   - Componente `<TeacherPayoutSetup />`
+   - Permite a docentes configurar su método de retiro/payout (datos bancarios)
 
 ---
 
@@ -448,22 +446,18 @@ export const getTeacherBalance = () =>
 
 2. **Inicio de pago:**
    - Click en "Pagar y Continuar"
-   - Frontend: `POST /api/payments/create-intent`
-   - Backend: Crea Payment Intent en Stripe
-   - Frontend recibe `clientSecret`
+   - Frontend: `POST /api/payments/create-transaction`
+   - Backend: Crea transacción en Wompi y retorna `checkoutUrl`
+   - Frontend redirige al usuario al `checkoutUrl` (Wompi hosted checkout)
 
-3. **Formulario de pago:**
-   - Stripe PaymentElement se renderiza
-   - Estudiante ingresa datos de tarjeta
-   - Click en "Pagar"
+3. **Pago en el checkout de Wompi:**
+   - El estudiante completa el pago en la pasarela alojada por Wompi
 
-4. **Confirmación:**
-   - Stripe procesa el pago
-   - Frontend: `POST /api/payments` con `paymentIntentId`
-   - Backend:
-     - Verifica pago en Stripe
+4. **Confirmación y registro:**
+   - Wompi notifica al backend mediante webhook cuando la transacción cambia de estado
+   - El backend valida la transacción (o el frontend puede consultar `checkPaymentStatus`)
+   - Si el pago fue exitoso, el backend:
      - Calcula distribución de ganancias
-     - Crea transferencia a cuenta del docente (Stripe Connect)
      - Guarda registro en BD
      - Agrega estudiante al curso
      - Actualiza ganancias del docente
@@ -476,12 +470,11 @@ export const getTeacherBalance = () =>
 
 ### **Flujo para Docentes:**
 
-1. **Configurar cuenta Stripe:**
-   - Docente ve `<TeacherStripeSetup />`
-   - Click en "Configurar Cuenta de Stripe"
-   - Backend crea cuenta Stripe Connect Express
-   - Genera link de onboarding
-   - Docente completa información en Stripe
+1. **Configurar método de retiro:**
+   - Docente ve `<TeacherPayoutSetup />`
+   - Click en "Configurar método de retiro"
+   - Backend crea/guarda registro de payout (`teacherPayoutId`) y puede generar pasos de verificación
+   - Docente completa información de retiro en la plataforma (datos bancarios o instrucciones)
 
 2. **Configurar curso como pago:**
    - Docente abre `PaymentConfigModal`
@@ -497,29 +490,18 @@ export const getTeacherBalance = () =>
 
 ## 💰 DISTRIBUCIÓN DE GANANCIAS
 
-**Fórmula:**
-```
-Monto Total = $100.00
+**Fórmula (conceptual):**
 
-Stripe Fee = (Monto × 2.9%) + $0.30
-           = ($100 × 0.029) + $0.30
-           = $2.90 + $0.30
-           = $3.20
+Wompi Fee = (Monto × wompi_percentage) + wompi_fixed_fee  (configurable según proveedor)
 
-Platform Fee = Monto × 10%
-             = $100 × 0.10
-             = $10.00
+Platform Fee = Monto × platformPercentage (p.ej. 10%)
 
-Teacher Amount = Monto - Stripe Fee - Platform Fee
-               = $100 - $3.20 - $10.00
-               = $86.80
-               ≈ 87.1% del monto total
-```
+Teacher Amount = Monto - Wompi Fee - Platform Fee
 
-**Ejemplo con $29.99:**
-- Stripe Fee: $1.17
+**Ejemplo (conceptual) con $29.99:**
+- Wompi Fee (ejemplo): $1.17 (si la tarifa fuera equivalente)
 - Platform Fee: $3.00
-- Teacher Amount: $25.82 (86.1%)
+- Teacher Amount: ~$25.82 (aprox. 86%)
 
 ---
 
@@ -527,14 +509,14 @@ Teacher Amount = Monto - Stripe Fee - Platform Fee
 
 ### Backend:
 ```env
-STRIPE_SECRET_KEY=sk_test_...  # Clave secreta de Stripe
-FRONTEND_URL=https://...       # URL del frontend (para onboarding)
+WOMPI_PRIVATE_KEY=wompi_test_...  # Clave privada de Wompi
+FRONTEND_URL=https://...          # URL del frontend (para onboarding / callbacks)
 ```
 
 ### Frontend:
 ```env
-VITE_STRIPE_PUBLISHABLE_KEY=pk_test_...  # Clave pública de Stripe
-VITE_API_URL=https://...                 # URL del backend
+VITE_WOMPI_PUBLIC_KEY=pk_wompi_...  # Clave pública de Wompi (si aplica para integraciones frontend)
+VITE_API_URL=https://...            # URL del backend
 ```
 
 ---
@@ -542,13 +524,13 @@ VITE_API_URL=https://...                 # URL del backend
 ## 📝 NOTAS IMPORTANTES
 
 1. **Modo de Prueba:**
-   - El sistema tiene modo de prueba si Stripe no está configurado
-   - Simula operaciones sin llamadas reales a Stripe
+   - El sistema tiene modo de prueba si `WOMPI_PRIVATE_KEY` no está configurada
+   - Simula operaciones sin llamadas reales a Wompi
 
-2. **Stripe Connect:**
-   - Los docentes usan cuentas Stripe Connect Express
-   - Las transferencias son automáticas después del pago
-   - El docente recibe 87.1% automáticamente
+2. **Payouts a docentes:**
+   - Los docentes configuran su método de retiro en la plataforma (datos bancarios o instrucciones)
+   - Las transferencias a docentes pueden ser automatizadas o gestionadas manualmente según la integración disponible
+   - La plataforma calcula y registra la distribución de ganancias (wompiFee, platformFee, teacherAmount)
 
 3. **Validaciones:**
    - No se permite pagar dos veces por el mismo curso
@@ -557,16 +539,16 @@ VITE_API_URL=https://...                 # URL del backend
 
 4. **Seguridad:**
    - Todos los endpoints requieren autenticación
-- Los Payment Intents se crean en el backend (nunca en el frontend)
-- El `clientSecret` se envía de forma segura al frontend
+   - Las transacciones se inician desde el backend (el backend crea la transacción y retorna `checkoutUrl`)
+   - La confirmación definitiva del pago se realiza mediante webhook o verificación en backend
 
 ---
 
 ## 🚀 PRÓXIMOS PASOS SUGERIDOS
 
-1. **Webhooks de Stripe:**
+1. **Webhooks de Wompi:**
    - Implementar webhooks para actualizar estados de pago
-   - Manejar reembolsos automáticamente
+   - Manejar reembolsos y cambios de estado automáticamente
 
 2. **Notificaciones:**
    - Email al docente cuando recibe un pago

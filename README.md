@@ -17,7 +17,7 @@ RUMI es una plataforma educativa innovadora que transforma el aprendizaje pasivo
 - ✅ Sistema de quizzes interactivos
 - ✅ Juegos educativos: Blackjack (probabilidad) y Sudoku
 - ✅ Seguimiento de progreso y analytics
-- ✅ Pagos seguros con Stripe (distribución automática a docentes)
+ - ✅ Pagos seguros con Wompi (checkout hospedado, confirmación por webhook)
 - ✅ Onboarding de docentes para pagos
 - ✅ Recuperación y cambio de contraseña por email
 - ✅ Notificaciones automáticas por email
@@ -27,7 +27,7 @@ RUMI es una plataforma educativa innovadora que transforma el aprendizaje pasivo
 - **Backend:** Node.js, Express, MongoDB (Mongoose)
 - **Frontend:** React, Vite, Tailwind CSS
 - **Autenticación:** JWT, Google OAuth, Passport.js
-- **Pagos:** Stripe (Stripe Connect para docentes)
+ - **Pagos:** Wompi (checkout hospedado para estudiantes)
 - **Email:** Nodemailer (verificación, recuperación, notificaciones)
 - **Testing:** Vitest, Testing Library
 - **Despliegue:** Vercel (frontend), Render (backend), MongoDB Atlas
@@ -50,8 +50,8 @@ npm run dev
 
 ### Variables de entorno
 - Copia `.env.example` a `.env` en cada carpeta y configura:
-  - **Backend:** `MONGODB_URI`, `JWT_SECRET`, `STRIPE_SECRET_KEY`, `EMAIL_USER`, `EMAIL_PASSWORD`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `FRONTEND_URL`
-  - **Frontend:** `VITE_API_URL`, `VITE_STRIPE_PUBLISHABLE_KEY`
+  - **Backend:** `MONGODB_URI`, `JWT_SECRET`, `WOMPI_PRIVATE_KEY`, `EMAIL_USER`, `EMAIL_PASSWORD`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `FRONTEND_URL`
+  - **Frontend:** `VITE_API_URL`, `VITE_WOMPI_PUBLIC_KEY`
 
 ## 🧩 Módulos y funcionalidades destacadas
 
@@ -59,9 +59,9 @@ npm run dev
 - **Blackjack:** Probabilidad condicional, estadísticas de usuario
 - **Sudoku:** Lógica y validación, niveles de dificultad
 
-### Pagos y Monetización
-- **Stripe Connect:** Pagos automáticos a docentes (87.1% para el docente, 10% plataforma, 2.9% Stripe)
-- **Onboarding docente:** Configuración guiada desde el frontend
+### Pagos y Monetizacion
+- **Wompi (checkout hospedado):** Pagos de estudiantes a través del checkout de Wompi con confirmación por webhook. Payouts a docentes se gestionan mediante el flujo de la plataforma (transferencias/bancos o integración de payout disponible).
+- **Onboarding docente:** Registro/registro de métodos para recibir pagos (bancos o instrucciones de transferencias)
 - **Botón de pago:** Integrado en cursos premium, reembolso 30 días
 
 ### Autenticación y Seguridad

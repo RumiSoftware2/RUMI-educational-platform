@@ -14,7 +14,7 @@ Este es el frontend de la plataforma educativa **RUMI**, desarrollado con React,
 - **Estilos:** Tailwind CSS 4.1.8
 - **Consumo de API:** Axios
 - **Autenticación:** JWT + Google OAuth
-- **Pagos:** Stripe (React Stripe.js)
+- **Pagos:** Wompi (checkout hospedado)
 - **Animaciones:** Framer Motion
 - **Testing:** Vitest + Testing Library
 - **Routing:** React Router DOM 6.30.1
@@ -35,7 +35,7 @@ Este es el frontend de la plataforma educativa **RUMI**, desarrollado con React,
 3. Crea un archivo `.env` basado en `.env.example` y configura las variables:
    ```env
    VITE_API_URL=https://tu-backend-deploy.com
-   VITE_STRIPE_PUBLISHABLE_KEY=pk_test_...
+   VITE_WOMPI_PUBLIC_KEY=pk_wompi_...
    ```
 
 4. Inicia la aplicación en modo desarrollo:
@@ -60,13 +60,13 @@ frontend/src/
 │   ├── HeaderEnterprise.jsx       # Header para versión enterprise
 │   ├── LanguageSwitcher.jsx       # Selector de idioma
 │   ├── LessonQuiz.jsx             # Componente de quiz
-│   ├── PaymentButton.jsx          # Botón de pago con Stripe
+│   ├── PaymentButton.jsx          # Botón de pago (Wompi hosted checkout)
 │   ├── PaymentConfigModal.jsx     # Modal de configuración de pagos
 │   ├── PaymentStats.jsx           # Estadísticas de pagos
 │   ├── ProtectedRoute.jsx         # Ruta protegida
 │   ├── ScrollToTop.jsx            # Scroll automático al top
 │   ├── Sidebar.jsx                # Barra lateral
-│   ├── TeacherStripeSetup.jsx     # Configuración de Stripe para docentes
+│   ├── TeacherPayoutSetup.jsx     # Configuración de método de payout para docentes
 │   └── games/
 │       ├── CountdownTimer.jsx     # Timer para juegos
 │       ├── DemographicForm.jsx    # Formulario demográfico
@@ -133,14 +133,14 @@ frontend/src/
 
 ## 💳 Sistema de Pagos
 
-### Integración con Stripe
-- **PaymentButton:** Botón de pago integrado en cursos premium
-- **TeacherStripeSetup:** Configuración de cuenta Stripe para docentes
-- **PaymentConfigModal:** Configuración avanzada de pagos
-- **PaymentStats:** Estadísticas de pagos y ganancias
+### Integración con Wompi
+ - **PaymentButton:** Botón de pago integrado en cursos premium (redirección a checkout de Wompi)
+ - **TeacherPayoutSetup:** Configuración de método de retiro para docentes
+ - **PaymentConfigModal:** Configuración avanzada de pagos
+ - **PaymentStats:** Estadísticas de pagos y ganancias
 
 ### Características
-- Distribución automática: 87.1% docente, 10% plataforma, 2.9% Stripe
+- Distribución sugerida: 87.1% docente, 10% plataforma; comisión de Wompi configurable
 - Onboarding guiado para docentes
 - Reembolso disponible en 30 días
 - Modo de prueba integrado
@@ -198,7 +198,7 @@ frontend/src/
 1. Sube la carpeta `frontend` como proyecto
 2. Configura las variables de entorno:
    - `VITE_API_URL`: URL del backend desplegado
-   - `VITE_STRIPE_PUBLISHABLE_KEY`: Clave pública de Stripe
+   - `VITE_WOMPI_PUBLIC_KEY`: Clave pública de Wompi (si aplica)
 3. El build se realiza automáticamente
 4. La app queda disponible en la web
 

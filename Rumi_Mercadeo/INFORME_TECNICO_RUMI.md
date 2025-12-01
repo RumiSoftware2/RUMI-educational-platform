@@ -219,7 +219,7 @@ Transformar el aprendizaje pasivo de videos en YouTube en una experiencia educat
 - [ ] Optimizar consultas de base de datos
 
 ### Fase 3: Funcionalidades Avanzadas (3-4 meses)
-- [ ] Sistema de pagos (Stripe/PayPal)
+- [ ] Sistema de pagos (Wompi/PayPal)
 - [ ] Certificados digitales
 - [ ] Analytics avanzados
 - [ ] API pública para integraciones

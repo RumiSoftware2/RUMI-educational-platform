@@ -111,7 +111,7 @@
 - [ ] Implementar monitoreo y logging
 
 ### Fase 3: Monetización (3-4 meses)
-- [ ] Sistema de pagos (Stripe/PayPal)
+- [ ] Sistema de pagos (Wompi/PayPal)
 - [ ] Marketplace de cursos
 - [ ] Certificados digitales
 - [ ] Analytics avanzados
