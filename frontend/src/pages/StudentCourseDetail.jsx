@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { AuthContext } from '../context/AuthContext';
 import LessonQuiz from '../components/LessonQuiz';
+import PaymentButton from '../components/PaymentButton';
 import { motion, AnimatePresence } from 'framer-motion';
 import logo2 from '../assets/logo2zeus.png';
 
@@ -17,6 +18,8 @@ export default function StudentCourseDetail() {
   const [videoWatched, setVideoWatched] = useState(false);
   const [progressMsg, setProgressMsg] = useState('');
   const [showIntro, setShowIntro] = useState(true);
+  const [hasPaid, setHasPaid] = useState(false);
+  const [paymentLoading, setPaymentLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -26,10 +29,24 @@ export default function StudentCourseDetail() {
         const res = await api.get(`/courses/${courseId}`);
         setCourse(res.data);
         setLessons(res.data.lessons || []);
+
+        // Check payment status if course is paid
+        if (res.data.isPaidCourse) {
+          try {
+            const paymentRes = await api.get(`/payments/course/${courseId}/status`);
+            setHasPaid(paymentRes.data.hasPaid);
+          } catch (err) {
+            console.log('Payment status check failed or not authenticated:', err);
+            setHasPaid(false);
+          }
+        } else {
+          setHasPaid(true); // Free course
+        }
       } catch (err) {
         setError('Error al cargar el curso');
       } finally {
         setLoading(false);
+        setPaymentLoading(false);
       }
     }
     fetchCourse();
@@ -105,7 +122,30 @@ export default function StudentCourseDetail() {
             </motion.div>
             <p className="mb-8 text-lg text-center text-gray-700 animate-fade-in-slow">{course.description}</p>
             
-            {lessons.length > 0 ? (
+            {/* Payment Section if course is paid and not yet paid */}
+            {course.isPaidCourse && !hasPaid && (
+              <motion.div
+                className="flex flex-col items-center justify-center mb-8 p-6 bg-gradient-to-br from-yellow-50 via-orange-50 to-red-50 rounded-xl shadow-lg border-2 border-yellow-400"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.15 }}
+              >
+                <h3 className="text-xl font-bold text-gray-800 mb-2">💳 Este es un curso de pago</h3>
+                <p className="text-gray-700 text-center mb-4">
+                  Para acceder a las lecciones completas y participar en los cuestionarios, debes completar tu pago.
+                </p>
+                <PaymentButton 
+                  courseId={courseId}
+                  coursePrice={course.price || 29.99}
+                  onPaymentSuccess={() => {
+                    setHasPaid(true);
+                    setShowIntro(false);
+                  }}
+                />
+              </motion.div>
+            )}
+            
+            {lessons.length > 0 && hasPaid ? (
               <div className="flex justify-center mt-6">
                 <motion.button
                   whileHover={{ scale: 1.07 }}
@@ -116,6 +156,26 @@ export default function StudentCourseDetail() {
                   Comenzar lecciones
                 </motion.button>
               </div>
+            ) : lessons.length > 0 && !hasPaid && course.isPaidCourse ? (
+              <motion.div
+                className="flex flex-col items-center justify-center mt-8 p-6 bg-gradient-to-br from-orange-50 via-red-50 to-pink-50 rounded-xl shadow-lg border border-orange-200"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.2 }}
+              >
+                <h2 className="text-xl font-bold text-orange-700 mb-3">🔒 Acceso Restringido</h2>
+                <p className="text-gray-600 text-center mb-4">
+                  Por favor completa tu pago para acceder a las lecciones de este curso.
+                </p>
+                <PaymentButton 
+                  courseId={courseId}
+                  coursePrice={course.price || 29.99}
+                  onPaymentSuccess={() => {
+                    setHasPaid(true);
+                    setShowIntro(false);
+                  }}
+                />
+              </motion.div>
             ) : (
               <motion.div
                 className="flex flex-col items-center justify-center mt-8 p-6 bg-gradient-to-br from-blue-50 via-green-50 to-yellow-50 rounded-xl shadow-lg border border-blue-100"

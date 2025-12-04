@@ -3,6 +3,7 @@ import { getMyCourses } from '../services/api';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
 import ChangePasswordModal from '../components/ChangePasswordModal';
+import TeacherPayoutSetup from '../components/TeacherPayoutSetup';
 import logo1 from '../assets/logo1zeus.png';
 import CourseSearchBar from '../components/CourseSearchBar';
 
@@ -27,6 +28,7 @@ export default function TeacherCourses() {
   const [error, setError] = useState(null);
   const [message, setMessage] = useState('');
   const [showChangePassword, setShowChangePassword] = useState(false);
+  const [showPayoutSetup, setShowPayoutSetup] = useState(false);
   const courseRefs = useRef({});
 
   useEffect(() => {
@@ -71,7 +73,7 @@ export default function TeacherCourses() {
       <CourseSearchBar courses={courses} courseRefs={courseRefs} placeholder="Buscar en mis cursos..." />
       
       <div className="flex flex-col sm:flex-row sm:justify-between items-center mb-8 gap-4 animate-fade-in-up">
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Link
             to="/profile/change-name"
             className="bg-yellow-500 text-white px-4 py-2 rounded-xl hover:bg-yellow-600 transition font-semibold shadow-md"
@@ -83,6 +85,12 @@ export default function TeacherCourses() {
             className="bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700 transition font-semibold shadow-md"
           >
             🔐 Cambiar Contraseña
+          </button>
+          <button
+            onClick={() => setShowPayoutSetup(true)}
+            className="bg-purple-600 text-white px-4 py-2 rounded-xl hover:bg-purple-700 transition font-semibold shadow-md"
+          >
+            💰 Configurar Ganancias
           </button>
           <Link
             to="/courses/new"
@@ -133,6 +141,23 @@ export default function TeacherCourses() {
         isOpen={showChangePassword} 
         onClose={() => setShowChangePassword(false)} 
       />
+      {/* Modal de configuración de ganancias */}
+      {showPayoutSetup && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 max-h-screen overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold text-gray-800">Configurar Ganancias</h2>
+              <button
+                onClick={() => setShowPayoutSetup(false)}
+                className="text-gray-500 hover:text-gray-700 text-2xl"
+              >
+                ✕
+              </button>
+            </div>
+            <TeacherPayoutSetup />
+          </div>
+        </div>
+      )}
       {/* Animaciones Tailwind personalizadas */}
       <style>{`
         @keyframes fade-in {

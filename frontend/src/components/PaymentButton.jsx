@@ -34,12 +34,24 @@ export default function PaymentButton({ courseId, coursePrice = 29.99, onPayment
     }
   };
 
-  if (hasPaid) return <div className="text-green-600">Acceso comprado</div>;
+  if (hasPaid) {
+    return (
+      <div className="text-center">
+        <div className="inline-flex items-center justify-center px-6 py-3 bg-green-100 text-green-700 rounded-lg font-semibold text-lg">
+          ✓ Acceso comprado
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div>
-      <button onClick={handlePay} disabled={loading} className="btn-primary">
-        {loading ? 'Preparando pago...' : `Pagar ${coursePrice}`}
+    <div className="flex justify-center">
+      <button 
+        onClick={handlePay} 
+        disabled={loading} 
+        className="px-8 py-3 bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-lg font-bold text-lg hover:from-green-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl"
+      >
+        {loading ? '⏳ Preparando pago...' : `💳 Pagar $${coursePrice.toLocaleString('es-CO')} COP`}
       </button>
     </div>
   );

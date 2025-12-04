@@ -45,5 +45,7 @@ export const confirmPayment = (paymentData) => api.post('/payments/confirm', pay
 export const getUserPayments = () => api.get('/payments/user');
 export const checkPaymentStatus = (courseId) => api.get(`/payments/course/${courseId}/status`);
 export const getCoursePaymentStats = (courseId) => api.get(`/payments/course/${courseId}/stats`);
+export const createTeacherPayoutAccount = (payoutData) => api.post('/payments/teacher/payout-account', payoutData);
+export const getTeacherBalance = () => api.get('/payments/teacher/balance');
 
 export default api;

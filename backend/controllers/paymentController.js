@@ -113,10 +113,110 @@ async function getCoursePaymentStats(req, res) {
   return res.json({ totalRevenue, totalPayments, totalTeacherEarnings, totalPlatformFees, payments });
 }
 
+// POST /api/payments/teacher/payout-account
+async function createTeacherPayoutAccount(req, res) {
+  try {
+    const userId = req.user && req.user.id;
+    const { bankName, accountNumber, accountType, documentId } = req.body;
+
+    if (!bankName || !accountNumber || !documentId) {
+      return res.status(400).json({ message: 'Faltan campos requeridos' });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });
+
+    // Guardar información de payout (simple: en memoria del user o en una colección aparte)
+    user.payoutInfo = {
+      bankName,
+      accountNumber,
+      accountType,
+      documentId,
+      status: 'pending',
+      createdAt: new Date()
+    };
+    user.teacherPayoutStatus = 'pending';
+    await user.save();
+
+    return res.json({ success: true, payoutStatus: 'pending' });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Error', error: err.message });
+  }
+}
+
+// GET /api/payments/teacher/balance
+async function getTeacherBalance(req, res) {
+  try {
+    const userId = req.user && req.user.id;
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });
+
+    return res.json({
+      totalEarnings: user.totalEarnings || 0,
+      monthlyEarnings: user.monthlyEarnings || 0,
+      payoutStatus: user.teacherPayoutStatus || 'not_configured'
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Error', error: err.message });
+  }
+}
+
+// POST /api/payments/webhook (sin autenticación, verificar con Wompi)
+async function handleWompiWebhook(req, res) {
+  try {
+    const event = req.body;
+    // Wompi envía eventos con estructura: { event: { type, data } } o similar
+    // Para sandbox/testing: verificar manualmente o asumir confianza temporal
+    if (!event || !event.data) return res.status(400).json({ message: 'Invalid webhook' });
+
+    const { id: wompiTransactionId, status, amount_in_cents } = event.data;
+    const payment = await Payment.findOne({ wompiTransactionId });
+    if (!payment) return res.status(404).json({ message: 'Payment not found' });
+
+    // Actualizar estado según respuesta de Wompi
+    if (status === 'APPROVED' || status === 'successful' || status === 'PAID') {
+      const { wompiFee, platformFee, teacherAmount } = wompiService.calculateFeeDistribution(payment.amount);
+      payment.status = 'completed';
+      payment.paymentDate = new Date();
+      payment.wompiFee = wompiFee;
+      payment.platformFee = platformFee;
+      payment.teacherAmount = teacherAmount;
+      payment.transactionId = wompiTransactionId;
+      await payment.save();
+
+      // Agregar al curso
+      const course = await Course.findById(payment.course);
+      if (course && course.students && !course.students.includes(payment.student)) {
+        course.students.push(payment.student);
+        await course.save();
+      }
+
+      // Actualizar ganancias docente
+      const teacher = await User.findById(course.teacher);
+      if (teacher) {
+        teacher.totalEarnings = (teacher.totalEarnings || 0) + teacherAmount;
+        await teacher.save();
+      }
+    } else if (status === 'DECLINED' || status === 'REJECTED') {
+      payment.status = 'failed';
+      await payment.save();
+    }
+    return res.json({ success: true });
+  } catch (err) {
+    console.error('Webhook error:', err);
+    return res.status(500).json({ message: 'Webhook error', error: err.message });
+  }
+}
+
 module.exports = {
   createTransaction,
   confirmPayment,
   getUserPayments,
   checkPaymentStatus,
-  getCoursePaymentStats
+  getCoursePaymentStats,
+  createTeacherPayoutAccount,
+  getTeacherBalance,
+  handleWompiWebhook
 };
