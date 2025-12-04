@@ -10,6 +10,9 @@ const CourseForm = () => {
     title: '',
     videoUrl: '',
     description: '',
+    isPaidCourse: false,
+    price: 0,
+    paidFromLesson: 1,
   });
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
@@ -52,7 +55,7 @@ const CourseForm = () => {
       // Usar la API centralizada, el token se añade automáticamente
       const res = await api.post('/courses', { ...formData, videoUrl });
       setMessage('✅ Curso creado exitosamente');
-      setFormData({ title: '', videoUrl: '', description: '' });
+      setFormData({ title: '', videoUrl: '', description: '', isPaidCourse: false, price: 0, paidFromLesson: 1 });
       // Opcional: redirigir después de un tiempo
       setTimeout(() => navigate('/teacher/courses'), 1200);
     } catch (err) {
@@ -120,6 +123,76 @@ const CourseForm = () => {
           required
           rows={4}
         ></textarea>
+
+        <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-xl mb-6 border-2 border-blue-200">
+          <h3 className="text-lg font-bold text-blue-900 mb-4">⚙️ Configuración de Pago (Opcional)</h3>
+          
+          <div className="mb-4">
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                name="isPaidCourse"
+                checked={formData.isPaidCourse}
+                onChange={(e) => setFormData({ ...formData, isPaidCourse: e.target.checked })}
+                className="w-5 h-5 rounded border-2 border-blue-400 cursor-pointer"
+              />
+              <span className="text-blue-900 font-semibold">Este es un curso de pago</span>
+            </label>
+          </div>
+
+          {formData.isPaidCourse && (
+            <>
+              <div className="mb-4">
+                <label className="block text-sm font-semibold text-blue-900 mb-2">
+                  💰 Precio del curso (COP)
+                </label>
+                <input
+                  type="number"
+                  name="price"
+                  placeholder="Ejemplo: 29990"
+                  value={formData.price}
+                  onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) })}
+                  className="w-full p-3 border-2 border-blue-300 rounded-lg focus:outline-none focus:border-blue-500"
+                  min="1000"
+                  step="1000"
+                  required={formData.isPaidCourse}
+                />
+                <p className="text-xs text-gray-600 mt-1">Mínimo: $1,000 COP</p>
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-semibold text-blue-900 mb-2">
+                  🔒 Lección desde donde es pagado
+                </label>
+                <input
+                  type="number"
+                  name="paidFromLesson"
+                  placeholder="Ejemplo: 2"
+                  value={formData.paidFromLesson}
+                  onChange={(e) => setFormData({ ...formData, paidFromLesson: parseInt(e.target.value) })}
+                  className="w-full p-3 border-2 border-blue-300 rounded-lg focus:outline-none focus:border-blue-500"
+                  min="1"
+                  required={formData.isPaidCourse}
+                />
+                <p className="text-xs text-gray-600 mt-1">Los estudiantes verán lecciones gratis hasta aquí, luego deben pagar</p>
+              </div>
+
+              <div className="bg-white p-4 rounded-lg border-l-4 border-green-500">
+                <p className="text-sm font-semibold text-gray-800">
+                  📊 Distribución de ingresos:
+                </p>
+                <ul className="text-xs text-gray-700 mt-2 space-y-1">
+                  <li>• Wompi (gateway): 2%</li>
+                  <li>• Plataforma RUMI: 8%</li>
+                  <li>• <span className="font-bold text-green-600">Tu ganancia: 90%</span></li>
+                </ul>
+                <p className="text-xs text-gray-600 mt-2">
+                  Por cada ${formData.price ? (formData.price * 0.9).toLocaleString('es-CO') : '0'} COP recibirás
+                </p>
+              </div>
+            </>
+          )}
+        </div>
 
         <button
           type="submit"

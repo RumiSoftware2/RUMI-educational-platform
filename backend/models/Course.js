@@ -31,6 +31,19 @@ const courseSchema = new mongoose.Schema({
     ref: 'User',
     default: []
   }],
+  isPaidCourse: {
+    type: Boolean,
+    default: false
+  },
+  price: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
+  paidFromLesson: {
+    type: Number,
+    default: 1
+  },
   createdAt: {
     type: Date,
     default: Date.now

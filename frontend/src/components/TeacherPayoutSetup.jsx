@@ -3,7 +3,7 @@ import api from '../services/api';
 
 export default function TeacherPayoutSetup() {
   const [payoutStatus, setPayoutStatus] = useState('not_configured');
-  const [balance, setBalance] = useState(0);
+  const [balance, setBalance] = useState({ totalEarnings: 0, monthlyEarnings: 0 });
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -12,6 +12,7 @@ export default function TeacherPayoutSetup() {
     accountType: 'savings',
     documentId: '',
   });
+  const [message, setMessage] = useState('');
 
   useEffect(() => {
     fetchPayoutStatus();
@@ -20,7 +21,7 @@ export default function TeacherPayoutSetup() {
   const fetchPayoutStatus = async () => {
     try {
       const res = await api.get('/payments/teacher/balance');
-      setBalance(res.data.totalEarnings || 0);
+      setBalance(res.data);
       setPayoutStatus(res.data.payoutStatus || 'not_configured');
     } catch (err) {
       console.error('Error fetching balance:', err);
@@ -35,114 +36,158 @@ export default function TeacherPayoutSetup() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setMessage('');
+    
+    if (!formData.bankName || !formData.accountNumber || !formData.documentId) {
+      setMessage('❌ Todos los campos son obligatorios');
+      setLoading(false);
+      return;
+    }
+
     try {
       const res = await api.post('/payments/teacher/payout-account', formData);
-      if (res.data.success) {
+      if (res.data.success || res.data.message) {
+        setMessage('✅ Información de retiro guardada. Verificación pendiente.');
         setPayoutStatus('pending');
         setShowForm(false);
         setFormData({ bankName: '', accountNumber: '', accountType: 'savings', documentId: '' });
-        alert('Información de retiro guardada. Verificación pendiente.');
+        await fetchPayoutStatus();
       }
     } catch (err) {
-      console.error(err);
-      alert('Error al guardar información: ' + (err.response?.data?.message || err.message));
+      const errorMsg = err.response?.data?.message || err.message;
+      setMessage(`❌ Error: ${errorMsg}`);
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-4">Configurar Método de Retiro</h2>
+  const bankOptions = [
+    'Banco de Bogotá',
+    'Banco de Crédito e Inversiones',
+    'Banco de Occidente',
+    'Banco del Bajío',
+    'Banco Falabella',
+    'Banco Popular',
+    'Banco Santander',
+    'Bancolombia',
+    'BBVA',
+    'Citibank',
+    'Davivienda',
+    'Scotiabank',
+    'Nequi',
+    'Nubank',
+    'Otro',
+  ];
 
-      <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded">
-        <p className="text-sm font-semibold mb-2">Estado: {payoutStatus}</p>
-        <p className="text-lg font-bold text-green-600">Balance: ${balance.toFixed(2)}</p>
+  return (
+    <div className="w-full max-w-2xl mx-auto bg-white rounded-2xl shadow-lg p-6">
+      <h2 className="text-3xl font-bold mb-2 text-gray-800">💰 Configurar Método de Retiro</h2>
+      <p className="text-gray-600 mb-6">Configura tu cuenta bancaria para recibir tus ganancias</p>
+
+      <div className="mb-6 p-5 bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200 rounded-xl">
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <p className="text-sm text-gray-600">Estado</p>
+            <p className="text-lg font-bold">
+              {payoutStatus === 'active' && (<span className="text-green-600">✓ Activo</span>)}
+              {payoutStatus === 'pending' && (<span className="text-yellow-600">⏳ Pendiente</span>)}
+              {payoutStatus === 'not_configured' && (<span className="text-red-600">✕ No Configurado</span>)}
+            </p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-600">Ganancias</p>
+            <p className="text-2xl font-bold text-green-600">
+              ${balance.totalEarnings?.toLocaleString('es-CO') || '0'}
+            </p>
+          </div>
+        </div>
       </div>
 
       {payoutStatus === 'active' && (
-        <div className="text-green-600 mb-4">✓ Método de retiro configurado y activo</div>
+        <div className="mb-6 p-4 bg-green-50 border-l-4 border-green-500 rounded">
+          <p className="text-green-700 font-semibold">✓ Tu método está configurado y activo</p>
+        </div>
       )}
 
-      {payoutStatus === 'pending' && (
-        <div className="text-yellow-600 mb-4">⏳ Verificación pendiente</div>
-      )}
-
-      {payoutStatus === 'not_configured' && !showForm && (
+      {!showForm && payoutStatus !== 'active' && (
         <button
           onClick={() => setShowForm(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          className="w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-semibold mb-4"
         >
-          Configurar Retiro
+          ➕ Configurar Retiro
         </button>
       )}
 
       {showForm && (
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 mb-4">
           <div>
-            <label className="block font-semibold mb-1">Banco</label>
-            <input
-              type="text"
+            <label className="block text-sm font-semibold text-gray-700 mb-2">🏦 Banco</label>
+            <select
               name="bankName"
               value={formData.bankName}
               onChange={handleInputChange}
-              placeholder="Nombre del banco"
-              className="w-full border px-3 py-2 rounded"
+              className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500"
               required
-            />
+            >
+              <option value="">Selecciona tu banco...</option>
+              {bankOptions.map((bank) => (
+                <option key={bank} value={bank}>{bank}</option>
+              ))}
+            </select>
           </div>
+
           <div>
-            <label className="block font-semibold mb-1">Número de Cuenta</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">🔢 Número de Cuenta</label>
             <input
               type="text"
               name="accountNumber"
+              placeholder="Ej: 1234567890"
               value={formData.accountNumber}
               onChange={handleInputChange}
-              placeholder="Número de cuenta"
-              className="w-full border px-3 py-2 rounded"
+              className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500"
               required
             />
           </div>
+
           <div>
-            <label className="block font-semibold mb-1">Tipo de Cuenta</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">💳 Tipo de Cuenta</label>
             <select
               name="accountType"
               value={formData.accountType}
               onChange={handleInputChange}
-              className="w-full border px-3 py-2 rounded"
+              className="w-full p-3 border-2 border-gray-300 rounded-lg"
             >
               <option value="savings">Ahorros</option>
               <option value="checking">Corriente</option>
+              <option value="nequi">Nequi</option>
             </select>
           </div>
+
           <div>
-            <label className="block font-semibold mb-1">Cédula / Identificación</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">📋 Cédula</label>
             <input
               type="text"
               name="documentId"
+              placeholder="Tu cédula"
               value={formData.documentId}
               onChange={handleInputChange}
-              placeholder="Tu identificación"
-              className="w-full border px-3 py-2 rounded"
+              className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500"
               required
             />
           </div>
-          <div className="flex gap-2">
-            <button
-              type="submit"
-              disabled={loading}
-              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:bg-gray-400"
-            >
-              {loading ? 'Guardando...' : 'Guardar'}
+
+          <div className="flex gap-3">
+            <button type="submit" disabled={loading} className="flex-1 bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700">
+              {loading ? '⏳ Guardando...' : '✅ Guardar'}
             </button>
-            <button
-              type="button"
-              onClick={() => setShowForm(false)}
-              className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500"
-            >
+            <button type="button" onClick={() => setShowForm(false)} className="flex-1 bg-gray-400 text-white font-bold py-3 rounded-lg">
               Cancelar
             </button>
           </div>
+
+          {message && <div className={`p-3 rounded text-center font-semibold ${message.startsWith('✅') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+            {message}
+          </div>}
         </form>
       )}
     </div>
