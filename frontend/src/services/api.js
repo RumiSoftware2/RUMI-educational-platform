@@ -39,4 +39,11 @@ export const saveLessonProgress = (courseId, lessonOrder, data) =>
 // Crear un nuevo quiz
 export const createQuiz = (quizData) => api.post('/quizzes', quizData);
 
+// Payments (Wompi)
+export const createTransaction = (paymentData) => api.post('/payments/create-transaction', paymentData);
+export const confirmPayment = (paymentData) => api.post('/payments/confirm', paymentData);
+export const getUserPayments = () => api.get('/payments/user');
+export const checkPaymentStatus = (courseId) => api.get(`/payments/course/${courseId}/status`);
+export const getCoursePaymentStats = (courseId) => api.get(`/payments/course/${courseId}/stats`);
+
 export default api;
