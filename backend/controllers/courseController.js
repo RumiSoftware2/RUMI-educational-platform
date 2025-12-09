@@ -53,7 +53,47 @@ const getCourseById = async (req, res) => {
     if (!course) {
       return res.status(404).json({ message: 'Curso no encontrado' });
     }
-    res.status(200).json(course);
+
+    // Sanitizar la respuesta para cursos de pago: si el curso es de pago
+    // y el usuario no está inscrito ni es el docente/admin, ocultar los
+    // campos de las lecciones que están detrás de pago (videoUrl, quiz)
+    // y dejar una descripción amable indicando que el contenido está bloqueado.
+    try {
+      const userId = req.user && req.user.id;
+      const userRole = req.user && req.user.role;
+      const isTeacherOrAdmin = userRole === 'docente' || userRole === 'admin';
+
+      const courseObj = course.toObject();
+
+      if (courseObj.isPaidCourse) {
+        const paidFrom = courseObj.paidFromLesson || 1;
+
+        const isEnrolled = userId && Array.isArray(courseObj.students) && courseObj.students.map(s => String(s)).includes(String(userId));
+
+        // Si el usuario NO está inscrito y NO es docente/admin, ocultar las lecciones a partir de paidFrom
+        if (!isEnrolled && !isTeacherOrAdmin) {
+          courseObj.lessons = (courseObj.lessons || []).map(lesson => {
+            if (lesson.order >= paidFrom) {
+              return {
+                order: lesson.order,
+                title: lesson.title,
+                description: '🔒 Contenido bloqueado. Completa el pago para acceder a esta lección.',
+                videoUrl: null,
+                quiz: null
+              };
+            }
+            // permitir previsualizar lecciones antes del corte de pago
+            return lesson;
+          });
+        }
+      }
+
+      return res.status(200).json(courseObj);
+    } catch (sanErr) {
+      // En caso de error inesperado durante sanitización, devolver el curso original mínimo
+      console.error('Error sanitizando curso:', sanErr);
+      return res.status(200).json(course);
+    }
   } catch (error) {
     res.status(500).json({ message: 'Error al obtener el curso', error });
   }

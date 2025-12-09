@@ -61,6 +61,25 @@ exports.saveLessonProgress = async (req, res) => {
     const { score, quizId, completed } = req.body;
     const userId = req.user.id;
 
+    // Verificar acceso para cursos de pago: si el curso requiere pago y el usuario
+    // no está inscrito y no es docente/admin, negar el guardado de progreso.
+    try {
+      const course = await Course.findById(courseId);
+      if (course && course.isPaidCourse) {
+        const paidFrom = course.paidFromLesson || 1;
+        const isEnrolled = Array.isArray(course.students) && course.students.map(s => String(s)).includes(String(userId));
+        const isTeacherOrAdmin = req.user && (req.user.role === 'docente' || req.user.role === 'admin');
+
+        if (!isEnrolled && !isTeacherOrAdmin && Number(lessonOrder) >= Number(paidFrom)) {
+          return res.status(403).json({ message: 'Acceso restringido: este contenido requiere pago' });
+        }
+      }
+    } catch (chkErr) {
+      console.error('Error verificando acceso al curso:', chkErr);
+      // continuar — si ocurre error en la comprobación, no permitir guardar por seguridad
+      return res.status(500).json({ message: 'Error verificando acceso al curso', error: chkErr.message });
+    }
+
     let progress = await Progress.findOne({ user: userId, course: courseId });
     if (!progress) {
       progress = new Progress({ user: userId, course: courseId });
