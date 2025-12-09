@@ -72,6 +72,28 @@ const userSchema = new mongoose.Schema({
     type: Object,
     default: {}
   },
+  // Campos para pagos y payouts (docentes)
+  totalEarnings: {
+    type: Number,
+    default: 0
+  },
+  monthlyEarnings: {
+    type: Number,
+    default: 0
+  },
+  payoutInfo: {
+    bankName: { type: String },
+    accountNumber: { type: String },
+    accountType: { type: String }, // 'savings', 'checking', 'nequi'
+    documentId: { type: String },
+    status: { type: String, enum: ['not_configured','pending','active'], default: 'not_configured' },
+    createdAt: { type: Date }
+  },
+  teacherPayoutStatus: {
+    type: String,
+    enum: ['not_configured', 'pending', 'active'],
+    default: 'not_configured'
+  },
   createdAt: {
     type: Date,
     default: Date.now

@@ -9,11 +9,15 @@ const PaymentSchema = new mongoose.Schema({
   paymentMethod: { type: String, enum: ['wompi','paypal','manual'], default: 'wompi' },
   transactionId: { type: String },
   wompiTransactionId: { type: String },
-  wompiTransferId: { type: String },
+  wompiTransferId: { type: String }, // ID de la transacción individual en el payout
+  batchId: { type: String }, // ID del lote en Wompi
   wompiFee: { type: Number, default: 0 },
   platformFee: { type: Number, default: 0 },
   teacherAmount: { type: Number, default: 0 },
   paymentDate: { type: Date },
+  // Campos para payout automático
+  payoutStatus: { type: String, enum: ['PENDING','APPROVED','CANCELLED','FAILED','NO_PAYOUT_INFO'], default: null },
+  payoutError: { type: String, default: null },
   metadata: { type: Object, default: {} }
 }, { timestamps: true });
 

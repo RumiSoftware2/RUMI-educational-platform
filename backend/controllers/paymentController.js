@@ -71,6 +71,35 @@ async function confirmPayment(req, res) {
       const teacher = await User.findById(course.teacher);
       if (teacher) {
         teacher.totalEarnings = (teacher.totalEarnings || 0) + teacherAmount;
+        
+        // Intentar transferencia automática si docente tiene payoutInfo configurada
+        if (teacher.payoutInfo && teacher.payoutInfo.accountNumber && teacher.payoutInfo.documentId && teacher.name && teacher.email) {
+          try {
+            const payoutResult = await wompiService.createPayout({
+              amount: teacherAmount,
+              currency: payment.currency || 'COP',
+              payoutInfo: {
+                ...teacher.payoutInfo,
+                name: teacher.name, // Nombre requerido por Wompi
+                email: teacher.email // Email requerido por Wompi
+              },
+              reference: `payment_${payment._id}`
+            });
+            payment.wompiTransferId = payoutResult.wompiTransferId;
+            payment.batchId = payoutResult.batchId;
+            payment.payoutStatus = payoutResult.status || 'PENDING';
+            console.log(`✓ Payout created for teacher ${teacher._id}:`, payoutResult.wompiTransferId);
+          } catch (payoutErr) {
+            console.error(`✗ Payout failed for teacher ${teacher._id}:`, payoutErr.message);
+            // No fallar la confirmación de pago si el payout falla - registro de error para revisión manual
+            payment.payoutStatus = 'FAILED';
+            payment.payoutError = payoutErr.message;
+          }
+        } else {
+          console.warn(`✓ Payment completed but teacher ${teacher._id} has incomplete payoutInfo (falta: ${!teacher.payoutInfo ? 'payoutInfo' : !teacher.payoutInfo.accountNumber ? 'accountNumber' : !teacher.payoutInfo.documentId ? 'documentId' : !teacher.name ? 'name' : !teacher.email ? 'email' : 'unknown'})`);
+          payment.payoutStatus = 'NO_PAYOUT_INFO';
+        }
+        
         await teacher.save();
       }
 
@@ -163,6 +192,30 @@ async function getTeacherBalance(req, res) {
   }
 }
 
+// GET /api/payments/payouts/banks  (admin)
+async function getPayoutBanks(req, res) {
+  try {
+    const banks = await wompiService.fetchBanks();
+    if (!banks) return res.status(500).json({ message: 'No se pudo obtener la lista de bancos. Verifica credenciales de payouts.' });
+    return res.json(banks);
+  } catch (err) {
+    console.error('Error fetching payout banks:', err);
+    return res.status(500).json({ message: 'Error', error: err.message });
+  }
+}
+
+// GET /api/payments/payouts/accounts  (admin)
+async function getPayoutAccounts(req, res) {
+  try {
+    const accounts = await wompiService.fetchAccounts();
+    if (!accounts) return res.status(500).json({ message: 'No se pudo obtener la lista de cuentas. Verifica credenciales de payouts.' });
+    return res.json(accounts);
+  } catch (err) {
+    console.error('Error fetching payout accounts:', err);
+    return res.status(500).json({ message: 'Error', error: err.message });
+  }
+}
+
 // POST /api/payments/webhook (sin autenticación, verificar con Wompi)
 async function handleWompiWebhook(req, res) {
   try {
@@ -197,7 +250,36 @@ async function handleWompiWebhook(req, res) {
       const teacher = await User.findById(course.teacher);
       if (teacher) {
         teacher.totalEarnings = (teacher.totalEarnings || 0) + teacherAmount;
+        
+        // Intentar transferencia automática si docente tiene payoutInfo configurada
+        if (teacher.payoutInfo && teacher.payoutInfo.accountNumber && teacher.payoutInfo.documentId && teacher.name && teacher.email) {
+          try {
+            const payoutResult = await wompiService.createPayout({
+              amount: teacherAmount,
+              currency: payment.currency || 'COP',
+              payoutInfo: {
+                ...teacher.payoutInfo,
+                name: teacher.name,
+                email: teacher.email
+              },
+              reference: `payment_${payment._id}`
+            });
+            payment.wompiTransferId = payoutResult.wompiTransferId;
+            payment.batchId = payoutResult.batchId;
+            payment.payoutStatus = payoutResult.status || 'PENDING';
+            console.log(`✓ Webhook payout created for teacher ${teacher._id}:`, payoutResult.wompiTransferId);
+          } catch (payoutErr) {
+            console.error(`✗ Webhook payout failed for teacher ${teacher._id}:`, payoutErr.message);
+            payment.payoutStatus = 'FAILED';
+            payment.payoutError = payoutErr.message;
+          }
+        } else {
+          console.warn(`✓ Payment completed but teacher ${teacher._id} has incomplete payoutInfo`);
+          payment.payoutStatus = 'NO_PAYOUT_INFO';
+        }
+        
         await teacher.save();
+        await payment.save(); // Guardar payoutStatus y wompiTransferId
       }
     } else if (status === 'DECLINED' || status === 'REJECTED') {
       payment.status = 'failed';
@@ -218,5 +300,7 @@ module.exports = {
   getCoursePaymentStats,
   createTeacherPayoutAccount,
   getTeacherBalance,
+  getPayoutBanks,
+  getPayoutAccounts,
   handleWompiWebhook
 };
