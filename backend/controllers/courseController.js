@@ -73,7 +73,10 @@ const getCourseById = async (req, res) => {
         // Si el usuario NO está inscrito y NO es docente/admin, ocultar las lecciones a partir de paidFrom
         if (!isEnrolled && !isTeacherOrAdmin) {
           courseObj.lessons = (courseObj.lessons || []).map(lesson => {
-            if (lesson.order >= paidFrom) {
+            // Algunas lecciones pueden estar indexadas desde 0, otras desde 1.
+            // Normalizamos tomando (order + 1) como número humano de lección.
+            const lessonNumber = Number(lesson.order) + 1;
+            if (lessonNumber >= Number(paidFrom)) {
               return {
                 order: lesson.order,
                 title: lesson.title,

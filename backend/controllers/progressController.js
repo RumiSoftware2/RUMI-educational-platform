@@ -70,7 +70,9 @@ exports.saveLessonProgress = async (req, res) => {
         const isEnrolled = Array.isArray(course.students) && course.students.map(s => String(s)).includes(String(userId));
         const isTeacherOrAdmin = req.user && (req.user.role === 'docente' || req.user.role === 'admin');
 
-        if (!isEnrolled && !isTeacherOrAdmin && Number(lessonOrder) >= Number(paidFrom)) {
+        // Normalizar index: si lessonOrder es 0-based, convertir a número humano +1
+        const lessonNumber = Number(lessonOrder) + 1;
+        if (!isEnrolled && !isTeacherOrAdmin && lessonNumber >= Number(paidFrom)) {
           return res.status(403).json({ message: 'Acceso restringido: este contenido requiere pago' });
         }
       }
