@@ -155,19 +155,19 @@ async function createTeacherPayoutAccount(req, res) {
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });
 
-    // Guardar información de payout (simple: en memoria del user o en una colección aparte)
+    // Guardar información de payout con activación automática
     user.payoutInfo = {
       bankName,
       accountNumber,
       accountType,
       documentId,
-      status: 'pending',
+      status: 'active',  // ✅ Activado automáticamente
       createdAt: new Date()
     };
-    user.teacherPayoutStatus = 'pending';
+    user.teacherPayoutStatus = 'active';  // ✅ Activado automáticamente
     await user.save();
 
-    return res.json({ success: true, payoutStatus: 'pending' });
+    return res.json({ success: true, payoutStatus: 'active', message: '✅ Cuenta activada automáticamente' });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: 'Error', error: err.message });
@@ -184,7 +184,8 @@ async function getTeacherBalance(req, res) {
     return res.json({
       totalEarnings: user.totalEarnings || 0,
       monthlyEarnings: user.monthlyEarnings || 0,
-      payoutStatus: user.teacherPayoutStatus || 'not_configured'
+      payoutStatus: user.teacherPayoutStatus || 'not_configured',
+      payoutInfo: user.payoutInfo || null
     });
   } catch (err) {
     console.error(err);

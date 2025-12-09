@@ -6,6 +6,7 @@ export default function TeacherPayoutSetup() {
   const [balance, setBalance] = useState({ totalEarnings: 0, monthlyEarnings: 0 });
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [savedPayoutInfo, setSavedPayoutInfo] = useState(null);
   const [formData, setFormData] = useState({
     bankName: '',
     accountNumber: '',
@@ -23,6 +24,15 @@ export default function TeacherPayoutSetup() {
       const res = await api.get('/payments/teacher/balance');
       setBalance(res.data);
       setPayoutStatus(res.data.payoutStatus || 'not_configured');
+      if (res.data.payoutInfo) {
+        setSavedPayoutInfo(res.data.payoutInfo);
+        setFormData({
+          bankName: res.data.payoutInfo.bankName || '',
+          accountNumber: res.data.payoutInfo.accountNumber || '',
+          accountType: res.data.payoutInfo.accountType || 'savings',
+          documentId: res.data.payoutInfo.documentId || '',
+        });
+      }
     } catch (err) {
       console.error('Error fetching balance:', err);
     }
@@ -47,8 +57,8 @@ export default function TeacherPayoutSetup() {
     try {
       const res = await api.post('/payments/teacher/payout-account', formData);
       if (res.data.success || res.data.message) {
-        setMessage('✅ Información de retiro guardada. Verificación pendiente.');
-        setPayoutStatus('pending');
+        setMessage('✅ Cuenta activada automáticamente. Ya puedes recibir dinero cuando estudiantes compren tus cursos.');
+        setPayoutStatus('active');
         setShowForm(false);
         setFormData({ bankName: '', accountNumber: '', accountType: 'savings', documentId: '' });
         await fetchPayoutStatus();
@@ -109,12 +119,40 @@ export default function TeacherPayoutSetup() {
         </div>
       )}
 
-      {!showForm && payoutStatus !== 'active' && (
+      {/* Mostrar datos guardados si existen */}
+      {!showForm && savedPayoutInfo && (
+        <div className="mb-6 p-4 bg-green-50 border-l-4 border-green-500 rounded-lg">
+          <h3 className="font-semibold text-gray-800 mb-3">✅ Cuenta Activada y Lista</h3>
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <p className="text-gray-600">Banco</p>
+              <p className="font-semibold text-gray-800">{savedPayoutInfo.bankName}</p>
+            </div>
+            <div>
+              <p className="text-gray-600">Tipo de Cuenta</p>
+              <p className="font-semibold text-gray-800 capitalize">{savedPayoutInfo.accountType}</p>
+            </div>
+            <div>
+              <p className="text-gray-600">Número de Cuenta</p>
+              <p className="font-semibold text-gray-800">•••• {savedPayoutInfo.accountNumber?.slice(-4)}</p>
+            </div>
+            <div>
+              <p className="text-gray-600">Cédula</p>
+              <p className="font-semibold text-gray-800">{savedPayoutInfo.documentId}</p>
+            </div>
+          </div>
+          {payoutStatus === 'active' && (
+            <p className="mt-3 text-sm text-green-700 font-semibold">🎉 Tu cuenta está lista. Recibirás dinero automáticamente cuando estudiantes compren tus cursos.</p>
+          )}
+        </div>
+      )}
+
+      {!showForm && (!savedPayoutInfo || payoutStatus !== 'active') && (
         <button
           onClick={() => setShowForm(true)}
           className="w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-semibold mb-4"
         >
-          ➕ Configurar Retiro
+          {savedPayoutInfo ? '✏️ Editar Datos' : '➕ Registrar Cuenta de Retiro'}
         </button>
       )}
 
