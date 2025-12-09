@@ -3,6 +3,82 @@ const Course = require('../models/Course');
 const User = require('../models/User');
 const wompiService = require('../services/wompiService');
 
+// Helper: finaliza el pago (idempotente). Valida montos y realiza payout si aplica.
+async function finalizePayment(payment, wompiData) {
+  // Evitar re-procesar pagos ya completados
+  if (!payment) throw new Error('Payment object missing in finalizePayment');
+  if (payment.status === 'completed') return payment;
+
+  // Validación de monto: si Wompi reporta amount_in_cents, verificar contra payment.amount
+  const wompiCents = Number(wompiData?.amount_in_cents || wompiData?.amount || 0);
+  if (wompiCents > 0) {
+    const expectedCents = Math.round((payment.amount || 0) * 100);
+    if (wompiCents !== expectedCents) {
+      // No completar pago si hay discrepancia de montos
+      console.warn(`Monto Wompi (${wompiCents}) no coincide con Payment (${expectedCents}) para payment ${payment._id}`);
+      payment.status = 'suspect';
+      payment.payoutStatus = 'FAILED';
+      payment.payoutError = `Monto discrepante: wompi ${wompiCents} vs expected ${expectedCents}`;
+      await payment.save();
+      throw new Error('Monto de transacción no coincide con monto esperado');
+    }
+  }
+
+  // calcular distribución
+  const { wompiFee, platformFee, teacherAmount } = wompiService.calculateFeeDistribution(payment.amount);
+  payment.status = 'completed';
+  payment.paymentDate = new Date();
+  payment.wompiFee = wompiFee;
+  payment.platformFee = platformFee;
+  payment.teacherAmount = teacherAmount;
+  payment.transactionId = wompiData.id || wompiData.transaction_id || payment.wompiTransactionId;
+  await payment.save();
+
+  // agregar estudiante al curso
+  const course = await Course.findById(payment.course);
+  if (course) {
+    if (!course.students) course.students = [];
+    if (!course.students.map(s => String(s)).includes(String(payment.student))) {
+      course.students.push(payment.student);
+      await course.save();
+    }
+  }
+
+  // actualizar ganancias del docente y crear payout si aplica
+  try {
+    const teacher = await User.findById(course.teacher);
+    if (teacher) {
+      teacher.totalEarnings = (teacher.totalEarnings || 0) + teacherAmount;
+
+      if (teacher.payoutInfo && teacher.payoutInfo.accountNumber && teacher.payoutInfo.documentId && teacher.name && teacher.email) {
+        try {
+          const payoutResult = await wompiService.createPayout({
+            amount: teacherAmount,
+            currency: payment.currency || 'COP',
+            payoutInfo: { ...teacher.payoutInfo, name: teacher.name, email: teacher.email },
+            reference: `payment_${payment._id}`
+          });
+          payment.wompiTransferId = payoutResult.wompiTransferId;
+          payment.batchId = payoutResult.batchId;
+          payment.payoutStatus = payoutResult.status || 'PENDING';
+        } catch (payoutErr) {
+          console.error(`Payout failed for teacher ${teacher._id}:`, payoutErr.message);
+          payment.payoutStatus = 'FAILED';
+          payment.payoutError = payoutErr.message;
+        }
+      } else {
+        payment.payoutStatus = 'NO_PAYOUT_INFO';
+      }
+      await teacher.save();
+    }
+  } catch (err) {
+    console.error('Error updating teacher earnings/payout:', err.message || err);
+  }
+
+  await payment.save();
+  return payment;
+}
+
 // POST /api/payments/create-transaction
 async function createTransaction(req, res) {
   try {
@@ -72,70 +148,19 @@ async function confirmPayment(req, res) {
     const { wompiTransactionId } = req.body;
     if (!wompiTransactionId) return res.status(400).json({ message: 'Missing wompiTransactionId' });
 
+    // Verificar transacción en Wompi (fuente de verdad) y usar lógica centralizada
     const wompiData = await wompiService.verifyTransaction(wompiTransactionId);
-    // Buscar payment pendiente
     const payment = await Payment.findOne({ wompiTransactionId });
     if (!payment) return res.status(404).json({ message: 'Payment not found' });
 
     if (wompiData.status === 'APPROVED' || wompiData.status === 'successful' || wompiData.status === 'PAID') {
-      // calcular distribución
-      const { wompiFee, platformFee, teacherAmount } = wompiService.calculateFeeDistribution(payment.amount);
-      payment.status = 'completed';
-      payment.paymentDate = new Date();
-      payment.wompiFee = wompiFee;
-      payment.platformFee = platformFee;
-      payment.teacherAmount = teacherAmount;
-      payment.transactionId = wompiData.id || wompiTransactionId;
-      await payment.save();
-
-      // agregar estudiante al curso (si el modelo Course tiene enroll)
-      const course = await Course.findById(payment.course);
-      if (course) {
-        // ejemplo: course.students.push(payment.student) y save
-        if (!course.students) course.students = [];
-        if (!course.students.includes(payment.student)) {
-          course.students.push(payment.student);
-          await course.save();
-        }
+      try {
+        const updated = await finalizePayment(payment, wompiData);
+        return res.json({ success: true, payment: updated });
+      } catch (finalErr) {
+        console.error('Error finalizing payment:', finalErr.message || finalErr);
+        return res.status(400).json({ success: false, message: finalErr.message });
       }
-
-      // actualizar ganancias del docente (si aplica)
-      const teacher = await User.findById(course.teacher);
-      if (teacher) {
-        teacher.totalEarnings = (teacher.totalEarnings || 0) + teacherAmount;
-        
-        // Intentar transferencia automática si docente tiene payoutInfo configurada
-        if (teacher.payoutInfo && teacher.payoutInfo.accountNumber && teacher.payoutInfo.documentId && teacher.name && teacher.email) {
-          try {
-            const payoutResult = await wompiService.createPayout({
-              amount: teacherAmount,
-              currency: payment.currency || 'COP',
-              payoutInfo: {
-                ...teacher.payoutInfo,
-                name: teacher.name, // Nombre requerido por Wompi
-                email: teacher.email // Email requerido por Wompi
-              },
-              reference: `payment_${payment._id}`
-            });
-            payment.wompiTransferId = payoutResult.wompiTransferId;
-            payment.batchId = payoutResult.batchId;
-            payment.payoutStatus = payoutResult.status || 'PENDING';
-            console.log(`✓ Payout created for teacher ${teacher._id}:`, payoutResult.wompiTransferId);
-          } catch (payoutErr) {
-            console.error(`✗ Payout failed for teacher ${teacher._id}:`, payoutErr.message);
-            // No fallar la confirmación de pago si el payout falla - registro de error para revisión manual
-            payment.payoutStatus = 'FAILED';
-            payment.payoutError = payoutErr.message;
-          }
-        } else {
-          console.warn(`✓ Payment completed but teacher ${teacher._id} has incomplete payoutInfo (falta: ${!teacher.payoutInfo ? 'payoutInfo' : !teacher.payoutInfo.accountNumber ? 'accountNumber' : !teacher.payoutInfo.documentId ? 'documentId' : !teacher.name ? 'name' : !teacher.email ? 'email' : 'unknown'})`);
-          payment.payoutStatus = 'NO_PAYOUT_INFO';
-        }
-        
-        await teacher.save();
-      }
-
-      return res.json({ success: true, payment });
     }
 
     // estados no aprobados
@@ -257,68 +282,33 @@ async function handleWompiWebhook(req, res) {
     // Para sandbox/testing: verificar manualmente o asumir confianza temporal
     if (!event || !event.data) return res.status(400).json({ message: 'Invalid webhook' });
 
-    const { id: wompiTransactionId, status, amount_in_cents } = event.data;
-    const payment = await Payment.findOne({ wompiTransactionId });
-    if (!payment) return res.status(404).json({ message: 'Payment not found' });
+    const { id: wompiTransactionId } = event.data;
+    if (!wompiTransactionId) return res.status(400).json({ message: 'Webhook missing transaction id' });
 
-    // Actualizar estado según respuesta de Wompi
-    if (status === 'APPROVED' || status === 'successful' || status === 'PAID') {
-      const { wompiFee, platformFee, teacherAmount } = wompiService.calculateFeeDistribution(payment.amount);
-      payment.status = 'completed';
-      payment.paymentDate = new Date();
-      payment.wompiFee = wompiFee;
-      payment.platformFee = platformFee;
-      payment.teacherAmount = teacherAmount;
-      payment.transactionId = wompiTransactionId;
-      await payment.save();
+    // Verificar la transacción con Wompi (fuente de verdad) y usar lógica centralizada
+    try {
+      const wompiData = await wompiService.verifyTransaction(wompiTransactionId);
+      const payment = await Payment.findOne({ wompiTransactionId });
+      if (!payment) return res.status(404).json({ message: 'Payment not found' });
 
-      // Agregar al curso
-      const course = await Course.findById(payment.course);
-      if (course && course.students && !course.students.includes(payment.student)) {
-        course.students.push(payment.student);
-        await course.save();
-      }
-
-      // Actualizar ganancias docente
-      const teacher = await User.findById(course.teacher);
-      if (teacher) {
-        teacher.totalEarnings = (teacher.totalEarnings || 0) + teacherAmount;
-        
-        // Intentar transferencia automática si docente tiene payoutInfo configurada
-        if (teacher.payoutInfo && teacher.payoutInfo.accountNumber && teacher.payoutInfo.documentId && teacher.name && teacher.email) {
-          try {
-            const payoutResult = await wompiService.createPayout({
-              amount: teacherAmount,
-              currency: payment.currency || 'COP',
-              payoutInfo: {
-                ...teacher.payoutInfo,
-                name: teacher.name,
-                email: teacher.email
-              },
-              reference: `payment_${payment._id}`
-            });
-            payment.wompiTransferId = payoutResult.wompiTransferId;
-            payment.batchId = payoutResult.batchId;
-            payment.payoutStatus = payoutResult.status || 'PENDING';
-            console.log(`✓ Webhook payout created for teacher ${teacher._id}:`, payoutResult.wompiTransferId);
-          } catch (payoutErr) {
-            console.error(`✗ Webhook payout failed for teacher ${teacher._id}:`, payoutErr.message);
-            payment.payoutStatus = 'FAILED';
-            payment.payoutError = payoutErr.message;
-          }
-        } else {
-          console.warn(`✓ Payment completed but teacher ${teacher._id} has incomplete payoutInfo`);
-          payment.payoutStatus = 'NO_PAYOUT_INFO';
+      if (wompiData.status === 'APPROVED' || wompiData.status === 'successful' || wompiData.status === 'PAID') {
+        try {
+          await finalizePayment(payment, wompiData);
+          return res.json({ success: true });
+        } catch (finalErr) {
+          console.error('Webhook finalize error:', finalErr.message || finalErr);
+          return res.status(400).json({ success: false, message: finalErr.message });
         }
-        
-        await teacher.save();
-        await payment.save(); // Guardar payoutStatus y wompiTransferId
+      } else if (wompiData.status === 'DECLINED' || wompiData.status === 'REJECTED') {
+        payment.status = 'failed';
+        await payment.save();
+        return res.json({ success: true });
       }
-    } else if (status === 'DECLINED' || status === 'REJECTED') {
-      payment.status = 'failed';
-      await payment.save();
+      return res.json({ success: true });
+    } catch (err) {
+      console.error('Webhook processing error:', err.message || err);
+      return res.status(500).json({ message: 'Webhook processing error', error: err.message });
     }
-    return res.json({ success: true });
   } catch (err) {
     console.error('Webhook error:', err);
     return res.status(500).json({ message: 'Webhook error', error: err.message });

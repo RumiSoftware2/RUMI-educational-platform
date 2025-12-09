@@ -7,6 +7,8 @@ const passport = require('./config/passport');
 const cron = require('node-cron');
 const User = require('./models/User');
 const feedbackRoutes = require('./routes/feedbackRoutes');
+// Iniciar servicio de reintentos de payout (cron)
+require('./services/payoutRetryService');
 
 // 2. Configuramos dotenv
 dotenv.config();
