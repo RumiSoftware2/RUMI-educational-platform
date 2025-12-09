@@ -20,7 +20,8 @@ export default function PaymentButton({ courseId, coursePrice = 29.99, onPayment
   const handlePay = async () => {
     setLoading(true);
     try {
-      const res = await createTransaction({ courseId, amount: coursePrice });
+      // ✅ Solo enviar courseId, el backend obtiene el precio de la BD
+      const res = await createTransaction({ courseId });
       if (res.data && res.data.checkoutUrl) {
         // redirigir al checkout hosted
         window.location.href = res.data.checkoutUrl;

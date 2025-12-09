@@ -6,30 +6,62 @@ const wompiService = require('../services/wompiService');
 // POST /api/payments/create-transaction
 async function createTransaction(req, res) {
   try {
-    const { courseId, amount } = req.body;
+    const { courseId } = req.body;  // ⚠️ NO confiar en amount del cliente
     const userId = req.user && req.user.id;
+    
+    // Obtener curso para validar que sea de pago y obtener precio real
     const course = await Course.findById(courseId);
-    if (!course || !course.isPaidCourse) return res.status(400).json({ message: 'Curso inválido o no es de pago' });
+    if (!course) {
+      return res.status(404).json({ message: 'Curso no encontrado' });
+    }
+    if (!course.isPaidCourse) {
+      return res.status(400).json({ message: 'Este no es un curso de pago' });
+    }
+    
+    // ✅ Usar el precio de la BD, no del cliente (seguridad)
+    const amount = course.price;
+    if (!amount || amount <= 0) {
+      return res.status(400).json({ message: 'Precio del curso inválido' });
+    }
+    
     const student = await User.findById(userId);
+    if (!student) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
 
-    const metadata = { courseId, studentEmail: student.email, reference: `course_${courseId}_user_${userId}` };
-    const { checkoutUrl, wompiTransactionId } = await wompiService.createTransaction({ amount, currency: course.currency || 'COP', metadata });
+    const metadata = { 
+      courseId, 
+      studentEmail: student.email, 
+      reference: `course_${courseId}_user_${userId}`,
+      teacherId: course.teacher
+    };
+    
+    const { checkoutUrl, wompiTransactionId } = await wompiService.createTransaction({ 
+      amount, 
+      currency: 'COP',  // Moneda fija
+      metadata 
+    });
 
     // Crear registro pendiente en la BD
     const payment = await Payment.create({
       student: userId,
       course: courseId,
       amount,
-      currency: course.currency || 'COP',
+      currency: 'COP',
       status: 'pending',
       paymentMethod: 'wompi',
       wompiTransactionId,
       metadata
     });
 
-    return res.json({ checkoutUrl, wompiTransactionId, paymentId: payment._id });
+    return res.json({ 
+      checkoutUrl, 
+      wompiTransactionId, 
+      paymentId: payment._id,
+      amount  // Retornar monto para confirmación
+    });
   } catch (err) {
-    console.error(err);
+    console.error('Error creando transacción:', err);
     return res.status(500).json({ message: 'Error creando transacción', error: err.message });
   }
 }
