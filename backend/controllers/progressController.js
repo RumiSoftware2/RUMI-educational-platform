@@ -3,6 +3,17 @@ const Progress = require('../models/Progress');
 const Course = require('../models/Course');
 const User = require('../models/User');
 
+// Obtener progreso propio del estudiante
+exports.getOwnProgress = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const progress = await Progress.find({ user: userId }).populate('course');
+    res.json(progress);
+  } catch (err) {
+    res.status(500).json({ error: 'Error al obtener tu progreso', details: err.message });
+  }
+};
+
 // Obtener progreso de todos los estudiantes en un curso (solo docentes/admin)
 exports.getCourseProgress = async (req, res) => {
   try {
