@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getEnrolledCourses, leaveCourse } from '../services/api';
+import { getEnrolledCourses, leaveCourse, checkPaymentStatus } from '../services/api';
+import PaymentButton from '../components/PaymentButton';
 import ChangePasswordModal from '../components/ChangePasswordModal';
 import logo2 from '../assets/logo2zeus.png';
 import CourseSearchBar from '../components/CourseSearchBar';
@@ -27,6 +28,7 @@ export default function StudentCourses() {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [hasPaidMap, setHasPaidMap] = useState({});
   const [message, setMessage] = useState('');
   const messageRef = useRef(null);
   const [showChangePassword, setShowChangePassword] = useState(false);
@@ -34,10 +36,30 @@ export default function StudentCourses() {
   const courseRefs = useRef({});
 
   useEffect(() => {
+    let mounted = true;
     getEnrolledCourses()
-      .then(res => setCourses(res.data))
+      .then(async res => {
+        if (!mounted) return;
+        setCourses(res.data);
+        // Para cada curso inscrito, consultar estado de pago si el curso es de pago
+        const paidMap = {};
+        await Promise.all((res.data || []).map(async (c) => {
+          if (c.isPaidCourse) {
+            try {
+              const st = await checkPaymentStatus(c._id);
+              paidMap[c._id] = !!st.data.hasPaid;
+            } catch (err) {
+              paidMap[c._id] = false;
+            }
+          } else {
+            paidMap[c._id] = true; // curso gratuito
+          }
+        }));
+        if (mounted) setHasPaidMap(paidMap);
+      })
       .catch(err => setError('Error al cargar cursos'))
       .finally(() => setLoading(false));
+    return () => { mounted = false; };
   }, []);
 
   const handleLeaveCourse = async (courseId) => {
@@ -118,6 +140,17 @@ export default function StudentCourses() {
                 <div className="flex-1 min-w-0">
                   <h2 className="text-2xl font-bold text-blue-800 truncate drop-shadow mb-1">{course.title}</h2>
                   <p className="text-gray-600 mt-1 line-clamp-2">{course.description}</p>
+                  {course.isPaidCourse && hasPaidMap[course._id] === false && (
+                    <div className="mt-2 inline-flex items-center gap-3">
+                      <span className="inline-block bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full font-semibold">Inscrito · Pago pendiente</span>
+                      <span className="text-sm text-gray-500">Completa el pago para desbloquear las lecciones.</span>
+                    </div>
+                  )}
+                  {course.isPaidCourse && hasPaidMap[course._id] === true && (
+                    <div className="mt-2 inline-flex items-center gap-3">
+                      <span className="inline-block bg-green-100 text-green-800 px-3 py-1 rounded-full font-semibold">Inscrito · Acceso activo</span>
+                    </div>
+                  )}
                 </div>
                 <div className="flex gap-3 mt-4 md:mt-0">
                   <button
@@ -133,6 +166,12 @@ export default function StudentCourses() {
                     Abandonar
                   </button>
                 </div>
+                {/* Si es curso de pago y aún no paga, mostrar botón de pago */}
+                {course.isPaidCourse && hasPaidMap[course._id] === false && (
+                  <div className="absolute bottom-4 left-6">
+                    <PaymentButton courseId={course._id} coursePrice={course.price || 0} />
+                  </div>
+                )}
               </div>
             );
           })}
