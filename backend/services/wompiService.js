@@ -5,9 +5,9 @@ const WOMPI_PRIVATE_KEY = process.env.WOMPI_PRIVATE_KEY;
 // Para Pagos a Terceros Wompi (payouts) - usar x-api-key + user-principal-id
 const WOMPI_API_KEY = process.env.WOMPI_API_KEY || WOMPI_PRIVATE_KEY;
 const WOMPI_USER_PRINCIPAL_ID = process.env.WOMPI_USER_PRINCIPAL_ID;
-const BASE_URL = process.env.WOMPI_TRANSACTIONS_BASE_URL || 'https://sandbox.wompi.co/v1';
-// Endpoint específico para Payouts (docs indican host diferente)
-const PAYOUTS_BASE_URL = process.env.WOMPI_PAYOUTS_BASE_URL || 'https://api.payouts.wompi.co/v1';
+// URLs de producción de Wompi
+const BASE_URL = 'https://production.wompi.co/v1';
+const PAYOUTS_BASE_URL = 'https://api.payouts.wompi.co/v1';
 const ACCOUNT_ID = process.env.WOMPI_ACCOUNT_ID || process.env.WOMPI_ACCOUNT; // Cuenta origen para payouts (acepta WOMPI_ACCOUNT_ID o WOMPI_ACCOUNT)
 
 // Valores por defecto: 2% Wompi, 8% Plataforma, 0 fijo
