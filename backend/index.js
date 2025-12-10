@@ -60,6 +60,26 @@ app.get('/', (req, res) => {
   res.send('Servidor funcionando correctamente');
 });
 
+// Diagnostic logs for startup (do not print secrets)
+console.log('--- Startup diagnostics ---');
+console.log('NODE_ENV:', process.env.NODE_ENV || 'not set');
+console.log('MONGODB_URI present:', !!process.env.MONGODB_URI);
+console.log('JWT_SECRET present:', !!process.env.JWT_SECRET);
+console.log('WOMPI_PRIVATE_KEY present:', !!process.env.WOMPI_PRIVATE_KEY);
+console.log('WOMPI_API_KEY present:', !!process.env.WOMPI_API_KEY);
+console.log('WOMPI_USER_PRINCIPAL_ID present:', !!process.env.WOMPI_USER_PRINCIPAL_ID);
+console.log('PORT:', process.env.PORT || '(default 3000)');
+console.log('--- End diagnostics ---');
+
+// Global error handlers to capture startup crashes in logs
+process.on('uncaughtException', (err) => {
+  console.error('UNCAUGHT EXCEPTION', err && err.stack ? err.stack : err);
+  process.exit(1);
+});
+process.on('unhandledRejection', (reason) => {
+  console.error('UNHANDLED REJECTION', reason && reason.stack ? reason.stack : reason);
+});
+
 // 10. Iniciar el servidor
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

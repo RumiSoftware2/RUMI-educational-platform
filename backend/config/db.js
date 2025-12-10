@@ -8,11 +8,19 @@ const connectDB = async () => {
       throw new Error('La variable MONGODB_URI no está definida en el archivo .env');
     }
 
-    await mongoose.connect(uri);
+    // Conectar con un timeout de selección de servidor corto para fallar rápido en deploys
+    await mongoose.connect(uri, {
+      // Reduce el tiempo que Mongoose espera para encontrar un servidor (ms)
+      serverSelectionTimeoutMS: 5000,
+      // Opciones recomendadas
+      useNewUrlParser: true,
+      useUnifiedTopology: true
+    });
     console.log('✅ Conexión a MongoDB exitosa');
   } catch (err) {
     console.error('🔴 Error al conectar a MongoDB:', err.message);
-    process.exit(1); // Finaliza la app si falla la conexión
+    // Salir con código 1 para que la plataforma (Render) pueda reiniciar el servicio.
+    process.exit(1);
   }
 };
 
