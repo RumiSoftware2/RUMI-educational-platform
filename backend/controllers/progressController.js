@@ -2,26 +2,19 @@
 const Progress = require('../models/Progress');
 const Course = require('../models/Course');
 const User = require('../models/User');
-    try {
-      const course = await Course.findById(courseId);
-      if (course && course.isPaidCourse) {
-        const isEnrolled = Array.isArray(course.students) && course.students.map(s => String(s)).includes(String(userId));
-        const isTeacherOrAdmin = req.user && (req.user.role === 'docente' || req.user.role === 'admin');
 
-        if (!isEnrolled && !isTeacherOrAdmin) {
-          return res.status(403).json({ message: 'Acceso restringido: este contenido requiere pago' });
-        }
-      }
-    } catch (chkErr) {
-      console.error('Error verificando acceso al curso:', chkErr);
-      return res.status(500).json({ message: 'Error verificando acceso al curso', error: chkErr.message });
-    }
+// Obtener progreso de todos los estudiantes en un curso (solo docentes/admin)
+exports.getCourseProgress = async (req, res) => {
+  try {
+    const { courseId } = req.params;
+    const userId = req.user.id;
 
+    // Verificar permisos
     if (req.user.role !== 'docente' && req.user.role !== 'admin') {
       return res.status(403).json({ error: 'No autorizado' });
     }
 
-    const progress = await Progress.find({ course: course._id }).populate('user');
+    const progress = await Progress.find({ course: courseId }).populate('user');
     res.json(progress);
   } catch (err) {
     res.status(500).json({ error: 'Error al obtener progreso del curso' });
