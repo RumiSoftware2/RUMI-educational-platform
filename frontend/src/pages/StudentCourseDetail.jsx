@@ -246,23 +246,40 @@ export default function StudentCourseDetail() {
               {lesson.title}
             </motion.h2>
                          <motion.div
-               className="aspect-video flex items-center justify-center bg-gradient-to-br from-blue-100 via-green-100 to-yellow-100 rounded-2xl shadow-xl border-4 border-transparent bg-clip-padding relative overflow-hidden"
-               style={{ boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.15)' }}
-               initial={{ scale: 0.98, opacity: 0 }}
-               animate={{ scale: 1, opacity: 1 }}
-               transition={{ delay: 0.15 }}
-             >
-               <iframe
-                 src={lesson.videoUrl}
-                 title={lesson.title}
-                 style={{ border: 0 }}
-                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                 allowFullScreen
-                 className="w-full h-full rounded-xl shadow-lg"
-                 onLoad={() => {}}
-                 onEnded={handleVideoEnded}
-               />
-             </motion.div>
+                           className="aspect-video flex items-center justify-center bg-gradient-to-br from-blue-100 via-green-100 to-yellow-100 rounded-2xl shadow-xl border-4 border-transparent bg-clip-padding relative overflow-hidden"
+                           style={{ boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.15)' }}
+                           initial={{ scale: 0.98, opacity: 0 }}
+                           animate={{ scale: 1, opacity: 1 }}
+                           transition={{ delay: 0.15 }}
+                         >
+                           {lesson.videoUrl ? (
+                             <iframe
+                               src={lesson.videoUrl}
+                               title={lesson.title}
+                               style={{ border: 0 }}
+                               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                               allowFullScreen
+                               className="w-full h-full rounded-xl shadow-lg"
+                               onLoad={() => {}}
+                               onEnded={handleVideoEnded}
+                             />
+                           ) : (
+                             <div className="w-full h-full flex flex-col items-center justify-center text-center p-6">
+                               <div className="text-6xl mb-4">🔒</div>
+                               <h3 className="text-xl font-bold mb-2">Contenido bloqueado</h3>
+                               <p className="text-gray-600 mb-4">Este curso es de pago y las lecciones están bloqueadas. Completa el pago para acceder al contenido.</p>
+                               <PaymentButton
+                                 courseId={courseId}
+                                 coursePrice={course.price || 29.99}
+                                 onPaymentSuccess={() => {
+                                   setHasPaid(true);
+                                   // reload lessons or refresh page state
+                                   setShowIntro(false);
+                                 }}
+                               />
+                             </div>
+                           )}
+                         </motion.div>
             <p className="mb-2 text-gray-700 text-center md:text-left animate-fade-in-slow">{lesson.description}</p>
             
             <div className="flex gap-2 justify-center md:justify-start mt-2">
@@ -294,16 +311,18 @@ export default function StudentCourseDetail() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <LessonQuiz
-              quizId={lesson.quiz}
-              courseId={courseId}
-              lessonOrder={lesson.order}
-              onComplete={(score) => {
-                setProgressMsg(`¡Progreso guardado! Puntuación: ${score}`);
-                setVideoWatched(true);
-                api.post(`/progress/lesson/${courseId}/${lesson.order}`, { score, completed: true });
-              }}
-            />
+            {lesson.quiz && lesson.videoUrl && (
+              <LessonQuiz
+                quizId={lesson.quiz}
+                courseId={courseId}
+                lessonOrder={lesson.order}
+                onComplete={(score) => {
+                  setProgressMsg(`¡Progreso guardado! Puntuación: ${score}`);
+                  setVideoWatched(true);
+                  api.post(`/progress/lesson/${courseId}/${lesson.order}`, { score, completed: true });
+                }}
+              />
+            )}
             {!lesson.quiz && videoWatched && <span className="block mt-2 text-green-700 font-semibold">¡Has completado la lección!</span>}
           </motion.div>
         </div>

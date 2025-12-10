@@ -5,7 +5,7 @@ const User = require('../models/User');
 // Crear un nuevo curso (con lecciones)
 const createCourse = async (req, res) => {
   try {
-    const { title, description, lessons } = req.body;
+    const { title, description, lessons, isPaidCourse, price, paidFromLesson } = req.body;
     if (!title || !description || !req.body.videoUrl) {
       return res.status(400).json({ message: 'Faltan campos requeridos: título, descripción y URL del video' });
     }
@@ -23,7 +23,10 @@ const createCourse = async (req, res) => {
       description,
       teacher: req.user.id,
       videoUrl: req.body.videoUrl,
-      lessons: lessonsToSave
+      lessons: lessonsToSave,
+      isPaidCourse: !!isPaidCourse,
+      price: isPaidCourse ? (Number(price) || 0) : 0,
+      paidFromLesson: isPaidCourse ? (paidFromLesson || 1) : null
     });
     const savedCourse = await newCourse.save();
     res.status(201).json(savedCourse);
@@ -66,30 +69,20 @@ const getCourseById = async (req, res) => {
       const courseObj = course.toObject();
 
       if (courseObj.isPaidCourse) {
-        const paidFrom = courseObj.paidFromLesson || 1;
+          const isEnrolled = userId && Array.isArray(courseObj.students) && courseObj.students.map(s => String(s)).includes(String(userId));
 
-        const isEnrolled = userId && Array.isArray(courseObj.students) && courseObj.students.map(s => String(s)).includes(String(userId));
-
-        // Si el usuario NO está inscrito y NO es docente/admin, ocultar las lecciones a partir de paidFrom
-        if (!isEnrolled && !isTeacherOrAdmin) {
-          courseObj.lessons = (courseObj.lessons || []).map(lesson => {
-            // Algunas lecciones pueden estar indexadas desde 0, otras desde 1.
-            // Normalizamos tomando (order + 1) como número humano de lección.
-            const lessonNumber = Number(lesson.order) + 1;
-            if (lessonNumber >= Number(paidFrom)) {
-              return {
-                order: lesson.order,
-                title: lesson.title,
-                description: '🔒 Contenido bloqueado. Completa el pago para acceder a esta lección.',
-                videoUrl: null,
-                quiz: null
-              };
-            }
-            // permitir previsualizar lecciones antes del corte de pago
-            return lesson;
-          });
+          // Si el usuario NO está inscrito y NO es docente/admin, ocultar TODAS las lecciones
+          // (solo dejar visible el video introductorio `course.videoUrl`).
+          if (!isEnrolled && !isTeacherOrAdmin) {
+            courseObj.lessons = (courseObj.lessons || []).map(lesson => ({
+              order: lesson.order,
+              title: lesson.title,
+              description: '🔒 Contenido bloqueado. Completa el pago para acceder a esta lección.',
+              videoUrl: null,
+              quiz: null
+            }));
+          }
         }
-      }
 
       return res.status(200).json(courseObj);
     } catch (sanErr) {
@@ -113,6 +106,8 @@ const updateCourse = async (req, res) => {
       return res.status(403).json({ message: 'No autorizado para editar este curso' });
     }
     const { title, description, videoUrl, lessons } = req.body;
+    // Permitir actualizar flags de pago y precio
+    const { isPaidCourse, price, paidFromLesson } = req.body;
     if (title) course.title = title;
     if (description) course.description = description;
     if (videoUrl) course.videoUrl = videoUrl;
@@ -131,6 +126,12 @@ const updateCourse = async (req, res) => {
         newLesson = lessons.find(l => !prevTitles.includes(l.title));
       }
       course.lessons = lessons;
+    }
+    // Actualizar configuración de pago si se envía
+    if (typeof isPaidCourse !== 'undefined') {
+      course.isPaidCourse = !!isPaidCourse;
+      course.price = isPaidCourse ? (Number(price) || course.price || 0) : 0;
+      course.paidFromLesson = isPaidCourse ? (paidFromLesson || 1) : null;
     }
     await course.save();
     // Si hay nueva lección y hay estudiantes inscritos, enviar notificación

@@ -161,20 +161,12 @@ const CourseForm = () => {
               </div>
 
               <div className="mb-4">
-                <label className="block text-sm font-semibold text-blue-900 mb-2">
-                  🔒 Lección desde donde es pagado
-                </label>
-                <input
-                  type="number"
-                  name="paidFromLesson"
-                  placeholder="Ejemplo: 2"
-                  value={formData.paidFromLesson}
-                  onChange={(e) => setFormData({ ...formData, paidFromLesson: parseInt(e.target.value) })}
-                  className="w-full p-3 border-2 border-blue-300 rounded-lg focus:outline-none focus:border-blue-500"
-                  min="1"
-                  required={formData.isPaidCourse}
-                />
-                <p className="text-xs text-gray-600 mt-1">Los estudiantes verán lecciones gratis hasta aquí, luego deben pagar</p>
+                <p className="text-sm text-gray-700">
+                  🔒 Al marcar este curso como de pago, el curso completo (excepto el video de introducción)
+                  quedará bloqueado para estudiantes no inscritos. El sistema mostrará un aviso y un botón
+                  para pagar desde la vista del estudiante.
+                </p>
+                <p className="text-xs text-gray-600 mt-1">Si quieres cambiar el comportamiento más adelante, podrás editar el curso.</p>
               </div>
 
               <div className="bg-white p-4 rounded-lg border-l-4 border-green-500">
