@@ -132,6 +132,21 @@ export default function CourseDetail() {
   // Crear o actualizar lección
   const handleAddOrUpdateLesson = async (e) => {
     e.preventDefault();
+    
+    // Validar campos requeridos de la lección
+    if (!lessonForm.title || !lessonForm.title.trim()) {
+      setMessage('❌ El título de la lección es obligatorio');
+      return;
+    }
+    if (!lessonForm.description || !lessonForm.description.trim()) {
+      setMessage('❌ La descripción de la lección es obligatoria');
+      return;
+    }
+    if (!lessonForm.videoUrl || !lessonForm.videoUrl.trim()) {
+      setMessage('❌ La URL del video es obligatoria');
+      return;
+    }
+    
     setMessage(editingIndex === null ? 'Guardando lección...' : 'Actualizando lección...');
     let updatedLessons;
     let quizId = null;
