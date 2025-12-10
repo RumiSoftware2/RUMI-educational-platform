@@ -47,24 +47,65 @@ async function createTransaction({ amount, currency = 'COP', metadata = {} } = {
     return { checkoutUrl: `https://wompi.mock/checkout?amount=${amount}`, wompiTransactionId: `mock_${Date.now()}` };
   }
 
-  const payload = {
-    amount_in_cents: Math.round(amount * 100),
-    currency,
-    redirect_url: process.env.FRONTEND_URL + '/payment-success',
-    customer_email: metadata.studentEmail || undefined,
-    // metadata puede ser almacenado en reference
-    reference: metadata.reference || `course_${metadata.courseId || 'unknown'}_${Date.now()}`,
-  };
-
-  const headers = {
-    Authorization: `Bearer ${WOMPI_PRIVATE_KEY}`
-  };
-
-  const res = await axios.post(`${BASE_URL}/transactions`, payload, { headers });
-  if (res.data && res.data.data && res.data.data.checkout_url) {
-    return { checkoutUrl: res.data.data.checkout_url, wompiTransactionId: res.data.data.id };
+  // Validar datos requeridos
+  if (!amount || amount <= 0) {
+    throw new Error('El monto debe ser mayor a cero');
   }
-  throw new Error('Wompi create transaction failed');
+
+  if (!metadata.studentEmail) {
+    throw new Error('El correo electrónico del estudiante es requerido');
+  }
+
+  try {
+    const payload = {
+      amount_in_cents: Math.round(amount * 100),
+      currency,
+      customer_email: metadata.studentEmail,
+      payment_source_id: null, // Mostrará el selector de métodos de pago
+      reference: metadata.reference || `course_${metadata.courseId || 'unknown'}_${Date.now()}`,
+      payment_method: {
+        installments: 1
+      },
+      redirect_url: `${process.env.FRONTEND_URL}/payment-success`,
+      customer_data: {
+        email: metadata.studentEmail,
+        full_name: metadata.studentName || 'Cliente'
+      }
+    };
+
+    const headers = {
+      'Authorization': `Bearer ${WOMPI_PRIVATE_KEY}`,
+      'Content-Type': 'application/json'
+    };
+
+    console.log('Enviando petición a Wompi:', { 
+      url: `${BASE_URL}/transactions`,
+      payload
+    });
+
+    const response = await axios.post(`${BASE_URL}/transactions`, payload, { headers });
+    
+    if (response.data && response.data.data && response.data.data.checkout_url) {
+      return { 
+        checkoutUrl: response.data.data.checkout_url, 
+        wompiTransactionId: response.data.data.id 
+      };
+    }
+    
+    throw new Error('Respuesta inesperada de Wompi');
+    
+  } catch (error) {
+    console.error('Error en createTransaction:', {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      config: {
+        url: error.config?.url,
+        data: error.config?.data
+      }
+    });
+    throw new Error(`Error al crear la transacción: ${error.message}`);
+  }
 }
 
 async function verifyTransaction(wompiTransactionId) {
