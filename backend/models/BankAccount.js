@@ -79,7 +79,4 @@ const bankAccountSchema = new mongoose.Schema({
   }
 });
 
-// Índice para búsqueda rápida por docente
-bankAccountSchema.index({ teacher: 1 });
-
 module.exports = mongoose.model('BankAccount', bankAccountSchema);

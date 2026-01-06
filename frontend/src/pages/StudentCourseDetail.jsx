@@ -48,6 +48,17 @@ export default function StudentCourseDetail() {
       }
     }
     fetchCourse();
+    
+    // Refresca el estado de pago cada 2 segundos si es un curso de pago
+    const interval = setInterval(() => {
+      if (course?.isPaid) {
+        api.get(`/payments/courses/${courseId}/has-paid`)
+          .then(res => setHasPaid(res.data.hasPaid))
+          .catch(err => console.error('Error verificando pago:', err));
+      }
+    }, 2000);
+    
+    return () => clearInterval(interval);
   }, [courseId]);
 
   useEffect(() => {
@@ -59,7 +70,7 @@ export default function StudentCourseDetail() {
   if (error) return <div className="p-4 text-red-600">{error}</div>;
   if (!course) return <div className="p-4">Curso no encontrado.</div>;
 
-  // Si es un curso de pago y el estudiante no ha pagado, mostrar pantalla de pago
+  // VALIDACIÓN: Si es curso de pago y NO ha pagado, SIEMPRE mostrar pantalla de pago (incluso si intenta acceder a lecciones)
   if (course.isPaid && !hasPaid) {
     return (
       <AnimatePresence>

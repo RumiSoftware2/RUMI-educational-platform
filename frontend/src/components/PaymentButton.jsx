@@ -22,6 +22,10 @@ export default function PaymentButton({ courseId, courseName, price, currency = 
 
     if (courseId) {
       checkPaymentStatus();
+      
+      // Refresca el estado cada 3 segundos después de volver del pago
+      const interval = setInterval(checkPaymentStatus, 3000);
+      return () => clearInterval(interval);
     }
   }, [courseId]);
 

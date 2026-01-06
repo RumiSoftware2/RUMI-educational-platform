@@ -4,6 +4,7 @@ const userController = require('../controllers/userController');
 const verifyToken = require('../middleware/authMiddleware');
 
 // Todas las rutas están protegidas con JWT
+router.get('/me', verifyToken, userController.getCurrentUser);
 router.get('/', verifyToken, userController.getAllUsers);
 router.get('/:id', verifyToken, userController.getUserById);
 router.put('/:id', verifyToken, userController.updateUser);

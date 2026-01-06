@@ -43,6 +43,17 @@ const deleteUser = async (req, res) => {
   }
 };
 
+// Obtener usuario actual (por token JWT)
+const getCurrentUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.userId).select('-password');
+    if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: 'Error al obtener el usuario actual' });
+  }
+};
+
 // Actualizar rol del usuario
 const updateUserRole = async (req, res) => {
   try {
@@ -84,5 +95,6 @@ module.exports = {
   getUserById,
   updateUser,
   deleteUser,
-  updateUserRole
+  updateUserRole,
+  getCurrentUser
 };
