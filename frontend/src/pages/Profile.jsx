@@ -1,27 +1,14 @@
 // frontend/src/pages/Profile.jsx
-import { useContext, useEffect, useState } from 'react';
+import { useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
-import api from '../services/api';
 import BankAccountForm from '../components/BankAccountForm';
 
 export default function Profile() {
-  const { user, token, logout } = useContext(AuthContext);
-  const [profile, setProfile] = useState(null);
+  const { user, logout } = useContext(AuthContext);
 
-  useEffect(() => {
-    // Si prefieres usar el contexto directamente, puedes comentar este fetch
-    api.get('/users/me')
-      .then(res => setProfile(res.data))
-      .catch(err => {
-        console.error(err);
-        // si token inválido, cerrar sesión
-        if (err.response?.status === 401) logout();
-      });
-  }, [logout]);
-
-  // Mientras carga
-  if (!profile) {
-    return <div className="p-4">Cargando perfil...</div>;
+  // Si no hay usuario, mostrar error
+  if (!user) {
+    return <div className="p-4 text-center text-red-600">No hay sesión activa. Por favor inicia sesión.</div>;
   }
 
   return (
@@ -32,23 +19,23 @@ export default function Profile() {
         <div className="space-y-3">
           <div className="flex justify-between items-center pb-3 border-b border-gray-200">
             <span className="font-semibold text-gray-700">Nombre:</span>
-            <span className="text-gray-900">{profile.name}</span>
+            <span className="text-gray-900">{user.name}</span>
           </div>
           <div className="flex justify-between items-center pb-3 border-b border-gray-200">
             <span className="font-semibold text-gray-700">Correo:</span>
-            <span className="text-gray-900">{profile.email}</span>
+            <span className="text-gray-900">{user.email}</span>
           </div>
           <div className="flex justify-between items-center pb-3 border-b border-gray-200">
             <span className="font-semibold text-gray-700">Rol:</span>
             <span className="inline-block px-4 py-2 bg-blue-100 text-blue-700 rounded-lg font-semibold">
-              {profile.role === 'docente' ? '👨‍🏫 Docente' : profile.role === 'estudiante' ? '👨‍🎓 Estudiante' : '👨‍💼 Admin'}
+              {user.role === 'docente' ? '👨‍🏫 Docente' : user.role === 'estudiante' ? '👨‍🎓 Estudiante' : '👨‍💼 Admin'}
             </span>
           </div>
         </div>
       </div>
 
       {/* Mostrar BankAccountForm solo para docentes */}
-      {profile.role === 'docente' && (
+      {user.role === 'docente' && (
         <BankAccountForm />
       )}
 
