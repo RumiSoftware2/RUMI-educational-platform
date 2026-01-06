@@ -2,7 +2,6 @@ const Payment = require('../models/Payment');
 const Course = require('../models/Course');
 const User = require('../models/User');
 const BankAccount = require('../models/BankAccount');
-const axios = require('axios');
 
 // Configuración del banco en Java (ajusta según tu configuración)
 const BANK_API_URL = process.env.BANK_API_URL || 'http://localhost:8080/api';
