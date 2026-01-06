@@ -71,7 +71,13 @@ export default function TeacherCourses() {
       <CourseSearchBar courses={courses} courseRefs={courseRefs} placeholder="Buscar en mis cursos..." />
       
       <div className="flex flex-col sm:flex-row sm:justify-between items-center mb-8 gap-4 animate-fade-in-up">
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
+          <Link
+            to="/profile"
+            className="bg-purple-600 text-white px-4 py-2 rounded-xl hover:bg-purple-700 transition font-semibold shadow-md"
+          >
+            🏦 Mi Cuenta Bancaria
+          </Link>
           <Link
             to="/profile/change-name"
             className="bg-yellow-500 text-white px-4 py-2 rounded-xl hover:bg-yellow-600 transition font-semibold shadow-md"
