@@ -1,0 +1,273 @@
+const Payment = require('../models/Payment');
+const Course = require('../models/Course');
+const User = require('../models/User');
+const BankAccount = require('../models/BankAccount');
+const axios = require('axios');
+
+// Configuración del banco en Java (ajusta según tu configuración)
+const BANK_API_URL = process.env.BANK_API_URL || 'http://localhost:8080/api';
+const BANK_API_KEY = process.env.BANK_API_KEY || 'your-api-key';
+
+// Crear un pago para un curso
+const createPayment = async (req, res) => {
+  try {
+    const { courseId } = req.params;
+    const studentId = req.user.id;
+
+    // Validar que el curso exista
+    const course = await Course.findById(courseId);
+    if (!course) {
+      return res.status(404).json({ message: 'Curso no encontrado' });
+    }
+
+    // Validar que el curso sea de pago
+    if (!course.isPaid) {
+      return res.status(400).json({ message: 'Este curso no es de pago' });
+    }
+
+    // Validar que el estudiante no haya pagado ya
+    const existingPayment = course.paidStudents.find(p => String(p.student) === String(studentId));
+    if (existingPayment) {
+      return res.status(400).json({ message: 'Ya has pagado este curso' });
+    }
+
+    // Crear registro de pago
+    const payment = new Payment({
+      course: courseId,
+      student: studentId,
+      teacher: course.teacher,
+      amount: course.price,
+      currency: course.currency,
+      status: 'pending',
+      transactionId: `TXN-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    });
+
+    await payment.save();
+
+    res.status(201).json({
+      message: 'Pago iniciado',
+      payment: payment,
+      bankPaymentUrl: `${BANK_API_URL}/transactions/initiate/${payment._id}`
+    });
+  } catch (error) {
+    console.error('Error al crear pago:', error);
+    res.status(500).json({ message: 'Error al crear pago', error: error.message });
+  }
+};
+
+// Procesar confirmación de pago del banco
+const confirmPayment = async (req, res) => {
+  try {
+    const { paymentId } = req.params;
+    const { bankTransactionId, status } = req.body;
+
+    const payment = await Payment.findById(paymentId);
+    if (!payment) {
+      return res.status(404).json({ message: 'Pago no encontrado' });
+    }
+
+    if (status === 'completed' || status === 'success') {
+      // Actualizar estado del pago
+      payment.status = 'completed';
+      payment.bankTransactionId = bankTransactionId;
+      payment.paidAt = new Date();
+      await payment.save();
+
+      // Agregar estudiante a la lista de pagos del curso
+      const course = await Course.findById(payment.course);
+      if (course) {
+        course.paidStudents.push({
+          student: payment.student,
+          transactionId: bankTransactionId
+        });
+        // Si no estaba inscrito, agregarlo
+        if (!course.students.includes(payment.student)) {
+          course.students.push(payment.student);
+        }
+        await course.save();
+      }
+
+      // Actualizar ganancias del profesor
+      const bankAccount = await BankAccount.findOne({ teacher: payment.teacher });
+      if (bankAccount) {
+        bankAccount.totalEarnings += payment.amount;
+        bankAccount.pendingPayouts += payment.amount;
+        await bankAccount.save();
+      }
+
+      res.status(200).json({
+        message: 'Pago confirmado exitosamente',
+        payment: payment
+      });
+    } else {
+      payment.status = 'failed';
+      payment.notes = `Pago fallido: ${status}`;
+      await payment.save();
+
+      res.status(400).json({
+        message: 'El pago no fue completado',
+        payment: payment
+      });
+    }
+  } catch (error) {
+    console.error('Error al confirmar pago:', error);
+    res.status(500).json({ message: 'Error al confirmar pago', error: error.message });
+  }
+};
+
+// Obtener historial de pagos de un estudiante
+const getStudentPayments = async (req, res) => {
+  try {
+    const studentId = req.user.id;
+    const payments = await Payment.find({ student: studentId })
+      .populate('course', 'title price')
+      .populate('teacher', 'name email');
+
+    res.status(200).json(payments);
+  } catch (error) {
+    console.error('Error al obtener pagos:', error);
+    res.status(500).json({ message: 'Error al obtener pagos', error: error.message });
+  }
+};
+
+// Obtener pagos de un curso (solo el docente)
+const getCoursePayments = async (req, res) => {
+  try {
+    const { courseId } = req.params;
+    const teacherId = req.user.id;
+
+    const course = await Course.findById(courseId);
+    if (!course) {
+      return res.status(404).json({ message: 'Curso no encontrado' });
+    }
+
+    if (String(course.teacher) !== String(teacherId) && req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'No autorizado' });
+    }
+
+    const payments = await Payment.find({ course: courseId })
+      .populate('student', 'name email')
+      .sort({ paidAt: -1 });
+
+    res.status(200).json(payments);
+  } catch (error) {
+    console.error('Error al obtener pagos del curso:', error);
+    res.status(500).json({ message: 'Error al obtener pagos', error: error.message });
+  }
+};
+
+// Obtener estado de pago
+const getPaymentStatus = async (req, res) => {
+  try {
+    const { paymentId } = req.params;
+    const payment = await Payment.findById(paymentId);
+
+    if (!payment) {
+      return res.status(404).json({ message: 'Pago no encontrado' });
+    }
+
+    res.status(200).json(payment);
+  } catch (error) {
+    console.error('Error al obtener estado de pago:', error);
+    res.status(500).json({ message: 'Error al obtener estado de pago', error: error.message });
+  }
+};
+
+// Verificar si un estudiante ha pagado un curso
+const hasStudentPaid = async (req, res) => {
+  try {
+    const { courseId } = req.params;
+    const studentId = req.user.id;
+
+    const course = await Course.findById(courseId);
+    if (!course) {
+      return res.status(404).json({ message: 'Curso no encontrado' });
+    }
+
+    const hasPaid = course.paidStudents.some(p => String(p.student) === String(studentId));
+
+    res.status(200).json({ hasPaid, isPaidCourse: course.isPaid });
+  } catch (error) {
+    console.error('Error al verificar pago:', error);
+    res.status(500).json({ message: 'Error al verificar pago', error: error.message });
+  }
+};
+
+// Obtener estadísticas de ingresos del docente
+const getTeacherEarnings = async (req, res) => {
+  try {
+    const teacherId = req.user.id;
+
+    const payments = await Payment.find({
+      teacher: teacherId,
+      status: 'completed'
+    });
+
+    const totalEarnings = payments.reduce((sum, p) => sum + p.amount, 0);
+    const totalTransactions = payments.length;
+
+    res.status(200).json({
+      totalEarnings,
+      totalTransactions,
+      payments
+    });
+  } catch (error) {
+    console.error('Error al obtener ingresos:', error);
+    res.status(500).json({ message: 'Error al obtener ingresos', error: error.message });
+  }
+};
+
+// Reembolsar pago
+const refundPayment = async (req, res) => {
+  try {
+    const { paymentId } = req.params;
+    const payment = await Payment.findById(paymentId);
+
+    if (!payment) {
+      return res.status(404).json({ message: 'Pago no encontrado' });
+    }
+
+    // Solo admin o el docente del curso pueden reembolsar
+    const course = await Course.findById(payment.course);
+    if (String(course.teacher) !== String(req.user.id) && req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'No autorizado' });
+    }
+
+    // Actualizar estado del pago
+    payment.status = 'refunded';
+    await payment.save();
+
+    // Remover del curso si es necesario
+    course.paidStudents = course.paidStudents.filter(
+      p => String(p.student) !== String(payment.student)
+    );
+    await course.save();
+
+    // Actualizar ganancias del profesor
+    const bankAccount = await BankAccount.findOne({ teacher: payment.teacher });
+    if (bankAccount) {
+      bankAccount.totalEarnings -= payment.amount;
+      bankAccount.pendingPayouts -= payment.amount;
+      await bankAccount.save();
+    }
+
+    res.status(200).json({
+      message: 'Pago reembolsado exitosamente',
+      payment: payment
+    });
+  } catch (error) {
+    console.error('Error al reembolsar pago:', error);
+    res.status(500).json({ message: 'Error al reembolsar pago', error: error.message });
+  }
+};
+
+module.exports = {
+  createPayment,
+  confirmPayment,
+  getStudentPayments,
+  getCoursePayments,
+  getPaymentStatus,
+  hasStudentPaid,
+  getTeacherEarnings,
+  refundPayment
+};

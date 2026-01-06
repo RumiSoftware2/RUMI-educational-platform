@@ -31,6 +31,31 @@ const courseSchema = new mongoose.Schema({
     ref: 'User',
     default: []
   }],
+  isPaid: {
+    type: Boolean,
+    default: false
+  },
+  price: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
+  currency: {
+    type: String,
+    default: 'USD',
+    enum: ['USD', 'COP', 'MXN', 'ARS']
+  },
+  paidStudents: [{
+    student: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    },
+    paidAt: {
+      type: Date,
+      default: Date.now
+    },
+    transactionId: String
+  }],
   createdAt: {
     type: Date,
     default: Date.now

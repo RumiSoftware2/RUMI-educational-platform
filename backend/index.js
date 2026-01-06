@@ -43,6 +43,8 @@ app.use('/api/quizzes', require('./routes/quizRoutes'));
 app.use('/api/progress', require('./routes/progressRoutes'));
 app.use('/api/grades', require('./routes/gradeRoutes'));
 app.use('/api/feedback', feedbackRoutes);
+app.use('/api/payments', require('./routes/paymentRoutes'));
+app.use('/api/bank-accounts', require('./routes/bankAccountRoutes'));
 
 // Cleanup diario a las 2:00 AM UTC
 // cron.schedule('0 2 * * *', async () => {

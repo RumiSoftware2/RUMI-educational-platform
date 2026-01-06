@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { AuthContext } from '../context/AuthContext';
 import LessonQuiz from '../components/LessonQuiz';
+import PaymentButton from '../components/PaymentButton';
 import { motion, AnimatePresence } from 'framer-motion';
 import logo2 from '../assets/logo2zeus.png';
 
@@ -17,6 +18,7 @@ export default function StudentCourseDetail() {
   const [videoWatched, setVideoWatched] = useState(false);
   const [progressMsg, setProgressMsg] = useState('');
   const [showIntro, setShowIntro] = useState(true);
+  const [hasPaid, setHasPaid] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -26,6 +28,19 @@ export default function StudentCourseDetail() {
         const res = await api.get(`/courses/${courseId}`);
         setCourse(res.data);
         setLessons(res.data.lessons || []);
+
+        // Verificar si el estudiante ha pagado (si es un curso de pago)
+        if (res.data.isPaid) {
+          try {
+            const paymentRes = await api.get(`/payments/courses/${courseId}/has-paid`);
+            setHasPaid(paymentRes.data.hasPaid);
+          } catch (paymentErr) {
+            console.error('Error al verificar pago:', paymentErr);
+            setHasPaid(false);
+          }
+        } else {
+          setHasPaid(true); // Cursos gratuitos siempre son accesibles
+        }
       } catch (err) {
         setError('Error al cargar el curso');
       } finally {
@@ -43,6 +58,80 @@ export default function StudentCourseDetail() {
   if (loading) return <div className="p-4">Cargando curso...</div>;
   if (error) return <div className="p-4 text-red-600">{error}</div>;
   if (!course) return <div className="p-4">Curso no encontrado.</div>;
+
+  // Si es un curso de pago y el estudiante no ha pagado, mostrar pantalla de pago
+  if (course.isPaid && !hasPaid) {
+    return (
+      <AnimatePresence>
+        <motion.div
+          key="intro-paid"
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -40 }}
+          transition={{ duration: 0.5, type: 'spring' }}
+          className="min-h-screen flex flex-col justify-center items-center bg-gradient-to-br from-[#0a2342] via-[#2ca6e0] to-[#ffd700] py-12 px-2 animate-fade-in"
+        >
+          <div className="max-w-3xl w-full bg-white/90 rounded-3xl shadow-2xl border border-[#2ca6e0]/20 p-6 md:p-12 flex flex-col items-center animate-fade-in">
+            {/* Botón para volver a Mis Cursos */}
+            <div className="flex justify-start mb-4 w-full">
+              <button
+                onClick={() => navigate('/student/courses')}
+                className="bg-gradient-to-r from-blue-500 to-emerald-500 text-white px-5 py-2 rounded-xl font-bold shadow-lg hover:from-blue-600 hover:to-emerald-600 transition-all duration-300"
+              >
+                ← Volver a Mis Cursos
+              </button>
+            </div>
+            <div className="flex flex-col items-center mb-4 w-full">
+              <motion.img
+                src={logo2}
+                alt="Logo decorativo"
+                className="w-16 h-16 mb-2 animate-bounce"
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: 0.1 }}
+              />
+              <h1 className="text-4xl md:text-5xl font-extrabold mb-2 text-center bg-gradient-to-r from-green-700 via-blue-400 to-yellow-400 bg-clip-text text-transparent drop-shadow animate-gradient-x animate-pulse" style={{ backgroundSize: '200% 200%' }}>
+                {course.title}
+              </h1>
+              <p className="text-lg md:text-xl text-center text-gray-700 mb-4 animate-fade-in-slow animate-pulse">Aquí puedes ver una vista previa del curso. Paga para obtener acceso completo.</p>
+            </div>
+            {/* Modern video container - Solo video de introducción */}
+            <motion.div
+              className="aspect-video mb-4 flex items-center justify-center bg-gradient-to-br from-blue-100 via-green-100 to-yellow-100 rounded-3xl shadow-2xl border-4 border-transparent bg-clip-padding relative overflow-hidden"
+              style={{ boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.15)' }}
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.2, duration: 0.5 }}
+            >
+              {course.videoUrl ? (
+                <iframe
+                  src={course.videoUrl}
+                  title={course.title}
+                  style={{ border: 0 }}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="w-full h-full rounded-2xl shadow-lg"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-gray-200 rounded text-gray-500">
+                  Sin video principal
+                </div>
+              )}
+            </motion.div>
+            <p className="mb-8 text-lg text-center text-gray-700 animate-fade-in-slow">{course.description}</p>
+            
+            {/* Mostrar PaymentButton */}
+            <PaymentButton 
+              courseId={courseId} 
+              courseName={course.title}
+              price={course.price}
+              currency={course.currency}
+            />
+          </div>
+        </motion.div>
+      </AnimatePresence>
+    );
+  }
 
   // Pantalla introductoria SIEMPRE que haya curso
   if (showIntro) {
@@ -105,7 +194,18 @@ export default function StudentCourseDetail() {
             </motion.div>
             <p className="mb-8 text-lg text-center text-gray-700 animate-fade-in-slow">{course.description}</p>
             
-            {lessons.length > 0 ? (
+            {/* Mostrar PaymentButton si es curso de pago y no ha pagado */}
+            {course.isPaid && !hasPaid && (
+              <PaymentButton 
+                courseId={courseId} 
+                courseName={course.title}
+                price={course.price}
+                currency={course.currency}
+              />
+            )}
+
+            {/* Mostrar botón de comenzar solo si tiene acceso */}
+            {hasPaid && lessons.length > 0 ? (
               <div className="flex justify-center mt-6">
                 <motion.button
                   whileHover={{ scale: 1.07 }}
@@ -117,6 +217,8 @@ export default function StudentCourseDetail() {
                 </motion.button>
               </div>
             ) : (
+              hasPaid ? (
+              // Si ya tiene acceso pero no hay lecciones
               <motion.div
                 className="flex flex-col items-center justify-center mt-8 p-6 bg-gradient-to-br from-blue-50 via-green-50 to-yellow-50 rounded-xl shadow-lg border border-blue-100"
                 initial={{ opacity: 0, scale: 0.95 }}
@@ -128,6 +230,10 @@ export default function StudentCourseDetail() {
                 <p className="text-gray-600 text-center mb-2">Este curso aún no tiene lecciones disponibles.<br/>Vuelve pronto para comenzar a aprender con TUMI.</p>
                 <span className="text-yellow-500 font-bold animate-bounce">🚀</span>
               </motion.div>
+              ) : (
+              // Si no tiene acceso porque no pagó y es un curso de pago
+              null
+            )
             )}
           </div>
         </motion.div>

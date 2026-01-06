@@ -2,6 +2,7 @@
 import { useContext, useEffect, useState } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import api from '../services/api';
+import BankAccountForm from '../components/BankAccountForm';
 
 export default function Profile() {
   const { user, token, logout } = useContext(AuthContext);
@@ -24,22 +25,38 @@ export default function Profile() {
   }
 
   return (
-    <div className="max-w-lg mx-auto mt-8 p-6 bg-white rounded-2xl shadow">
-      <h1 className="text-2xl font-bold mb-4">Mi Perfil</h1>
-      <div className="mb-2">
-        <span className="font-semibold">Nombre:</span> {profile.name}
+    <div className="max-w-4xl mx-auto mt-8 p-6 space-y-8">
+      {/* Sección de Perfil */}
+      <div className="bg-white p-8 rounded-2xl shadow-lg border-2 border-green-200">
+        <h1 className="text-3xl font-bold mb-6 text-green-700">👤 Mi Perfil</h1>
+        <div className="space-y-3">
+          <div className="flex justify-between items-center pb-3 border-b border-gray-200">
+            <span className="font-semibold text-gray-700">Nombre:</span>
+            <span className="text-gray-900">{profile.name}</span>
+          </div>
+          <div className="flex justify-between items-center pb-3 border-b border-gray-200">
+            <span className="font-semibold text-gray-700">Correo:</span>
+            <span className="text-gray-900">{profile.email}</span>
+          </div>
+          <div className="flex justify-between items-center pb-3 border-b border-gray-200">
+            <span className="font-semibold text-gray-700">Rol:</span>
+            <span className="inline-block px-4 py-2 bg-blue-100 text-blue-700 rounded-lg font-semibold">
+              {profile.role === 'docente' ? '👨‍🏫 Docente' : profile.role === 'estudiante' ? '👨‍🎓 Estudiante' : '👨‍💼 Admin'}
+            </span>
+          </div>
+        </div>
       </div>
-      <div className="mb-2">
-        <span className="font-semibold">Correo:</span> {profile.email}
-      </div>
-      <div className="mb-4">
-        <span className="font-semibold">Rol:</span> {profile.role}
-      </div>
+
+      {/* Mostrar BankAccountForm solo para docentes */}
+      {profile.role === 'docente' && (
+        <BankAccountForm />
+      )}
+
       <button
         onClick={logout}
-        className="mt-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+        className="w-full px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 font-bold text-lg transition shadow-md"
       >
-        Cerrar Sesión
+        🚪 Cerrar Sesión
       </button>
     </div>
   );

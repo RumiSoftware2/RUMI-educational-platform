@@ -10,6 +10,9 @@ const CourseForm = () => {
     title: '',
     videoUrl: '',
     description: '',
+    isPaid: false,
+    price: 0,
+    currency: 'USD'
   });
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
@@ -17,7 +20,11 @@ const CourseForm = () => {
   const navigate = useNavigate();
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value, type, checked } = e.target;
+    setFormData({
+      ...formData,
+      [name]: type === 'checkbox' ? checked : (type === 'number' ? parseFloat(value) : value)
+    });
   };
 
   // Función para convertir cualquier URL de YouTube a formato embed
@@ -52,7 +59,7 @@ const CourseForm = () => {
       // Usar la API centralizada, el token se añade automáticamente
       const res = await api.post('/courses', { ...formData, videoUrl });
       setMessage('✅ Curso creado exitosamente');
-      setFormData({ title: '', videoUrl: '', description: '' });
+      setFormData({ title: '', videoUrl: '', description: '', isPaid: false, price: 0, currency: 'USD' });
       // Opcional: redirigir después de un tiempo
       setTimeout(() => navigate('/teacher/courses'), 1200);
     } catch (err) {
@@ -116,10 +123,58 @@ const CourseForm = () => {
           placeholder="Descripción del curso"
           value={formData.description}
           onChange={handleChange}
-          className="w-full mb-4 p-4 border-2 border-green-200 rounded-xl focus:outline-none focus:border-green-500 text-lg shadow-sm bg-white/80"
+          className="w-full mb-6 p-4 border-2 border-green-200 rounded-xl focus:outline-none focus:border-green-500 text-lg shadow-sm bg-white/80"
           required
           rows={4}
         ></textarea>
+
+        {/* Sección de Configuración de Pago */}
+        <div className="mb-6 p-4 bg-blue-50 rounded-xl border-2 border-blue-200">
+          <label className="flex items-center gap-3 cursor-pointer mb-4">
+            <input
+              type="checkbox"
+              name="isPaid"
+              checked={formData.isPaid}
+              onChange={handleChange}
+              className="w-5 h-5 cursor-pointer"
+            />
+            <span className="font-semibold text-gray-700">¿Es un curso de pago?</span>
+          </label>
+
+          {formData.isPaid && (
+            <div className="space-y-4">
+              <input
+                type="number"
+                name="price"
+                placeholder="Precio del curso"
+                value={formData.price}
+                onChange={handleChange}
+                min="0"
+                step="0.01"
+                className="w-full p-3 border-2 border-blue-300 rounded-lg focus:outline-none focus:border-blue-500 text-lg shadow-sm bg-white"
+                required={formData.isPaid}
+              />
+
+              <select
+                name="currency"
+                value={formData.currency}
+                onChange={handleChange}
+                className="w-full p-3 border-2 border-blue-300 rounded-lg focus:outline-none focus:border-blue-500 text-lg shadow-sm bg-white"
+              >
+                <option value="USD">USD (Dólares)</option>
+                <option value="COP">COP (Pesos Colombianos)</option>
+                <option value="MXN">MXN (Pesos Mexicanos)</option>
+                <option value="ARS">ARS (Pesos Argentinos)</option>
+              </select>
+
+              <p className="text-sm text-blue-700 bg-blue-100 p-3 rounded-lg">
+                ✓ Los estudiantes solo verán el video de introducción hasta que paguen<br/>
+                ✓ El pago es una única vez para acceso completo<br/>
+                ✓ Recibirás los fondos en tu cuenta bancaria registrada
+              </p>
+            </div>
+          )}
+        </div>
 
         <button
           type="submit"
