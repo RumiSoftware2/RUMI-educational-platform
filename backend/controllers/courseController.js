@@ -5,7 +5,7 @@ const User = require('../models/User');
 // Crear un nuevo curso (con lecciones)
 const createCourse = async (req, res) => {
   try {
-    const { title, description, lessons } = req.body;
+    const { title, description, lessons, isPaid, price, currency } = req.body;
     if (!title || !description || !req.body.videoUrl) {
       return res.status(400).json({ message: 'Faltan campos requeridos: título, descripción y URL del video' });
     }
@@ -23,7 +23,10 @@ const createCourse = async (req, res) => {
       description,
       teacher: req.user.id,
       videoUrl: req.body.videoUrl,
-      lessons: lessonsToSave
+      lessons: lessonsToSave,
+      isPaid: !!isPaid,
+      price: typeof price === 'number' ? price : (price ? Number(price) : 0),
+      currency: currency || 'USD'
     });
     const savedCourse = await newCourse.save();
     res.status(201).json(savedCourse);
@@ -69,10 +72,14 @@ const updateCourse = async (req, res) => {
     if (req.user.role !== 'admin' && String(course.teacher) !== String(req.user.id)) {
       return res.status(403).json({ message: 'No autorizado para editar este curso' });
     }
-    const { title, description, videoUrl, lessons } = req.body;
+    const { title, description, videoUrl, lessons, isPaid, price, currency } = req.body;
     if (title) course.title = title;
     if (description) course.description = description;
     if (videoUrl) course.videoUrl = videoUrl;
+    // Permitir actualizar configuración de pago
+    if (typeof isPaid !== 'undefined') course.isPaid = !!isPaid;
+    if (typeof price !== 'undefined') course.price = typeof price === 'number' ? price : Number(price);
+    if (typeof currency !== 'undefined') course.currency = currency;
     let newLesson = null;
     if (Array.isArray(lessons)) {
       // Validar lecciones
