@@ -222,7 +222,16 @@ export default function StudentCourseDetail() {
                   whileHover={{ scale: 1.07 }}
                   whileTap={{ scale: 0.97 }}
                   className="bg-gradient-to-r from-green-600 to-blue-400 text-white px-6 py-3 rounded-xl font-bold text-lg hover:from-blue-700 hover:to-green-500 shadow-lg transition-all duration-300"
-                  onClick={() => setShowIntro(false)}
+                      onClick={() => {
+                        // Previene el acceso a lecciones si es curso de pago y no ha pagado
+                        if (course.isPaid && !hasPaid) {
+                          // Alentar al usuario a pagar: deslizar a la sección de pago
+                          const payBtn = document.querySelector('.rumi-payment-focus');
+                          if (payBtn) payBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                          return;
+                        }
+                        setShowIntro(false);
+                      }}
                 >
                   Comenzar lecciones
                 </motion.button>

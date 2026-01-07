@@ -69,7 +69,7 @@ export default function PaymentButton({ courseId, courseName, price, currency = 
   }
 
   return (
-    <div className="mt-6 p-6 bg-gradient-to-r from-yellow-50 to-orange-50 border-3 border-yellow-300 rounded-xl">
+    <div className="mt-6 p-6 bg-gradient-to-r from-yellow-50 to-orange-50 border-3 border-yellow-300 rounded-xl rumi-payment-focus">
       <div className="mb-4">
         <h3 className="text-2xl font-bold text-orange-700 mb-2">🔒 Curso Premium</h3>
         <p className="text-gray-700 mb-3">Debes pagar para acceder al contenido completo de este curso</p>
@@ -114,6 +114,7 @@ export default function PaymentButton({ courseId, courseName, price, currency = 
           <button
             onClick={() => setShowPaymentForm(true)}
             disabled={loading}
+            aria-label="rumi-pay-button"
             className="w-full px-6 py-4 bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold text-lg rounded-lg hover:from-orange-600 hover:to-red-600 transform hover:scale-105 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
           >
             🔓 Pagar y Desbloquear Curso

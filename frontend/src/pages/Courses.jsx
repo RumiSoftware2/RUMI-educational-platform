@@ -129,16 +129,25 @@ export default function Courses() {
               className="group bg-white/90 border border-green-200 rounded-3xl shadow-xl p-4 flex flex-col items-center transition-transform duration-300 hover:scale-105 hover:shadow-2xl relative overflow-hidden"
             >
               {thumb ? (
-                <div className="w-full aspect-video rounded-xl overflow-hidden mb-3 shadow-md">
-                  <img
-                    src={thumb}
-                    alt={c.title}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                  />
-                </div>
-              ) : (
-                <div className="w-full aspect-video flex items-center justify-center bg-gray-200 rounded-xl mb-3 text-gray-400">Sin video</div>
-              )}
+                  <div className="w-full aspect-video rounded-xl overflow-hidden mb-3 shadow-md relative">
+                    <img
+                      src={thumb}
+                      alt={c.title}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                    />
+                    {/* Lock badge for paid courses */}
+                    {c.isPaid && (
+                      <div className="absolute top-3 right-3 bg-white/90 px-3 py-1 rounded-full flex items-center gap-2 shadow-md border">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-yellow-600" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M5 8a3 3 0 116 0v1h1a2 2 0 012 2v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4a2 2 0 012-2h1V8zm2-1a1 1 0 112 0v1H7V7z" clipRule="evenodd" />
+                        </svg>
+                        <span className="text-sm font-semibold text-gray-800">{c.price} {c.currency}</span>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="w-full aspect-video flex items-center justify-center bg-gray-200 rounded-xl mb-3 text-gray-400">Sin video</div>
+                )}
               <h3 className="font-extrabold text-xl text-green-800 mb-1 text-center drop-shadow">{c.title}</h3>
               <p className="text-gray-700 text-center mb-4 line-clamp-3">{c.description}</p>
               <div className="flex gap-2 w-full justify-center">
