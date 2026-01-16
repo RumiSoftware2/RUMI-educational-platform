@@ -30,6 +30,7 @@ import StudentStatistics from './pages/StudentStatistics';
 import StudentCourseDetail from './pages/StudentCourseDetail';
 import VerifyResetCode from './pages/VerifyResetCode';
 import Sudoku from './pages/games/Sudoku';
+import PaymentSuccess from './pages/PaymentSuccess';
 import { LanguageProvider } from './context/LanguageContext';
 
 // Obtener el Client ID de Google desde las variables de entorno
@@ -64,6 +65,7 @@ function App() {
               <Route path="/person-rumi" element={<PersonRumi />} />
               <Route path="/enterprise-rumi" element={<EnterpriseRumi />} />
               <Route path="/enterprise/login" element={<EnterpriseLogin />} />
+              <Route path="/payment/success" element={<PaymentSuccess />} />
                
               <Route
                 path="/profile"

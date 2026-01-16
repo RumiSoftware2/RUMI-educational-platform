@@ -138,6 +138,13 @@ const confirmPaymentWebhook = async (req, res) => {
   try {
     const event = req.body;
     
+    // Validar firma del evento
+    const isValidSignature = validateWompiEventSignature(event);
+    if (!isValidSignature) {
+      console.log('Firma del evento inválida');
+      return res.status(400).json({ message: 'Firma inválida' });
+    }
+    
     // Validar que sea un evento de transacción
     if (event.event !== 'transaction.updated') {
       return res.status(200).json({ message: 'Evento no procesado' });
@@ -194,6 +201,43 @@ const confirmPaymentWebhook = async (req, res) => {
     console.error('Error en webhook:', error);
     res.status(500).json({ message: 'Error procesando webhook' });
   }
+};
+
+// Función para validar la firma del evento de Wompi
+const validateWompiEventSignature = (event) => {
+  try {
+    const { signature, timestamp } = event;
+    const eventSecret = WOMPI_EVENT_SECRET;
+    
+    // Concatenar valores de las propiedades en orden
+    let concatenatedString = '';
+    for (const property of signature.properties) {
+      const value = getNestedProperty(event.data, property);
+      if (value !== undefined) {
+        concatenatedString += value;
+      }
+    }
+    
+    // Agregar timestamp
+    concatenatedString += timestamp;
+    
+    // Agregar secreto
+    concatenatedString += eventSecret;
+    
+    // Generar hash SHA256
+    const calculatedChecksum = crypto.createHash('sha256').update(concatenatedString).digest('hex');
+    
+    // Comparar con el checksum enviado
+    return calculatedChecksum === signature.checksum;
+  } catch (error) {
+    console.error('Error validando firma:', error);
+    return false;
+  }
+};
+
+// Función auxiliar para obtener propiedades anidadas
+const getNestedProperty = (obj, path) => {
+  return path.split('.').reduce((current, key) => current && current[key], obj);
 };
 
 // Obtener historial de pagos de un estudiante
