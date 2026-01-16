@@ -9,6 +9,12 @@ const createCourse = async (req, res) => {
     if (!title || !description || !req.body.videoUrl) {
       return res.status(400).json({ message: 'Faltan campos requeridos: título, descripción y URL del video' });
     }
+    
+    // Validar precio mínimo para cursos de pago
+    if (isPaid && (!price || price < 2000)) {
+      return res.status(400).json({ message: 'El precio mínimo para cursos de pago es 2000 COP' });
+    }
+    
     let lessonsToSave = [];
     if (Array.isArray(lessons) && lessons.length > 0) {
       for (const lesson of lessons) {
@@ -26,7 +32,7 @@ const createCourse = async (req, res) => {
       lessons: lessonsToSave,
       isPaid: !!isPaid,
       price: typeof price === 'number' ? price : (price ? Number(price) : 0),
-      currency: currency || 'USD'
+      currency: currency || 'COP'
     });
     const savedCourse = await newCourse.save();
     res.status(201).json(savedCourse);
@@ -80,6 +86,11 @@ const updateCourse = async (req, res) => {
     if (typeof isPaid !== 'undefined') course.isPaid = !!isPaid;
     if (typeof price !== 'undefined') course.price = typeof price === 'number' ? price : Number(price);
     if (typeof currency !== 'undefined') course.currency = currency;
+    
+    // Validar precio mínimo para cursos de pago
+    if (course.isPaid && course.price < 2000) {
+      return res.status(400).json({ message: 'El precio mínimo para cursos de pago es 2000 COP' });
+    }
     let newLesson = null;
     if (Array.isArray(lessons)) {
       // Validar lecciones

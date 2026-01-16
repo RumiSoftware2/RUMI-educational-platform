@@ -11,8 +11,8 @@ const CourseForm = () => {
     videoUrl: '',
     description: '',
     isPaid: false,
-    price: 0,
-    currency: 'USD'
+    price: 2000,
+    currency: 'COP'
   });
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
@@ -53,13 +53,21 @@ const CourseForm = () => {
     e.preventDefault();
     setLoading(true);
     setMessage('');
+    
+    // Validar precio mínimo para cursos de pago
+    if (formData.isPaid && formData.price < 2000) {
+      setMessage('❌ El precio mínimo para cursos de pago es 2000 COP');
+      setLoading(false);
+      return;
+    }
+    
     // Transformar la URL a formato embed si es de YouTube
     let videoUrl = toYoutubeEmbed(formData.videoUrl);
     try {
       // Usar la API centralizada, el token se añade automáticamente
       const res = await api.post('/courses', { ...formData, videoUrl });
       setMessage('✅ Curso creado exitosamente');
-      setFormData({ title: '', videoUrl: '', description: '', isPaid: false, price: 0, currency: 'USD' });
+      setFormData({ title: '', videoUrl: '', description: '', isPaid: false, price: 2000, currency: 'COP' });
       // Opcional: redirigir después de un tiempo
       setTimeout(() => navigate('/teacher/courses'), 1200);
     } catch (err) {
@@ -146,10 +154,10 @@ const CourseForm = () => {
               <input
                 type="number"
                 name="price"
-                placeholder="Precio del curso"
+                placeholder="Precio del curso (mínimo 2000 COP)"
                 value={formData.price}
                 onChange={handleChange}
-                min="0"
+                min="2000"
                 step="0.01"
                 className="w-full p-3 border-2 border-blue-300 rounded-lg focus:outline-none focus:border-blue-500 text-lg shadow-sm bg-white"
                 required={formData.isPaid}
