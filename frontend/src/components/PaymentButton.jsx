@@ -1,12 +1,28 @@
 import { useState, useEffect } from 'react';
 import api from '../services/api';
 
-export default function PaymentButton({ courseId, courseName, price, currency = 'USD' }) {
+// Cargar script de Wompi
+const loadWompiScript = () => {
+  return new Promise((resolve) => {
+    if (window.WidgetCheckout) {
+      resolve();
+      return;
+    }
+    
+    const script = document.createElement('script');
+    script.src = 'https://checkout.wompi.co/widget.js';
+    script.onload = resolve;
+    document.head.appendChild(script);
+  });
+};
+
+export default function PaymentButton({ courseId, courseName, price, currency = 'COP' }) {
   const [loading, setLoading] = useState(false);
   const [hasPaid, setHasPaid] = useState(false);
   const [isPaidCourse, setIsPaidCourse] = useState(false);
   const [paymentMessage, setPaymentMessage] = useState('');
   const [showPaymentForm, setShowPaymentForm] = useState(false);
+  const [wompiData, setWompiData] = useState(null);
 
   // Verificar si el estudiante ya pagó
   useEffect(() => {
@@ -35,18 +51,38 @@ export default function PaymentButton({ courseId, courseName, price, currency = 
 
     try {
       const res = await api.post(`/payments/courses/${courseId}/pay`);
-
-      // El ID del banco en Java que maneja los pagos
-      const bankPaymentUrl = res.data.bankPaymentUrl;
-
-      // Aquí redirigimos al sistema de pagos del banco
-      // El banco enviará un webhook de confirmación a confirmPayment
-      if (bankPaymentUrl) {
-        // Abrir ventana del banco para completar el pago
-        window.location.href = bankPaymentUrl;
-      } else {
-        setPaymentMessage(`✅ Pago iniciado. ID: ${res.data.payment._id}`);
-      }
+      
+      const data = res.data.wompiData;
+      setWompiData(data);
+      
+      // Cargar script de Wompi si no está cargado
+      await loadWompiScript();
+      
+      // Configurar y abrir el widget
+      const checkout = new window.WidgetCheckout({
+        currency: data.currency,
+        amountInCents: data.amountInCents,
+        reference: data.reference,
+        publicKey: data.publicKey,
+        signature: { integrity: data.signature },
+        redirectUrl: data.redirectUrl
+      });
+      
+      checkout.open((result) => {
+        const transaction = result.transaction;
+        console.log('Transacción completada:', transaction);
+        
+        if (transaction.status === 'APPROVED') {
+          setPaymentMessage('✅ Pago aprobado. Procesando...');
+          // El webhook se encargará de actualizar el estado
+          setTimeout(() => {
+            window.location.reload(); // Recargar para verificar acceso
+          }, 2000);
+        } else {
+          setPaymentMessage('❌ Pago no aprobado. Intenta nuevamente.');
+        }
+      });
+      
     } catch (error) {
       setPaymentMessage(`❌ ${error.response?.data?.message || 'Error al iniciar pago'}`);
     } finally {
@@ -77,7 +113,7 @@ export default function PaymentButton({ courseId, courseName, price, currency = 
         <div className="bg-white p-4 rounded-lg mb-4 text-center">
           <p className="text-sm text-gray-600">Precio del curso:</p>
           <p className="text-3xl font-bold text-orange-600">
-            {price} <span className="text-lg">{currency}</span>
+            {price} <span className="text-lg">COP</span>
           </p>
         </div>
 
@@ -87,7 +123,7 @@ export default function PaymentButton({ courseId, courseName, price, currency = 
             <p className="text-lg font-bold text-gray-900">{courseName}</p>
             
             <div className="bg-blue-50 p-3 rounded text-sm text-blue-700 border border-blue-300">
-              ℹ️ Serás redirigido al sistema seguro de pagos para completar la transacción
+              ℹ️ Serás redirigido al sistema seguro de pagos de Wompi para completar la transacción
             </div>
 
             <div className="flex gap-2">

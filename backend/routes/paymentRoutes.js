@@ -3,6 +3,7 @@ const router = express.Router();
 const {
   createPayment,
   confirmPayment,
+  confirmPaymentWebhook,
   getStudentPayments,
   getCoursePayments,
   getPaymentStatus,
@@ -18,6 +19,9 @@ router.post('/courses/:courseId/pay', authMiddleware, checkRole(['estudiante']),
 
 // Confirmar pago (webhook del banco)
 router.post('/:paymentId/confirm', confirmPayment);
+
+// Webhook de Wompi
+router.post('/webhook/wompi', confirmPaymentWebhook);
 
 // Obtener historial de pagos del estudiante
 router.get('/student/history', authMiddleware, checkRole(['estudiante']), getStudentPayments);

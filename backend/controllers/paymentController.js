@@ -2,10 +2,13 @@ const Payment = require('../models/Payment');
 const Course = require('../models/Course');
 const User = require('../models/User');
 const BankAccount = require('../models/BankAccount');
+const crypto = require('crypto');
 
-// Configuración del banco en Java (ajusta según tu configuración)
-const BANK_API_URL = process.env.BANK_API_URL || 'http://localhost:8080/api';
-const BANK_API_KEY = process.env.BANK_API_KEY || 'your-api-key';
+// Configuración de Wompi
+const WOMPI_SANDBOX = process.env.WOMPI_SANDBOX === 'true';
+const WOMPI_PUBLIC_KEY = WOMPI_SANDBOX ? process.env.WOMPI_PUBLIC_KEY_SANDBOX : process.env.WOMPI_PUBLIC_KEY;
+const WOMPI_INTEGRITY_SECRET = WOMPI_SANDBOX ? process.env.WOMPI_INTEGRITY_SECRET_SANDBOX : process.env.WOMPI_INTEGRITY_SECRET;
+const WOMPI_EVENT_SECRET = WOMPI_SANDBOX ? process.env.WOMPI_EVENT_SECRET_SANDBOX : process.env.WOMPI_EVENT_SECRET;
 
 // Crear un pago para un curso
 const createPayment = async (req, res) => {
@@ -36,17 +39,33 @@ const createPayment = async (req, res) => {
       student: studentId,
       teacher: course.teacher,
       amount: course.price,
-      currency: course.currency,
+      currency: 'COP', // Wompi usa COP
       status: 'pending',
       transactionId: `TXN-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
     });
 
     await payment.save();
 
+    // Generar firma de integridad para Wompi
+    const amountInCents = Math.round(course.price * 100); // Convertir a centavos
+    const reference = payment.transactionId;
+    const currency = 'COP';
+    const integritySecret = WOMPI_INTEGRITY_SECRET;
+    
+    const signatureString = `${reference}${amountInCents}${currency}${integritySecret}`;
+    const signature = crypto.createHash('sha256').update(signatureString).digest('hex');
+
     res.status(201).json({
       message: 'Pago iniciado',
       payment: payment,
-      bankPaymentUrl: `${BANK_API_URL}/transactions/initiate/${payment._id}`
+      wompiData: {
+        publicKey: WOMPI_PUBLIC_KEY,
+        currency: currency,
+        amountInCents: amountInCents,
+        reference: reference,
+        signature: signature,
+        redirectUrl: `${process.env.FRONTEND_URL}/payment/success` // Opcional
+      }
     });
   } catch (error) {
     console.error('Error al crear pago:', error);
@@ -111,6 +130,69 @@ const confirmPayment = async (req, res) => {
   } catch (error) {
     console.error('Error al confirmar pago:', error);
     res.status(500).json({ message: 'Error al confirmar pago', error: error.message });
+  }
+};
+
+// Webhook para confirmación de pagos desde Wompi
+const confirmPaymentWebhook = async (req, res) => {
+  try {
+    const event = req.body;
+    
+    // Validar que sea un evento de transacción
+    if (event.event !== 'transaction.updated') {
+      return res.status(200).json({ message: 'Evento no procesado' });
+    }
+
+    const transaction = event.data.transaction;
+    
+    // Buscar pago por referencia
+    const payment = await Payment.findOne({ transactionId: transaction.reference });
+    if (!payment) {
+      console.log('Pago no encontrado para referencia:', transaction.reference);
+      return res.status(200).json({ message: 'Pago no encontrado' });
+    }
+
+    // Actualizar estado según el status de Wompi
+    if (transaction.status === 'APPROVED') {
+      payment.status = 'completed';
+      payment.bankTransactionId = transaction.id;
+      payment.paidAt = new Date();
+      await payment.save();
+
+      // Agregar estudiante al curso
+      const course = await Course.findById(payment.course);
+      if (course) {
+        course.paidStudents.push({
+          student: payment.student,
+          transactionId: transaction.id,
+          paidAt: new Date()
+        });
+        if (!course.students.includes(payment.student)) {
+          course.students.push(payment.student);
+        }
+        await course.save();
+      }
+
+      // Actualizar ganancias del docente
+      const bankAccount = await BankAccount.findOne({ teacher: payment.teacher });
+      if (bankAccount) {
+        bankAccount.totalEarnings += payment.amount;
+        bankAccount.pendingPayouts += payment.amount;
+        await bankAccount.save();
+      }
+
+      console.log('Pago confirmado exitosamente:', payment._id);
+    } else if (transaction.status === 'DECLINED' || transaction.status === 'ERROR') {
+      payment.status = 'failed';
+      payment.notes = `Transacción ${transaction.status}`;
+      await payment.save();
+      console.log('Pago fallido:', payment._id);
+    }
+
+    res.status(200).json({ message: 'Evento procesado' });
+  } catch (error) {
+    console.error('Error en webhook:', error);
+    res.status(500).json({ message: 'Error procesando webhook' });
   }
 };
 
@@ -263,6 +345,7 @@ const refundPayment = async (req, res) => {
 module.exports = {
   createPayment,
   confirmPayment,
+  confirmPaymentWebhook,
   getStudentPayments,
   getCoursePayments,
   getPaymentStatus,
