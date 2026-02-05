@@ -36,6 +36,19 @@ const MathSVG = () => (
   </svg>
 );
 
+// SVG para Laboratorio de Algebra Lineal
+const AlgebraSVG = () => (
+  <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
+    <rect x="5" y="5" width="50" height="50" rx="8" fill="#fff" stroke="#9333ea" strokeWidth="3"/>
+    <circle cx="20" cy="20" r="3" fill="#9333ea"/>
+    <circle cx="40" cy="20" r="3" fill="#9333ea"/>
+    <circle cx="20" cy="40" r="3" fill="#9333ea"/>
+    <circle cx="40" cy="40" r="3" fill="#9333ea"/>
+    <line x1="20" y1="20" x2="40" y2="40" stroke="#9333ea" strokeWidth="2"/>
+    <line x1="40" y1="20" x2="20" y2="40" stroke="#9333ea" strokeWidth="2"/>
+  </svg>
+);
+
 // Estructura de categorías y juegos - Solo Matemáticas
 const categories = [
   {
@@ -52,6 +65,13 @@ const categories = [
         id: 'sudoku',
         name: 'Sudoku',
         image: <SudokuSVG />,
+      },
+      {
+        id: 'algebra-lab',
+        name: 'Laboratorio de Algebra Lineal',
+        image: <AlgebraSVG />,
+        isExternal: true,
+        externalUrl: 'https://algebra-lab.example.com', // Reemplazar con URL real cuando se despliegue
       },
     ],
   },
@@ -133,12 +153,23 @@ export default function GameMenu() {
                 {game.image}
               </div>
               <div className="flex-1">
-                <Link
-                  to={`/games/${game.id}`}
-                  className="block text-xl md:text-2xl font-bold text-[#0a2342] hover:text-[#2ca6e0] transition-colors"
-                >
-                  {game.name}
-                </Link>
+                {game.isExternal ? (
+                  <a
+                    href={game.externalUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block text-xl md:text-2xl font-bold text-[#0a2342] hover:text-[#9333ea] transition-colors"
+                  >
+                    {game.name}
+                  </a>
+                ) : (
+                  <Link
+                    to={`/games/${game.id}`}
+                    className="block text-xl md:text-2xl font-bold text-[#0a2342] hover:text-[#2ca6e0] transition-colors"
+                  >
+                    {game.name}
+                  </Link>
+                )}
               </div>
             </motion.div>
           ))}
