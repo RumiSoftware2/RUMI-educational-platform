@@ -85,6 +85,12 @@ export default function Header() {
             >
               🎮 Juegos
             </Link>
+            <Link 
+              to="/app-especializado" 
+              className="bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-xl hover:bg-gradient-to-r hover:from-purple-500 hover:to-pink-500 hover:scale-105 transition-all duration-300 font-semibold border border-white/30"
+            >
+              ⭐ App Especializado
+            </Link>
             {user && user.role === 'estudiante' && (
               <Link 
                 to="/student/courses" 
@@ -175,6 +181,13 @@ export default function Header() {
               onClick={() => setIsMenuOpen(false)}
             >
               🎮 Juegos Educativos
+            </Link>
+            <Link 
+              to="/app-especializado" 
+              className="block px-4 py-3 rounded-xl transition-all duration-300 font-semibold bg-white/20 backdrop-blur-sm text-white hover:bg-gradient-to-r hover:from-purple-500 hover:to-pink-500 border border-white/30"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              ⭐ App Especializado
             </Link>
             {user && user.role === 'estudiante' && (
               <Link 

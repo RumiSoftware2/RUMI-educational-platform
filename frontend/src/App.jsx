@@ -34,6 +34,7 @@ import PaymentSuccess from './pages/PaymentSuccess';
 import { LanguageProvider } from './context/LanguageContext';
 import { AIAssistantProvider } from './context/AIAssistantContext';
 import AIAssistant from './components/AIAssistant';
+import MenuEspecializado from './pages/MenuEspecializado';
 
 // Obtener el Client ID de Google desde las variables de entorno
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
@@ -98,15 +99,10 @@ function App() {
                 path="/courses"
                 element={<Courses />}
               />
-             <Route
-                path="/games"
-                element={<GameMenu />}
-              />
-              <Route
-                path="/games/blackjack"
-                element={<Blackjack />}
-              />
+<Route path="/games" element={<GameMenu />} />
+              <Route path="/games/blackjack" element={<Blackjack />} />
               <Route path="/games/sudoku" element={<Sudoku />} />
+              <Route path="/app-especializado" element={<MenuEspecializado />} />
 
               <Route
                 path="/courses/new"
