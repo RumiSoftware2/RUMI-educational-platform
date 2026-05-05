@@ -10,7 +10,7 @@ export default function MenuEspecializado() {
       name: 'N males',
       description: 'Este software está diseñado para trabajar con números en cualquier base menor o igual a 36, ofreciendo una solución completa y versátil para operaciones matemáticas fuera del sistema decimal tradicional. Permite realizar cálculos con números en distintas bases, incluyendo suma, resta, multiplicación y división, manteniendo precisión en cada resultado Además, presenta el desarrollo paso a paso de cada operación, simulando los procedimientos realizados manualmente en papel, lo que facilita la comprensión y el aprendizaje de los procesos involucrados. ',
       icon: '🎯',
-      url: '/n-males'
+      url: 'https://nmal-fraccion.vercel.app/'
     },
     {
       id: 2,
