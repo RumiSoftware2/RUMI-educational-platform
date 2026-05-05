@@ -36,7 +36,11 @@ export default function MenuEspecializado() {
   ]);
 
   const handleCardClick = (url) => {
-    navigate(url);
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      window.location.href = url;
+    } else {
+      navigate(url);
+    }
   };
 
   return (
