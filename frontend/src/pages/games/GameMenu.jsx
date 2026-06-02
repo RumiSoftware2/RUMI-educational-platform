@@ -66,13 +66,7 @@ const categories = [
         name: 'Sudoku',
         image: <SudokuSVG />,
       },
-      {
-        id: 'algebra-lab',
-        name: 'Laboratorio de Algebra Lineal',
-        image: <AlgebraSVG />,
-        isExternal: true,
-        externalUrl: 'https://algebra-lab.example.com', // Reemplazar con URL real cuando se despliegue
-      },
+      
     ],
   },
 ];
