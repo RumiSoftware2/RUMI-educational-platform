@@ -32,8 +32,6 @@ import VerifyResetCode from './pages/VerifyResetCode';
 import Sudoku from './pages/games/Sudoku';
 import PaymentSuccess from './pages/PaymentSuccess';
 import { LanguageProvider } from './context/LanguageContext';
-import { AIAssistantProvider } from './context/AIAssistantContext';
-import AIAssistant from './components/AIAssistant';
 import MenuEspecializado from './pages/MenuEspecializado';
 
 // Obtener el Client ID de Google desde las variables de entorno
@@ -54,10 +52,9 @@ function App() {
   return (
     <GoogleOAuthProvider clientId={isValidClientId ? GOOGLE_CLIENT_ID : 'dummy-client-id'}>
       <LanguageProvider>
-        <AIAssistantProvider>
-          <BrowserRouter>
-            <ScrollToTop />
-            <AppLayout>
+        <BrowserRouter>
+          <ScrollToTop />
+          <AppLayout>
               <Routes>
               <Route path="/register" element={<Register />} />
               <Route path="/login" element={<Login />} />
@@ -180,9 +177,7 @@ function App() {
               />
             </Routes>
           </AppLayout>
-          <AIAssistant />
-          </BrowserRouter>
-        </AIAssistantProvider>
+        </BrowserRouter>
       </LanguageProvider>
     </GoogleOAuthProvider>
   );
