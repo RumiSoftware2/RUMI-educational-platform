@@ -245,18 +245,7 @@ export default function BankAccountForm() {
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Routing Number</label>
-              <input
-                type="text"
-                name="routingNumber"
-                value={formData.routingNumber}
-                onChange={handleChange}
-                placeholder="Routing number"
-                className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-                required
-              />
-            </div>
+            
           </div>
 
           <button
