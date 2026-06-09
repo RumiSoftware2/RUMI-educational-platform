@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import logo2 from '../assets/logo2zeus.png';
+import { toYoutubeEmbed } from '../utils/youtube';
 
 // SVGs para redes sociales
 const LinkedInIcon = () => (
@@ -71,6 +72,8 @@ function AnimatedTitle() {
   );
 }
 
+const INTRO_VIDEO_URL = 'https://youtu.be/KOv372ed_A0?si=3Zzf3j6JiwuzPn6T';
+
 export default function PersonRumi() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-700 to-yellow-200 flex flex-col">
@@ -104,7 +107,7 @@ export default function PersonRumi() {
               </h3>
               <div className="aspect-video rounded-xl overflow-hidden shadow-lg w-full max-w-xl mx-auto">
                 <iframe
-                  src="https://youtu.be/KOv372ed_A0?si=3Zzf3j6JiwuzPn6T"
+                  src={toYoutubeEmbed(INTRO_VIDEO_URL)}
                   title="Video introductorio de RUMI"
                   frameBorder="0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

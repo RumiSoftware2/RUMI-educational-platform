@@ -9,28 +9,7 @@ import LessonQuiz from '../components/LessonQuiz';
 import { createQuiz } from '../services/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import logo1 from '../assets/logo1zeus.png';
-
-// Función para convertir cualquier URL de YouTube a formato embed
-function toYoutubeEmbed(url) {
-  if (!url) return '';
-  // Caso 1: Formato largo
-  let match = url.match(/(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([\w-]+)/);
-  if (match) {
-    const videoId = match[1];
-    const listMatch = url.match(/[?&]list=([\w-]+)/);
-    return `https://www.youtube.com/embed/${videoId}` + (listMatch ? `?list=${listMatch[1]}` : '');
-  }
-  // Caso 2: Formato corto (compartir)
-  match = url.match(/(?:https?:\/\/)?youtu\.be\/([\w-]+)/);
-  if (match) {
-    const videoId = match[1];
-    // Si hay parámetros extra, los puedes conservar si quieres
-    const params = url.split('?')[1];
-    return `https://www.youtube.com/embed/${videoId}` + (params ? `?${params}` : '');
-  }
-  // Si no es YouTube, devolver la URL original
-  return url;
-}
+import { toYoutubeEmbed } from '../utils/youtube';
 
 export default function CourseDetail() {
   const { id } = useParams();
