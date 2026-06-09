@@ -104,7 +104,7 @@ export default function PersonRumi() {
               </h3>
               <div className="aspect-video rounded-xl overflow-hidden shadow-lg w-full max-w-xl mx-auto">
                 <iframe
-                  src="https://youtu.be/KOv372ed_A0"
+                  src="https://www.youtube.com/watch?v=KOv372ed_A0&feature=youtu.be"
                   title="Video introductorio de RUMI"
                   frameBorder="0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
