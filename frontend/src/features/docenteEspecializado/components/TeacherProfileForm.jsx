@@ -14,6 +14,7 @@ function generateSlug(text) {
 
 export default function TeacherProfileForm({ onClose }) {
   const [loading, setLoading] = useState(false);
+  const [step, setStep] = useState(1); // 1 = Datos Básicos y Redes, 2 = Habilidades y Experiencia
   const [profile, setProfile] = useState({
     name: '',
     bio: '',
@@ -82,80 +83,119 @@ export default function TeacherProfileForm({ onClose }) {
     }
   };
 
+  const goNext = () => {
+    // simple validation for step 1
+    if (!profile.name || profile.name.trim() === '') {
+      alert('Por favor, ingresa el nombre antes de continuar.');
+      return;
+    }
+    setStep(2);
+  };
+
+  const goBack = () => setStep(1);
+
   return (
-    <div className="fixed inset-x-4 bottom-4 z-50 bg-white/90 backdrop-blur-md rounded-xl p-6 shadow-xl max-w-3xl mx-auto">
+    <div className="fixed inset-x-4 bottom-4 z-50 bg-white/95 backdrop-blur-md rounded-xl p-6 shadow-xl max-w-3xl mx-auto max-h-[85vh] overflow-y-auto transition-all duration-300">
       <div className="relative">
         <RumiSeal className="absolute right-4 bottom-4 w-48 h-48 opacity-10 pointer-events-none" />
         <h3 className="text-2xl font-bold mb-2">Crear / Editar Marca Personal</h3>
+        <div className="mb-4">
+          <div className="flex items-center justify-between mb-2">
+            <div className="text-sm text-gray-600">Paso {step} de 2</div>
+            <div className="text-sm font-medium">{step === 1 ? 'Datos del Perfil' : 'Trayectoria Profesional'}</div>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+            <div className={`h-2 bg-emerald-600 transition-all ${step === 1 ? 'w-1/2' : 'w-full'}`}></div>
+          </div>
+        </div>
         <form onSubmit={handleSubmit}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium">Nombre</label>
-              <input className="w-full p-2 border rounded" value={profile.name || ''} onChange={(e) => setProfile({ ...profile, name: e.target.value })} required />
-            </div>
-            <div>
-              <label className="block text-sm font-medium">Enlace público (slug) opcional</label>
-              <input className="w-full p-2 border rounded" value={profile.slug || ''} onChange={(e) => setProfile({ ...profile, slug: e.target.value })} placeholder="Si lo dejas vacío se generará automáticamente" />
-            </div>
-          </div>
+          {/* Step 1: Basic data & social links */}
+          {step === 1 && (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium">Nombre</label>
+                  <input className="w-full p-2 border rounded" value={profile.name || ''} onChange={(e) => setProfile({ ...profile, name: e.target.value })} required />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium">Enlace público (slug) opcional</label>
+                  <input className="w-full p-2 border rounded" value={profile.slug || ''} onChange={(e) => setProfile({ ...profile, slug: e.target.value })} placeholder="Si lo dejas vacío se generará automáticamente" />
+                </div>
+              </div>
 
-          <div className="mt-4">
-            <label className="block text-sm font-medium">Biografía</label>
-            <textarea className="w-full p-2 border rounded" value={profile.bio || ''} onChange={(e) => setProfile({ ...profile, bio: e.target.value })} rows={4} />
-          </div>
+              <div className="mt-4">
+                <label className="block text-sm font-medium">Biografía</label>
+                <textarea className="w-full p-2 border rounded" value={profile.bio || ''} onChange={(e) => setProfile({ ...profile, bio: e.target.value })} rows={4} />
+              </div>
 
-          <div className="mt-4">
-            <label className="block text-sm font-medium">Redes sociales</label>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
-              <input className="p-2 border rounded" placeholder="LinkedIn" value={profile.social?.linkedin || ''} onChange={(e) => setProfile({ ...profile, social: { ...profile.social, linkedin: e.target.value } })} />
-              <input className="p-2 border rounded" placeholder="Twitter / X" value={profile.social?.twitter || ''} onChange={(e) => setProfile({ ...profile, social: { ...profile.social, twitter: e.target.value } })} />
-              <input className="p-2 border rounded" placeholder="GitHub" value={profile.social?.github || ''} onChange={(e) => setProfile({ ...profile, social: { ...profile.social, github: e.target.value } })} />
-              <input className="p-2 border rounded" placeholder="Sitio Web" value={profile.social?.website || ''} onChange={(e) => setProfile({ ...profile, social: { ...profile.social, website: e.target.value } })} />
-            </div>
-          </div>
+              <div className="mt-4">
+                <label className="block text-sm font-medium">Redes sociales</label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
+                  <input className="p-2 border rounded" placeholder="LinkedIn" value={profile.social?.linkedin || ''} onChange={(e) => setProfile({ ...profile, social: { ...profile.social, linkedin: e.target.value } })} />
+                  <input className="p-2 border rounded" placeholder="Twitter / X" value={profile.social?.twitter || ''} onChange={(e) => setProfile({ ...profile, social: { ...profile.social, twitter: e.target.value } })} />
+                  <input className="p-2 border rounded" placeholder="GitHub" value={profile.social?.github || ''} onChange={(e) => setProfile({ ...profile, social: { ...profile.social, github: e.target.value } })} />
+                  <input className="p-2 border rounded" placeholder="Sitio Web" value={profile.social?.website || ''} onChange={(e) => setProfile({ ...profile, social: { ...profile.social, website: e.target.value } })} />
+                </div>
+              </div>
+            </>
+          )}
 
-          <div className="mt-4">
-            <label className="block text-sm font-medium">Habilidades</label>
-            <div className="flex gap-2 mt-2">
-              <input className="p-2 border rounded flex-1" value={skillInput} onChange={(e) => setSkillInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())} placeholder="Escribe y presiona Enter" />
-              <button type="button" onClick={addSkill} className="px-4 py-2 bg-emerald-600 text-white rounded">Agregar</button>
-            </div>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {(profile.skills || []).map((s, i) => (
-                <span key={i} className="bg-emerald-100 text-emerald-900 px-3 py-1 rounded-full flex items-center gap-2">
-                  {s} <button type="button" onClick={() => removeSkill(i)}>×</button>
-                </span>
-              ))}
-            </div>
-          </div>
+          {/* Step 2: Skills & Experience */}
+          {step === 2 && (
+            <>
+              <div className="mt-2">
+                <label className="block text-sm font-medium">Habilidades</label>
+                <div className="flex gap-2 mt-2">
+                  <input className="p-2 border rounded flex-1" value={skillInput} onChange={(e) => setSkillInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())} placeholder="Escribe y presiona Enter" />
+                  <button type="button" onClick={addSkill} className="px-4 py-2 bg-emerald-600 text-white rounded">Agregar</button>
+                </div>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {(profile.skills || []).map((s, i) => (
+                    <span key={i} className="bg-emerald-100 text-emerald-900 px-3 py-1 rounded-full flex items-center gap-2">
+                      {s} <button type="button" onClick={() => removeSkill(i)}>×</button>
+                    </span>
+                  ))}
+                </div>
+              </div>
 
-          <div className="mt-4">
-            <label className="block text-sm font-medium">Experiencia</label>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
-              <input className="p-2 border rounded" placeholder="Cargo" value={expInput.title} onChange={(e) => setExpInput({ ...expInput, title: e.target.value })} />
-              <input className="p-2 border rounded" placeholder="Institución" value={expInput.organization} onChange={(e) => setExpInput({ ...expInput, organization: e.target.value })} />
-              <input className="p-2 border rounded" placeholder="Año inicio" value={expInput.startYear} onChange={(e) => setExpInput({ ...expInput, startYear: e.target.value })} />
-              <input className="p-2 border rounded" placeholder="Año fin (opcional)" value={expInput.endYear} onChange={(e) => setExpInput({ ...expInput, endYear: e.target.value })} />
-              <textarea className="p-2 border rounded md:col-span-2" placeholder="Descripción" value={expInput.description} onChange={(e) => setExpInput({ ...expInput, description: e.target.value })} />
-            </div>
-            <div className="mt-2 flex gap-2">
-              <button type="button" onClick={addExperience} className="px-4 py-2 bg-emerald-600 text-white rounded">Agregar Experiencia</button>
-            </div>
-            <div className="mt-2 space-y-2">
-              {(profile.experience || []).map((ex, i) => (
-                <div key={i} className="p-3 border rounded flex justify-between items-start">
+              <div className="mt-4">
+                <label className="block text-sm font-medium">Experiencia</label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
+                  <input className="p-2 border rounded" placeholder="Cargo" value={expInput.title} onChange={(e) => setExpInput({ ...expInput, title: e.target.value })} />
+                  <input className="p-2 border rounded" placeholder="Institución" value={expInput.organization} onChange={(e) => setExpInput({ ...expInput, organization: e.target.value })} />
+                  <input className="p-2 border rounded" placeholder="Año inicio" value={expInput.startYear} onChange={(e) => setExpInput({ ...expInput, startYear: e.target.value })} />
+                  <input className="p-2 border rounded" placeholder="Año fin (opcional)" value={expInput.endYear} onChange={(e) => setExpInput({ ...expInput, endYear: e.target.value })} />
+                  <textarea className="p-2 border rounded md:col-span-2" placeholder="Descripción" value={expInput.description} onChange={(e) => setExpInput({ ...expInput, description: e.target.value })} />
+                </div>
+                <div className="mt-2 flex gap-2">
+                  <button type="button" onClick={addExperience} className="px-4 py-2 bg-emerald-600 text-white rounded">Agregar Experiencia</button>
+                </div>
+                <div className="mt-2 space-y-2">
+                  {(profile.experience || []).map((ex, i) => (
+                    <div key={i} className="p-3 border rounded flex justify-between items-start">
+                      <div>
+                        <div className="font-semibold">{ex.title} — <span className="text-sm text-gray-600">{ex.organization}</span></div>
+                        <div className="text-sm text-gray-600">{ex.startYear} - {ex.endYear || 'Presente'}</div>
+                        <p className="mt-1 text-sm">{ex.description}</p>
+                      </div>
+                      <div>
+                        <button type="button" onClick={() => removeExperience(i)} className="text-red-500">Eliminar</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {profile.slug && (
+                <div className="mt-4 p-3 bg-emerald-50 border border-emerald-100 rounded">
+                  <strong>Tu portafolio público está activo en:</strong>
                   <div>
-                    <div className="font-semibold">{ex.title} — <span className="text-sm text-gray-600">{ex.organization}</span></div>
-                    <div className="text-sm text-gray-600">{ex.startYear} - {ex.endYear || 'Presente'}</div>
-                    <p className="mt-1 text-sm">{ex.description}</p>
-                  </div>
-                  <div>
-                    <button type="button" onClick={() => removeExperience(i)} className="text-red-500">Eliminar</button>
+                    <a href={`/p/${profile.slug}`} target="_blank" rel="noreferrer" className="text-emerald-700 underline">Visitar Portafolio ↗</a>
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
+              )}
+            </>
+          )}
 
           {profile.slug && (
             <div className="mt-4 p-3 bg-emerald-50 border border-emerald-100 rounded">
@@ -167,8 +207,17 @@ export default function TeacherProfileForm({ onClose }) {
           )}
 
           <div className="mt-4 flex justify-end gap-2">
-            <button type="button" onClick={onClose} className="px-4 py-2 border rounded">Cancelar</button>
-            <button type="submit" disabled={loading} className="px-6 py-2 bg-emerald-600 text-white rounded">{loading ? 'Guardando...' : 'Guardar y publicar'}</button>
+            {step === 1 ? (
+              <>
+                <button type="button" onClick={onClose} className="px-4 py-2 border rounded">Cancelar</button>
+                <button type="button" onClick={goNext} className="px-6 py-2 bg-emerald-600 text-white rounded">Siguiente ➔</button>
+              </>
+            ) : (
+              <>
+                <button type="button" onClick={goBack} className="px-4 py-2 border rounded">⬅ Atrás</button>
+                <button type="submit" disabled={loading} className="px-6 py-2 bg-emerald-600 text-white rounded">{loading ? 'Guardando...' : 'Guardar y publicar'}</button>
+              </>
+            )}
           </div>
         </form>
       </div>
