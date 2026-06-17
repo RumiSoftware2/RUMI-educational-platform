@@ -7,6 +7,7 @@ import RumiAcademy from './scene/RumiAcademy';
 import RumiLetters from './scene/RumiLetters';
 import StudentAvatar from './avatars/StudentAvatar';
 import StudentAvatarSelector from './ui/StudentAvatarSelector';
+import TouchDPad from './ui/TouchDPad';
 
 export default function RumiCampusWorld() {
   const [avatar, setAvatar] = useState('wolf');
@@ -49,6 +50,7 @@ export default function RumiCampusWorld() {
             />
           </Canvas>
         </div>
+        <TouchDPad />
       </KeyboardControls>
     </section>
   );
