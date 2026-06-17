@@ -1,8 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { useKeyboardControls } from '@react-three/drei';
-
-export default function TouchDPad() {
-  const [setKeys] = useKeyboardControls();
+export default function TouchDPad({ onDirectionChange }) {
   const [isTouch, setIsTouch] = useState(false);
 
   useEffect(() => {
@@ -10,6 +7,17 @@ export default function TouchDPad() {
     const touch = 'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
     setIsTouch(Boolean(touch));
   }, []);
+
+  useEffect(() => {
+    return () => {
+      if (typeof onDirectionChange === 'function') {
+        onDirectionChange('forward', false);
+        onDirectionChange('back', false);
+        onDirectionChange('left', false);
+        onDirectionChange('right', false);
+      }
+    };
+  }, [onDirectionChange]);
 
   const start = useCallback(
     (name) => (e) => {
@@ -20,9 +28,9 @@ export default function TouchDPad() {
           e.currentTarget.setPointerCapture(e.pointerId);
         }
       } catch (err) {}
-      setKeys((s) => ({ ...s, [name]: true }));
+      if (typeof onDirectionChange === 'function') onDirectionChange(name, true);
     },
-    [setKeys]
+    [onDirectionChange]
   );
 
   const stop = useCallback(
@@ -34,13 +42,12 @@ export default function TouchDPad() {
           e.currentTarget.releasePointerCapture(e.pointerId);
         }
       } catch (err) {}
-      setKeys((s) => ({ ...s, [name]: false }));
+      if (typeof onDirectionChange === 'function') onDirectionChange(name, false);
     },
-    [setKeys]
+    [onDirectionChange]
   );
 
   if (!isTouch) return null;
-
   const Arrow = ({ direction }) => (
     <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden>
       <path d="M12 4l-8 8h5v8h6v-8h5z" fill="currentColor" transform={

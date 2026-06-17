@@ -1,4 +1,4 @@
-import React, { Suspense, useMemo, useState } from 'react';
+import React, { Suspense, useMemo, useState, useCallback } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { KeyboardControls, OrbitControls, PerspectiveCamera } from '@react-three/drei';
 import CampusEnvironment from './scene/CampusEnvironment';
@@ -11,6 +11,7 @@ import TouchDPad from './ui/TouchDPad';
 
 export default function RumiCampusWorld() {
   const [avatar, setAvatar] = useState('wolf');
+  const [touchMovement, setTouchMovement] = useState({ forward: false, back: false, left: false, right: false });
   const controls = useMemo(
     () => [
       { name: 'forward', keys: ['ArrowUp', 'KeyW'] },
@@ -28,6 +29,7 @@ export default function RumiCampusWorld() {
         <div className="rumi3d-help">Flechas o WASD para moverte</div>
       </div>
 
+      {/* touchMovement comparte estado táctil sin tocar KeyboardControls */}
       <KeyboardControls map={controls}>
         <div className="rumi3d-canvas" aria-label="Campus 3D de RUMI">
           <Canvas shadows dpr={[1, 1.75]}>
@@ -39,7 +41,7 @@ export default function RumiCampusWorld() {
               <CampusEnvironment />
               <RumiAcademy />
               <RumiLetters />
-              <StudentAvatar avatar={avatar} />
+              <StudentAvatar avatar={avatar} touchMovement={touchMovement} />
             </Suspense>
             <OrbitControls
               enablePan={false}
@@ -50,7 +52,7 @@ export default function RumiCampusWorld() {
             />
           </Canvas>
         </div>
-        <TouchDPad />
+        <TouchDPad onDirectionChange={useCallback((direction, pressed) => setTouchMovement((p) => ({ ...p, [direction]: pressed })), [])} />
       </KeyboardControls>
     </section>
   );

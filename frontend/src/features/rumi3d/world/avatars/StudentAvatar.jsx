@@ -6,7 +6,7 @@ import DuckStudentModel from './DuckStudentModel';
 
 const campusLimit = 4.2;
 
-export default function StudentAvatar({ avatar }) {
+export default function StudentAvatar({ avatar, touchMovement = {} }) {
   const group = useRef();
   const model = useRef();
   const [, getKeys] = useKeyboardControls();
@@ -15,8 +15,13 @@ export default function StudentAvatar({ avatar }) {
     if (!group.current || !model.current) return;
 
     const keys = getKeys();
-    const x = Number(keys.right) - Number(keys.left);
-    const z = Number(keys.back) - Number(keys.forward);
+    const tm = touchMovement || {};
+    const right = Boolean(keys.right || tm.right);
+    const left = Boolean(keys.left || tm.left);
+    const back = Boolean(keys.back || tm.back);
+    const forward = Boolean(keys.forward || tm.forward);
+    const x = Number(right) - Number(left);
+    const z = Number(back) - Number(forward);
     const moving = x !== 0 || z !== 0;
     const speed = avatar === 'duck' ? 2.1 : 2.35;
     const time = state.clock.elapsedTime;
