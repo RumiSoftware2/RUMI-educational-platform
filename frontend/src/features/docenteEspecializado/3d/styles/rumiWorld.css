@@ -1,0 +1,121 @@
+.rumi-world {
+  width: 100%;
+  overflow: hidden;
+}
+
+.rumi-world__toolbar {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.rumi-world__eyebrow {
+  color: #5f7f5b;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.rumi-world__title {
+  color: #244d3b;
+  font-size: 1.55rem;
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.rumi-avatar-selector {
+  display: inline-flex;
+  gap: 8px;
+  padding: 6px;
+  border: 1px solid rgba(76, 105, 70, 0.16);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.58);
+  backdrop-filter: blur(14px);
+}
+
+.rumi-avatar-selector button,
+.rumi-world__actions button {
+  min-height: 42px;
+  border: 0;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 800;
+  color: #234637;
+  transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
+}
+
+.rumi-avatar-selector button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 14px;
+  background: transparent;
+}
+
+.rumi-avatar-selector button:hover,
+.rumi-world__actions button:hover {
+  transform: translateY(-1px);
+}
+
+.rumi-avatar-selector button.is-selected {
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(63, 98, 69, 0.14);
+}
+
+.rumi-avatar-selector span {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  border: 2px solid rgba(49, 92, 56, 0.22);
+}
+
+.rumi-world__actions {
+  display: inline-flex;
+  gap: 8px;
+}
+
+.rumi-world__actions button {
+  padding: 0 16px;
+  background: #b9db9e;
+  box-shadow: 0 12px 24px rgba(80, 128, 74, 0.18);
+}
+
+.rumi-world__actions .rumi-world__secondary {
+  background: #f6e2a0;
+}
+
+.rumi-world__canvas {
+  position: relative;
+  width: 100%;
+  height: clamp(420px, 56vw, 620px);
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(76, 105, 70, 0.16);
+  background: linear-gradient(135deg, #f7fbef, #e7f6fb);
+  box-shadow: 0 22px 60px rgba(55, 84, 68, 0.16);
+}
+
+.rumi-world__canvas canvas {
+  display: block;
+}
+
+@media (max-width: 860px) {
+  .rumi-world__toolbar {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .rumi-avatar-selector,
+  .rumi-world__actions {
+    width: 100%;
+  }
+
+  .rumi-avatar-selector button,
+  .rumi-world__actions button {
+    flex: 1;
+    justify-content: center;
+  }
+}

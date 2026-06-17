@@ -1,5 +1,6 @@
 import React from 'react';
 import Footprints from './Footprints';
+import heroImage from '../assets/rumi-portada-estudio-tecnico.png';
 
 export default function AnimatedHero() {
   return (
@@ -8,7 +9,7 @@ export default function AnimatedHero() {
       <div className="de-content relative z-10 flex flex-col md:flex-row items-center gap-6">
         <div className="de-image-wrapper flex-1 flex items-center justify-center">
           <img
-            src="/src/features/docenteEspecializado/assets/rumi-portada-estudio-tecnico.png"
+            src={heroImage}
             alt="Rumi Portada"
             className="de-image"
           />
