@@ -32,6 +32,7 @@ export default function Header() {
     if (path === '/games' && location.pathname.startsWith('/games')) return true;
     if (path === '/student/courses' && location.pathname.startsWith('/student/courses')) return true;
     if (path === '/teacher/courses' && location.pathname.startsWith('/teacher/courses')) return true;
+    if (path === '/teacher/especializado' && location.pathname.startsWith('/teacher/especializado')) return true;
     if (path === '/admin/courses' && location.pathname.startsWith('/admin/courses')) return true;
     return false;
   };
@@ -105,6 +106,14 @@ export default function Header() {
                 className={getRoleClasses('/teacher/courses', 'docente')}
               >
                 👨‍🏫 Mis Cursos
+              </Link>
+            )}
+            {user && user.role === 'docente' && (
+              <Link
+                to="/teacher/especializado"
+                className={getRoleClasses('/teacher/especializado', 'docente')}
+              >
+                ✨ Docente especializado
               </Link>
             )}
             {user && user.role === 'admin' && (
@@ -205,6 +214,15 @@ export default function Header() {
                 onClick={() => setIsMenuOpen(false)}
               >
                 👨‍🏫 Mis Cursos
+              </Link>
+            )}
+            {user && user.role === 'docente' && (
+              <Link
+                to="/teacher/especializado"
+                className={`block px-4 py-3 rounded-xl transition-all duration-300 font-semibold ${isActive('/teacher/especializado') ? 'bg-gradient-to-r from-yellow-400 to-orange-400 text-white border-2 border-white/50' : 'bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 border border-white/30'}`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                ✨ Docente especializado
               </Link>
             )}
             {user && user.role === 'admin' && (

@@ -25,6 +25,7 @@ import AdminCourses from './pages/AdminCourses';
 import CourseStatistics from './pages/CourseStatistics';
 import AppLayout from './components/AppLayout';
 import CourseDetail from './pages/CourseDetail';
+import DocenteEspecializado from './features/docenteEspecializado/pages/DocenteEspecializado';
 import ScrollToTop from './components/ScrollToTop';
 import StudentStatistics from './pages/StudentStatistics';
 import StudentCourseDetail from './pages/StudentCourseDetail';
@@ -63,6 +64,14 @@ function App() {
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/verify-reset-code" element={<VerifyResetCode />} />
               <Route path="/" element={<Home />} />
+              <Route
+                path="/teacher/especializado"
+                element={
+                  <ProtectedRoute requiredRoles={["docente"]}>
+                    <DocenteEspecializado />
+                  </ProtectedRoute>
+                }
+              />
               <Route path="/person-rumi" element={<PersonRumi />} />
               <Route path="/enterprise-rumi" element={<EnterpriseRumi />} />
               <Route path="/enterprise/login" element={<EnterpriseLogin />} />

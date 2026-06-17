@@ -30,6 +30,7 @@ export default function AppLayout({ children }) {
     '/my-courses',
     '/games',
     '/app-especializado',
+    '/teacher/especializado',
     '/courses/new',
     '/admin',
     '/student/courses',
