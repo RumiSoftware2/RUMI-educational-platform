@@ -26,6 +26,7 @@ import CourseStatistics from './pages/CourseStatistics';
 import AppLayout from './components/AppLayout';
 import CourseDetail from './pages/CourseDetail';
 import DocenteEspecializado from './features/docenteEspecializado/pages/DocenteEspecializado';
+import Rumi3D from './features/rumi3d/pages/Rumi3D';
 import ScrollToTop from './components/ScrollToTop';
 import StudentStatistics from './pages/StudentStatistics';
 import StudentCourseDetail from './pages/StudentCourseDetail';
@@ -64,6 +65,7 @@ function App() {
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/verify-reset-code" element={<VerifyResetCode />} />
               <Route path="/" element={<Home />} />
+              <Route path="/rumi-3d" element={<Rumi3D />} />
               <Route
                 path="/teacher/especializado"
                 element={

@@ -1,0 +1,142 @@
+.rumi3d-page {
+  min-height: 100vh;
+  padding: 32px 16px 48px;
+  background:
+    radial-gradient(circle at 18% 14%, rgba(255, 241, 166, 0.65), transparent 22%),
+    radial-gradient(circle at 88% 18%, rgba(184, 230, 245, 0.6), transparent 24%),
+    linear-gradient(135deg, #f4fbef 0%, #eef9fb 52%, #fff8df 100%);
+}
+
+.rumi3d-shell {
+  width: min(1180px, 100%);
+  margin: 0 auto;
+}
+
+.rumi3d-intro {
+  margin: 6px 0 18px;
+  color: #244d3b;
+}
+
+.rumi3d-intro p {
+  margin: 0 0 4px;
+  color: #5f7f5b;
+  font-size: 0.8rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.rumi3d-intro h1 {
+  margin: 0;
+  font-size: clamp(2.1rem, 6vw, 4.7rem);
+  line-height: 0.95;
+  font-weight: 950;
+}
+
+.rumi3d-intro span {
+  display: block;
+  max-width: 680px;
+  margin-top: 8px;
+  color: #426655;
+  font-weight: 650;
+}
+
+.rumi3d-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.rumi3d-selector {
+  display: inline-flex;
+  gap: 8px;
+  padding: 6px;
+  border: 1px solid rgba(76, 105, 70, 0.16);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.62);
+  backdrop-filter: blur(14px);
+}
+
+.rumi3d-selector button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 8px;
+  color: #234637;
+  background: transparent;
+  cursor: pointer;
+  font-weight: 850;
+  transition: background 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.rumi3d-selector button:hover {
+  transform: translateY(-1px);
+}
+
+.rumi3d-selector button.is-active {
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(63, 98, 69, 0.14);
+}
+
+.rumi3d-selector span {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  border: 2px solid rgba(49, 92, 56, 0.22);
+}
+
+.rumi3d-help {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  border-radius: 8px;
+  color: #315c38;
+  background: rgba(255, 255, 255, 0.56);
+  border: 1px solid rgba(76, 105, 70, 0.16);
+  font-weight: 800;
+}
+
+.rumi3d-canvas {
+  width: 100%;
+  height: clamp(520px, 62vw, 700px);
+  overflow: hidden;
+  border-radius: 8px;
+  border: 1px solid rgba(76, 105, 70, 0.18);
+  background: linear-gradient(135deg, #eef8f3, #f7f0cf);
+  box-shadow: 0 24px 70px rgba(55, 84, 68, 0.18);
+}
+
+.rumi3d-canvas canvas {
+  display: block;
+}
+
+@media (max-width: 760px) {
+  .rumi3d-page {
+    padding: 22px 12px 36px;
+  }
+
+  .rumi3d-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .rumi3d-selector,
+  .rumi3d-help {
+    width: 100%;
+  }
+
+  .rumi3d-selector button {
+    flex: 1;
+    justify-content: center;
+    padding: 0 10px;
+  }
+
+  .rumi3d-canvas {
+    height: 520px;
+  }
+}

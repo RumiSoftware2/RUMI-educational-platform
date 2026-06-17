@@ -30,6 +30,7 @@ export default function AppLayout({ children }) {
     '/my-courses',
     '/games',
     '/app-especializado',
+    '/rumi-3d',
     '/teacher/especializado',
     '/courses/new',
     '/admin',

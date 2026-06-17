@@ -30,6 +30,7 @@ export default function Header() {
   const isActive = (path) => {
     if (path === '/courses' && location.pathname === '/courses') return true;
     if (path === '/games' && location.pathname.startsWith('/games')) return true;
+    if (path === '/rumi-3d' && location.pathname.startsWith('/rumi-3d')) return true;
     if (path === '/student/courses' && location.pathname.startsWith('/student/courses')) return true;
     if (path === '/teacher/courses' && location.pathname.startsWith('/teacher/courses')) return true;
     if (path === '/teacher/especializado' && location.pathname.startsWith('/teacher/especializado')) return true;
@@ -85,6 +86,12 @@ export default function Header() {
               className={getActiveClasses('/games')}
             >
               🎮 Juegos
+            </Link>
+            <Link
+              to="/rumi-3d"
+              className={getActiveClasses('/rumi-3d')}
+            >
+              RUMI 3D
             </Link>
             <Link 
               to="/app-especializado" 
@@ -191,6 +198,13 @@ export default function Header() {
             >
               🎮 Juegos Educativos
             </Link>
+            <Link
+              to="/rumi-3d"
+              className={`block px-4 py-3 rounded-xl transition-all duration-300 font-semibold ${isActive('/rumi-3d') ? 'bg-gradient-to-r from-yellow-400 to-orange-400 text-white border-2 border-white/50' : 'bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 border border-white/30'}`}
+              onClick={() => setIsMenuOpen(false)}
+            >
+              RUMI 3D
+            </Link>
             <Link 
               to="/app-especializado" 
               className="block px-4 py-3 rounded-xl transition-all duration-300 font-semibold bg-white/20 backdrop-blur-sm text-white hover:bg-gradient-to-r hover:from-purple-500 hover:to-pink-500 border border-white/30"
@@ -292,3 +306,4 @@ export default function Header() {
     </header>
   );
 } 
+
