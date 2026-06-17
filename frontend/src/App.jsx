@@ -27,6 +27,7 @@ import AppLayout from './components/AppLayout';
 import CourseDetail from './pages/CourseDetail';
 import DocenteEspecializado from './features/docenteEspecializado/pages/DocenteEspecializado';
 import Rumi3D from './features/rumi3d/pages/Rumi3D';
+import PublicPortfolio from './features/docenteEspecializado/pages/PublicPortfolio';
 import ScrollToTop from './components/ScrollToTop';
 import StudentStatistics from './pages/StudentStatistics';
 import StudentCourseDetail from './pages/StudentCourseDetail';
@@ -74,6 +75,7 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route path="/p/:slug" element={<PublicPortfolio />} />
               <Route path="/person-rumi" element={<PersonRumi />} />
               <Route path="/enterprise-rumi" element={<EnterpriseRumi />} />
               <Route path="/enterprise/login" element={<EnterpriseLogin />} />

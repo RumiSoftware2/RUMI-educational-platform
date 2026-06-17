@@ -1,16 +1,19 @@
 import React from 'react';
 
-export default function ServicePanel() {
+export default function ServicePanel({ onOpenMarcaPersonal }) {
   return (
-    <div className="de-panel rounded-xl p-6 shadow-lg bg-white/30 backdrop-blur-sm">
-      <h3 className="text-2xl font-bold mb-2">Recursos para docentes</h3>
-      <p className="mb-4">Herramientas de análisis, plantillas de estudio técnico y guías para implementación en el aula.</p>
+    <div className="de-panel rounded-xl p-8 shadow-lg bg-white/30 backdrop-blur-sm border border-white/20 text-center">
+      <h3 className="text-3xl font-extrabold text-emerald-900 mb-2">Marca Personal RUMI</h3>
+      <p className="text-md text-emerald-800/90 mb-6 max-w-xl mx-auto">
+        Diseña tu portafolio profesional en minutos. Completa tu información académica y obtén una página de presentación interactiva con un enlace público único listo para compartir.
+      </p>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="de-card p-4 rounded-lg">📈 Análisis Técnico</div>
-        <div className="de-card p-4 rounded-lg">🧾 Plantillas</div>
-        <div className="de-card p-4 rounded-lg">🔧 Herramientas</div>
-      </div>
+      <button
+        onClick={onOpenMarcaPersonal}
+        className="w-full md:w-auto px-8 py-4 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold text-lg rounded-xl shadow-lg hover:shadow-emerald-900/20 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+      >
+        ✨ Crear Marca Personal
+      </button>
     </div>
   );
 }
