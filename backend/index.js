@@ -1,5 +1,7 @@
 // 1. Importamos las dependencias
 const express = require('express');
+const http = require('http');
+const { WebSocketServer } = require('ws');
 const dotenv = require('dotenv');
 const cors = require('cors'); // 👈 AÑADE ESTO
 const connectDB = require('./config/db');
@@ -7,6 +9,7 @@ const passport = require('./config/passport');
 const cron = require('node-cron');
 const User = require('./models/User');
 const feedbackRoutes = require('./routes/feedbackRoutes');
+const forumWsHandler = require('./websocket/forumWsHandler');
 
 // 2. Configuramos dotenv
 dotenv.config();
@@ -47,6 +50,9 @@ app.use('/api/payments', require('./routes/paymentRoutes'));
 app.use('/api/bank-accounts', require('./routes/bankAccountRoutes'));
 app.use('/api/profile', require('./routes/profileRoutes'));
 
+// Forum routes (REST)
+app.use('/api/forum', require('./routes/forumRoutes'));
+
 // Cleanup diario a las 2:00 AM UTC
 // cron.schedule('0 2 * * *', async () => {
 //   const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
@@ -59,8 +65,12 @@ app.get('/', (req, res) => {
   res.send('Servidor funcionando correctamente');
 });
 
-// 10. Iniciar el servidor
+// 10. Iniciar el servidor (Express + WebSocket compartiendo puerto)
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+const server = http.createServer(app);
+const wss = new WebSocketServer({ server, path: '/ws/forum' });
+wss.on('connection', (ws, req) => forumWsHandler.handleConnection(ws, req, wss));
+
+server.listen(PORT, () => {
   console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
 });

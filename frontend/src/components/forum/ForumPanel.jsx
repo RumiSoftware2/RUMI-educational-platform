@@ -26,7 +26,7 @@ function MessageRow({ m }) {
 }
 
 export default function ForumPanel() {
-  const { messages, isOpen, setIsOpen, sendMessage, connectedCount, markRead, questionOfDay } = useForum();
+  const { messages, isOpen, setIsOpen, sendMessage, connectedCount, markRead, questionOfDay, status } = useForum();
   const { user } = useContext(AuthContext);
   const [text, setText] = useState('');
   const [showModal, setShowModal] = useState(false);
@@ -61,7 +61,11 @@ export default function ForumPanel() {
       <div style={{ padding: 12, borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <div style={{ fontWeight: 700 }}>🟣 Foro Comunitario RUMI</div>
-          <div style={{ fontSize: 12, color: '#9ca3af' }}>{connectedCount} conectados</div>
+          <div style={{ fontSize: 12, color: '#9ca3af' }}>
+            {status === 'connected'
+              ? `● ${connectedCount} conectados`
+              : status === 'connecting' ? '⟳ Conectando...' : '○ Desconectado'}
+          </div>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           {user?.role === 'admin' && <button className='btn' onClick={() => setShowModal(true)}>Pregunta del Día</button>}

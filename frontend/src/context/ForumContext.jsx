@@ -1,6 +1,7 @@
 // frontend/src/context/ForumContext.jsx
 import React, { createContext, useContext, useEffect, useMemo, useState, useRef } from 'react';
 import useForumWebSocket from '../hooks/useForumWebSocket';
+import api from '../services/api';
 import questionsBank from '../data/questionsBank';
 import { AuthContext } from './AuthContext';
 
@@ -40,22 +41,34 @@ export function ForumProvider({ children }) {
       typingRef.current[data.userId] = { userName: data.userName, ts: Date.now() };
       return;
     }
-      if (data.type === 'question_of_day') {
-        // Cuando otra pestaña publica la pregunta, la actualizamos localmente
-        setQuestionOfDay(data.content);
-        return;
-      }
-    // message or question_of_day
-    setMessages((prev) => {
-      const next = [...prev, data].slice(-200);
-      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next.slice(-50))); } catch (e) {}
-      return next;
-    });
-    if (!isOpen) setUnread((n) => n + 1);
+    // History message from server
+    if (data.type === 'history' && Array.isArray(data.messages)) {
+      const msgs = data.messages || [];
+      setMessages(msgs);
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(msgs.slice(-50))); } catch (e) {}
+      return;
+    }
+
+    if (data.type === 'question_of_day') {
+      const content = data.message?.content || data.content || (data.message && data.message.content) || null;
+      if (content) setQuestionOfDay(content);
+      return;
+    }
+
+    if (data.type === 'message') {
+      const m = data.message || data;
+      setMessages((prev) => {
+        const next = [...prev, m].slice(-200);
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next.slice(-50))); } catch (e) {}
+        return next;
+      });
+      if (!isOpen) setUnread((n) => n + 1);
+      return;
+    }
   };
 
-  // Use BroadcastChannel mode by default for demo. To switch to real WS, set wsUrl env or pass in options later.
-  const { send, status } = useForumWebSocket({ channel: 'rumi-forum', wsUrl: 'broadcast', onMessage: onIncoming });
+  // Use WebSocket backend (configured via VITE_WS_URL)
+  const { send, status } = useForumWebSocket({ channel: 'rumi-forum', onMessage: onIncoming });
 
   useEffect(() => {
     // announce join
@@ -88,24 +101,29 @@ export function ForumProvider({ children }) {
     setQuestionOfDay(newQ);
   }, [user?.id]);
 
+  // Cuando se abre el panel, cargar historial vía REST si está vacío
+  useEffect(() => {
+    if (isOpen && messages.length === 0) {
+      api.get('/forum/messages')
+        .then(res => {
+          const data = res.data || [];
+          setMessages(data);
+          try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data.slice(-50))); } catch (e) {}
+        })
+        .catch(err => console.error('Error cargando historial foro', err));
+    }
+  }, [isOpen]);
+
   const sendMessage = (content, replyTo = null) => {
-    const msg = {
-      type: 'message', id: crypto?.randomUUID?.() || `${Date.now()}`, userId: user?.id || `anon-${Math.floor(Math.random()*10000)}`, userName: user?.name || 'Anónimo', userRole: user?.role || 'anónimo', content, timestamp: new Date().toISOString(), replyTo, reactions: {}
-    };
-    // Siempre agregar al estado local primero (BroadcastChannel NO se auto-escucha)
-    onIncoming(msg);
-    // Luego broadcast a otras pestañas/usuarios
-    try { send(msg); } catch (e) {}
+    const payload = { type: 'message', content, replyTo };
+    try { send(payload); } catch (e) { console.error('Enviar mensaje WS falló', e); }
   };
 
   const publishQuestionOfDay = (content) => {
     // Actualizar el estado local de la pregunta del día
     setQuestionOfDay(content);
     // También notificar a otras pestañas via broadcast
-    const msg = {
-      type: 'question_of_day', id: crypto?.randomUUID?.() || `${Date.now()}-qod`, userId: user?.id || 'system', userName: user?.name || 'Admin', userRole: user?.role || 'admin', content, timestamp: new Date().toISOString()
-    };
-    try { send(msg); } catch (e) {}
+    try { send({ type: 'question_of_day', content }); } catch (e) { console.error('Enviar pregunta del día falló', e); }
   };
 
   const pickRandomQuestion = () => questionsBank[Math.floor(Math.random() * questionsBank.length)];

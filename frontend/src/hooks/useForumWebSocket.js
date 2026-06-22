@@ -6,7 +6,6 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 // - websocket: usa URL wss:// para comunicación real-time
 
 export default function useForumWebSocket({ channel = 'rumi-forum', wsUrl = null, onMessage } = {}) {
-  const bcRef = useRef(null);
   const wsRef = useRef(null);
   const reconnectRef = useRef(0);
   const pingRef = useRef(null);
@@ -19,10 +18,6 @@ export default function useForumWebSocket({ channel = 'rumi-forum', wsUrl = null
     const raw = typeof payload === 'string' ? payload : JSON.stringify(payload);
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       wsRef.current.send(raw);
-      return;
-    }
-    if (bcRef.current) {
-      bcRef.current.postMessage(raw);
     }
   }, []);
 
@@ -40,41 +35,26 @@ export default function useForumWebSocket({ channel = 'rumi-forum', wsUrl = null
 
   useEffect(() => {
     let isUnmount = false;
-
-    if (!wsUrl || wsUrl === 'broadcast') {
-      // BroadcastChannel mode (demo, works between tabs)
-      try {
-        bcRef.current = new BroadcastChannel(channel);
-        bcRef.current.onmessage = (ev) => {
-          try {
-            const data = typeof ev.data === 'string' ? JSON.parse(ev.data) : ev.data;
-            onMessageRef.current?.(data);
-          } catch (e) {
-            // ignore
-            onMessageRef.current?.(ev.data);
-          }
-        };
-        setStatus('connected');
-      } catch (e) {
-        console.warn('BroadcastChannel not available, falling back to in-memory.', e);
-        setStatus('failed');
-      }
-
-      return () => {
-        isUnmount = true;
-        if (bcRef.current) bcRef.current.close();
-      };
-    }
-
-    // WebSocket mode
+    // WebSocket mode (always)
     const connect = () => {
       if (isUnmount) return;
       setStatus('connecting');
       try {
-        wsRef.current = new WebSocket(wsUrl);
+        const resolvedUrl = wsUrl || import.meta.env.VITE_WS_URL || (window.location.hostname === 'localhost' ? 'ws://localhost:3000/ws/forum' : undefined);
+        if (!resolvedUrl) {
+          console.error('No WS URL configured');
+          setStatus('failed');
+          return;
+        }
+        wsRef.current = new WebSocket(resolvedUrl);
         wsRef.current.onopen = () => {
           reconnectRef.current = 0;
           setStatus('connected');
+          // send auth token as first message
+          try {
+            const token = localStorage.getItem('token');
+            wsRef.current.send(JSON.stringify({ type: 'auth', token: token || null }));
+          } catch (e) {}
           // start ping
           pingRef.current = setInterval(() => {
             try { wsRef.current?.send(JSON.stringify({ type: 'ping', timestamp: new Date().toISOString() })); } catch (e) {}
