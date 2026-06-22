@@ -11,6 +11,9 @@ export default function useForumWebSocket({ channel = 'rumi-forum', wsUrl = null
   const reconnectRef = useRef(0);
   const pingRef = useRef(null);
   const [status, setStatus] = useState('closed');
+  // Guardamos onMessage en un ref para estabilidad y evitamos re-suscribir el useEffect
+  const onMessageRef = useRef(onMessage);
+  useEffect(() => { onMessageRef.current = onMessage; }, [onMessage]);
 
   const send = useCallback((payload) => {
     const raw = typeof payload === 'string' ? payload : JSON.stringify(payload);
@@ -45,10 +48,10 @@ export default function useForumWebSocket({ channel = 'rumi-forum', wsUrl = null
         bcRef.current.onmessage = (ev) => {
           try {
             const data = typeof ev.data === 'string' ? JSON.parse(ev.data) : ev.data;
-            onMessage?.(data);
+            onMessageRef.current?.(data);
           } catch (e) {
             // ignore
-            onMessage?.(ev.data);
+            onMessageRef.current?.(ev.data);
           }
         };
         setStatus('connected');
@@ -80,9 +83,9 @@ export default function useForumWebSocket({ channel = 'rumi-forum', wsUrl = null
         wsRef.current.onmessage = (ev) => {
           try {
             const data = typeof ev.data === 'string' ? JSON.parse(ev.data) : ev.data;
-            onMessage?.(data);
+            onMessageRef.current?.(data);
           } catch (e) {
-            onMessage?.(ev.data);
+            onMessageRef.current?.(ev.data);
           }
         };
         wsRef.current.onclose = () => {
@@ -110,7 +113,7 @@ export default function useForumWebSocket({ channel = 'rumi-forum', wsUrl = null
       if (pingRef.current) clearInterval(pingRef.current);
       try { wsRef.current?.close(); } catch (e) {}
     };
-  }, [channel, wsUrl, onMessage]);
+  }, [channel, wsUrl]);
 
   return { send, close, status };
 }

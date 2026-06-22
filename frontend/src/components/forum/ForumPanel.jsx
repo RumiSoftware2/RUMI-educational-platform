@@ -1,8 +1,8 @@
 // frontend/src/components/forum/ForumPanel.jsx
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useForum } from '../../context/ForumContext';
-import { useAuth } from '../../context/AuthContext';
+import { AuthContext } from '../../context/AuthContext';
 import QuestionOfDayModal from './QuestionOfDayModal';
 
 function MessageRow({ m }) {
@@ -27,7 +27,7 @@ function MessageRow({ m }) {
 
 export default function ForumPanel() {
   const { messages, isOpen, setIsOpen, sendMessage, connectedCount, markRead } = useForum();
-  const { user } = useAuth();
+  const { user } = useContext(AuthContext);
   const [text, setText] = useState('');
   const [showModal, setShowModal] = useState(false);
   const listRef = useRef(null);

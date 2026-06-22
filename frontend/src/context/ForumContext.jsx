@@ -2,7 +2,6 @@
 import React, { createContext, useContext, useEffect, useMemo, useState, useRef } from 'react';
 import useForumWebSocket from '../hooks/useForumWebSocket';
 import questionsBank from '../data/questionsBank';
-import { useContext } from 'react';
 import { AuthContext } from './AuthContext';
 
 const ForumContext = createContext(null);
