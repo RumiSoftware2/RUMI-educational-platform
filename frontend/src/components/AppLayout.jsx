@@ -1,6 +1,9 @@
 // frontend/src/components/AppLayout.jsx
 import { useLocation } from 'react-router-dom';
 import Header from './Header';
+import ForumBubble from './forum/ForumBubble';
+import ForumPanel from './forum/ForumPanel';
+import { ForumProvider } from '../context/ForumContext';
 
 export default function AppLayout({ children }) {
   const location = useLocation();
@@ -54,11 +57,15 @@ export default function AppLayout({ children }) {
   const shouldShowHeader = isPersonalRoute || isCourseDetailRoute;
 
   return (
-    <>
-      {shouldShowHeader && <Header />}
-      <div className={shouldShowHeader ? "pt-20" : ""}>
-        {children}
-      </div>
-    </>
+    <ForumProvider>
+      <>
+        {shouldShowHeader && <Header />}
+        <div className={shouldShowHeader ? "pt-20" : ""}>
+          {children}
+        </div>
+        <ForumBubble />
+        <ForumPanel />
+      </>
+    </ForumProvider>
   );
 } 

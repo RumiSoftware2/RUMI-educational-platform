@@ -1,0 +1,36 @@
+// frontend/src/data/questionsBank.js
+const questionsBank = [
+  "¿Cuál es tu técnica de estudio más efectiva?",
+  "¿Qué habilidad desearías aprender este mes?",
+  "¿Cuál es el mayor reto que has superado en tu aprendizaje?",
+  "¿Qué consejo le darías a alguien que empieza a aprender hoy?",
+  "¿Cómo organizas tu tiempo para estudiar?",
+  "¿Qué recursos (libros, cursos, canales) recomiendas?",
+  "¿Prefieres estudiar solo o en grupo? ¿Por qué?",
+  "¿Qué app o herramienta te ayuda a concentrarte?",
+  "¿Cómo mides tu progreso de aprendizaje?",
+  "¿Cuál ha sido tu logro académico más reciente?",
+  "¿Qué hábito te ha ayudado más a aprender?",
+  "¿Cómo afrontas la procrastinación?",
+  "¿Qué formato de contenido prefieres (video, texto, audio)?",
+  "¿Cuál es tu meta de aprendizaje para este año?",
+  "¿Cómo das feedback útil a tus compañeros?",
+  "¿Qué tema te gustaría que RUMI cubriera próximamente?",
+  "¿Qué te motiva a continuar aprendiendo cada día?",
+  "¿Cómo aplicas lo aprendido en proyectos reales?",
+  "¿Qué estrategia usas para repasar antes de un examen?",
+  "¿Qué libro te ha cambiado la forma de aprender?",
+  "¿Usas tarjetas (flashcards) para memorizar? ¿Cómo?",
+  "¿Cómo gestionas la ansiedad antes de evaluaciones?",
+  "¿Qué técnicas de lectura rápida usas (si las usas)?",
+  "¿Qué es lo más valioso que aprendiste este mes?",
+  "¿Cómo equilibras trabajo, vida y estudio?",
+  "¿Qué proyecto de aprendizaje te gustaría empezar ahora?",
+  "¿Cómo enseñas a alguien un concepto complejo?",
+  "¿Qué rutina de estudio recomiendas para principiantes?",
+  "¿Qué rol juega la curiosidad en tu aprendizaje?",
+  "¿Cómo retroalimentas tus errores para mejorar?",
+  "¿Cuál fue tu momento \"aha\" más reciente?"
+];
+
+export default questionsBank;
