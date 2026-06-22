@@ -26,7 +26,7 @@ function MessageRow({ m }) {
 }
 
 export default function ForumPanel() {
-  const { messages, isOpen, setIsOpen, sendMessage, connectedCount, markRead } = useForum();
+  const { messages, isOpen, setIsOpen, sendMessage, connectedCount, markRead, questionOfDay } = useForum();
   const { user } = useContext(AuthContext);
   const [text, setText] = useState('');
   const [showModal, setShowModal] = useState(false);
@@ -41,7 +41,8 @@ export default function ForumPanel() {
 
   if (!isOpen) return null;
 
-  const latestQ = [...messages].reverse().find(m => m.type === 'question_of_day');
+  // La pregunta del día proviene del contexto (estado separado)
+  const latestQ = questionOfDay;
 
   const handleSend = () => {
     if (!text.trim()) return;
@@ -69,7 +70,7 @@ export default function ForumPanel() {
       </div>
 
       <div style={{ padding: 12, borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-        <div style={{ background: '#FDE68A', color: '#000', padding: 10, borderRadius: 6 }}>{latestQ ? latestQ.content : 'Pregunta del Día no publicada'}</div>
+        <div style={{ background: '#FDE68A', color: '#000', padding: 10, borderRadius: 6 }}>💬 {latestQ || 'Pregunta del Día no publicada'}</div>
       </div>
 
       <div ref={listRef} style={{ flex: 1, overflow: 'auto', padding: 12 }}>

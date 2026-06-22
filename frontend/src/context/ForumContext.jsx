@@ -21,6 +21,10 @@ export function ForumProvider({ children }) {
   const [isOpen, setIsOpen] = useState(false);
   const [unread, setUnread] = useState(0);
   const typingRef = useRef({});
+  // Estado separado para la pregunta del día (no va a messages[])
+  const [questionOfDay, setQuestionOfDay] = useState(
+    () => questionsBank[Math.floor(Math.random() * questionsBank.length)]
+  );
 
   const onIncoming = (data) => {
     if (!data) return;
@@ -36,6 +40,11 @@ export function ForumProvider({ children }) {
       typingRef.current[data.userId] = { userName: data.userName, ts: Date.now() };
       return;
     }
+      if (data.type === 'question_of_day') {
+        // Cuando otra pestaña publica la pregunta, la actualizamos localmente
+        setQuestionOfDay(data.content);
+        return;
+      }
     // message or question_of_day
     setMessages((prev) => {
       const next = [...prev, data].slice(-200);
@@ -72,21 +81,31 @@ export function ForumProvider({ children }) {
     return () => clearInterval(id);
   }, []);
 
+  // Cada vez que cambia el usuario (login/logout/cambio de cuenta),
+  // se elige una nueva pregunta del día aleatoria
+  useEffect(() => {
+    const newQ = questionsBank[Math.floor(Math.random() * questionsBank.length)];
+    setQuestionOfDay(newQ);
+  }, [user?.id]);
+
   const sendMessage = (content, replyTo = null) => {
     const msg = {
       type: 'message', id: crypto?.randomUUID?.() || `${Date.now()}`, userId: user?.id || `anon-${Math.floor(Math.random()*10000)}`, userName: user?.name || 'Anónimo', userRole: user?.role || 'anónimo', content, timestamp: new Date().toISOString(), replyTo, reactions: {}
     };
-    try { send(msg); } catch (e) {
-      // locally add if send fails
-      onIncoming(msg);
-    }
+    // Siempre agregar al estado local primero (BroadcastChannel NO se auto-escucha)
+    onIncoming(msg);
+    // Luego broadcast a otras pestañas/usuarios
+    try { send(msg); } catch (e) {}
   };
 
   const publishQuestionOfDay = (content) => {
+    // Actualizar el estado local de la pregunta del día
+    setQuestionOfDay(content);
+    // También notificar a otras pestañas via broadcast
     const msg = {
       type: 'question_of_day', id: crypto?.randomUUID?.() || `${Date.now()}-qod`, userId: user?.id || 'system', userName: user?.name || 'Admin', userRole: user?.role || 'admin', content, timestamp: new Date().toISOString()
     };
-    send(msg);
+    try { send(msg); } catch (e) {}
   };
 
   const pickRandomQuestion = () => questionsBank[Math.floor(Math.random() * questionsBank.length)];
@@ -98,6 +117,7 @@ export function ForumProvider({ children }) {
     sendMessage,
     publishQuestionOfDay,
     pickRandomQuestion,
+    questionOfDay,
     connectedCount,
     status,
     isOpen,
@@ -105,7 +125,7 @@ export function ForumProvider({ children }) {
     unread,
     markRead,
     typing: typingRef
-  }), [messages, connectedCount, status, isOpen, unread]);
+  }), [messages, questionOfDay, connectedCount, status, isOpen, unread]);
 
   return <ForumContext.Provider value={value}>{children}</ForumContext.Provider>;
 }
