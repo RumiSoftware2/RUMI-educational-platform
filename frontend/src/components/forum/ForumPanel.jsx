@@ -26,7 +26,7 @@ function MessageRow({ m }) {
 }
 
 export default function ForumPanel() {
-  const { messages, isOpen, setIsOpen, sendMessage, connectedCount, markRead, questionOfDay, status } = useForum();
+  const { messages, isOpen, setIsOpen, sendMessage, connectedCount, markRead, questionOfDay, status, lastError, clearError } = useForum();
   const { user } = useContext(AuthContext);
   const [text, setText] = useState('');
   const [showModal, setShowModal] = useState(false);
@@ -46,6 +46,9 @@ export default function ForumPanel() {
 
   const handleSend = () => {
     if (!text.trim()) return;
+    if (status !== 'connected') {
+      return;
+    }
     sendMessage(text.trim());
     setText('');
   };
@@ -77,17 +80,23 @@ export default function ForumPanel() {
         <div style={{ background: '#FDE68A', color: '#000', padding: 10, borderRadius: 6 }}>💬 {latestQ || 'Pregunta del Día no publicada'}</div>
       </div>
 
+      {lastError && (
+        <div style={{ background: '#F87171', color: '#fff', padding: 8, textAlign: 'center' }}>
+          {lastError} <button onClick={() => clearError()} style={{ marginLeft: 8, background: 'transparent', border: 'none', color: '#fff' }}>×</button>
+        </div>
+      )}
+
       <div ref={listRef} style={{ flex: 1, overflow: 'auto', padding: 12 }}>
         {messages.map(m => (
-          <MessageRow key={m.id} m={m} />
+          <MessageRow key={m.id || m._id} m={m} />
         ))}
       </div>
 
       <div style={{ padding: 12, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
         <div style={{ marginBottom: 8 }}><small>Escribes como: <strong>{user?.name || 'Anónimo'}</strong></small></div>
-        <textarea value={text} onChange={e => setText(e.target.value)} rows={3} style={{ width: '100%', borderRadius: 8 }} placeholder='Escribe tu mensaje...' />
+        <textarea value={text} onChange={e => setText(e.target.value)} rows={3} style={{ width: '100%', borderRadius: 8 }} placeholder='Escribe tu mensaje...' disabled={status !== 'connected'} />
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 8 }}>
-          <button className='btn btn-primary' onClick={handleSend}>Enviar ➤</button>
+          <button className='btn btn-primary' onClick={handleSend} disabled={status !== 'connected'}>Enviar ➤</button>
         </div>
       </div>
 

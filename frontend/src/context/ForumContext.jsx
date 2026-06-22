@@ -29,6 +29,15 @@ export function ForumProvider({ children }) {
 
   const onIncoming = (data) => {
     if (!data) return;
+    // Handle server-side errors
+    if (data.type === 'error') {
+      setLastError && setLastError(data.message || 'Error del servidor');
+      return;
+    }
+    if (data.type === 'auth_failed') {
+      setLastError && setLastError('Autenticación WS fallida');
+      return;
+    }
     if (data.type === 'join') {
       setConnectedCount((c) => Math.max(1, c + 1));
       return;
@@ -41,9 +50,20 @@ export function ForumProvider({ children }) {
       typingRef.current[data.userId] = { userName: data.userName, ts: Date.now() };
       return;
     }
+    // Normalization helper
+    const normalizeMessage = (m) => {
+      if (!m) return m;
+      return {
+        ...m,
+        id: m.id || m._id || (m.message && (m.message.id || m.message._id)) || `${Date.now()}-${Math.random()}`,
+        timestamp: m.timestamp || m.createdAt || (m.message && (m.message.timestamp || m.message.createdAt)) || new Date().toISOString(),
+        content: m.content || (m.message && m.message.content) || ''
+      };
+    };
+
     // History message from server
     if (data.type === 'history' && Array.isArray(data.messages)) {
-      const msgs = data.messages || [];
+      const msgs = (data.messages || []).map(normalizeMessage);
       setMessages(msgs);
       try { localStorage.setItem(STORAGE_KEY, JSON.stringify(msgs.slice(-50))); } catch (e) {}
       return;
@@ -56,7 +76,8 @@ export function ForumProvider({ children }) {
     }
 
     if (data.type === 'message') {
-      const m = data.message || data;
+      const raw = data.message || data;
+      const m = normalizeMessage(raw);
       setMessages((prev) => {
         const next = [...prev, m].slice(-200);
         try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next.slice(-50))); } catch (e) {}
@@ -66,6 +87,8 @@ export function ForumProvider({ children }) {
       return;
     }
   };
+
+  const [lastError, setLastError] = useState(null);
 
   // Use WebSocket backend (configured via VITE_WS_URL)
   const { send, status } = useForumWebSocket({ channel: 'rumi-forum', onMessage: onIncoming });
@@ -99,7 +122,12 @@ export function ForumProvider({ children }) {
   useEffect(() => {
     const newQ = questionsBank[Math.floor(Math.random() * questionsBank.length)];
     setQuestionOfDay(newQ);
-  }, [user?.id]);
+    // Re-auth WebSocket when user changes (login/logout)
+    try {
+      const token = localStorage.getItem('token') || null;
+      send({ type: 'auth', token });
+    } catch (e) {}
+  }, [user?.id, send]);
 
   // Cuando se abre el panel, cargar historial vía REST si está vacío
   useEffect(() => {
@@ -142,7 +170,9 @@ export function ForumProvider({ children }) {
     setIsOpen,
     unread,
     markRead,
-    typing: typingRef
+    typing: typingRef,
+    lastError,
+    clearError: () => setLastError(null)
   }), [messages, questionOfDay, connectedCount, status, isOpen, unread]);
 
   return <ForumContext.Provider value={value}>{children}</ForumContext.Provider>;

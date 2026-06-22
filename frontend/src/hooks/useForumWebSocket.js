@@ -35,14 +35,32 @@ export default function useForumWebSocket({ channel = 'rumi-forum', wsUrl = null
 
   useEffect(() => {
     let isUnmount = false;
-    // WebSocket mode (always)
+    // Resolve WS URL: try explicit env, then derive from VITE_API_URL, then localhost fallback
+    function resolveWsUrl() {
+      if (wsUrl) return wsUrl;
+      if (import.meta.env.VITE_WS_URL) return import.meta.env.VITE_WS_URL;
+      const api = import.meta.env.VITE_API_URL;
+      try {
+        if (api) {
+          const u = new URL(api);
+          u.protocol = u.protocol === 'https:' ? 'wss:' : 'ws:';
+          u.pathname = '/ws/forum';
+          u.search = '';
+          return u.toString();
+        }
+      } catch (e) {
+        // ignore
+      }
+      if (window.location.hostname === 'localhost') return 'ws://localhost:3000/ws/forum';
+      return undefined;
+    }
     const connect = () => {
       if (isUnmount) return;
       setStatus('connecting');
       try {
-        const resolvedUrl = wsUrl || import.meta.env.VITE_WS_URL || (window.location.hostname === 'localhost' ? 'ws://localhost:3000/ws/forum' : undefined);
+        const resolvedUrl = resolveWsUrl();
         if (!resolvedUrl) {
-          console.error('No WS URL configured');
+          console.error('No WS URL configured — set VITE_WS_URL or VITE_API_URL');
           setStatus('failed');
           return;
         }
